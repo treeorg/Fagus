@@ -27,6 +27,9 @@ class TestTreeO(unittest.TestCase):
         b["1"][0][1] = False
         self.assertEqual(b, TreeO.set(a, False, "1 0 1"), "Correctly traversing dicts and lists with numeric "
                                                           "indices when the node type is not given explicitly.")
+        # verify that base object is writable for set
+        self.assertRaisesRegex(ValueError, "Can't modify base object self having the immutable type ", TreeO.set,
+                               (((1, 0), 2), 3), 7, "0 0 0")
         # new nodes can only either be lists or dicts, expressed by l's and
         self.assertRaisesRegex(ValueError, "The only allowed characters in .*", TreeO.set, a["1"], "f", "0", "pld")
         # Due to limitations on how references work in Python, the base-object can't be changed. So if the base-object
@@ -49,7 +52,6 @@ class TestTreeO(unittest.TestCase):
         b["1"][0].insert(2, [["q"]])
         a.set("q", ("1", 0, 2, 0, 0), list_insert=2, default_node_type="l")
         self.assertEqual(a, b, "Insert into list")
-        TreeO.set((((1, 0), 2), 3), 7, "0 0 0")
 
     def test_iter(self):
         a = TreeO(self.a, mod=False)
@@ -62,9 +64,14 @@ class TestTreeO(unittest.TestCase):
         self.assertEqual([(0, 0, 3), (0, 1, 4), (1, "b", 1)], a.items("a"), "Correct iterator when path is given")
 
     def test_mod_function(self):
-        TreeO.default_node_type = "l"
-        #print(TreeO.default_node_type)
-        TreeO.ensure_json([], mod_functions={"default": lambda x: str(x)})
+        a = TreeO(self.a, mod=False)
+        b = copy.deepcopy(self.a)
+        b["1"][0][0] += 4
+        a.mod(lambda x: x + 4, "1 0 0", 6)
+        self.assertEqual(a, b, "Modifying existing number")
+        b["1"][0].insert(0, 2)
+        a.mod(lambda x: x + 4, "1 0 0", 2, list_insert=2)
+        self.assertEqual(a, b, "Setting default value")
 
     def test_mul(self):
         a = TreeO(self.a["1"])
