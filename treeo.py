@@ -175,7 +175,7 @@ class TreeO(MutableMapping, MutableSequence, metaclass=TreeOMeta):
 
         node_types can be used to manually define if the nodes along path are supposed to be lists or dicts. If left
         empty, TreeO will try to use TreeO.default_node_type to create new nodes or just use the existing nodes."""
-        return TreeO.__build_node__(self, value, path, "insert", node_types, index=index, **kwargs)
+        return TreeO.__build_node__(self, value, path, "insert", node_types, **kwargs, index=index)
 
     def add(self: Union[MutableMapping, MutableSequence], value, path, node_types: str = ..., **kwargs):
         """Create (if they don't already exist) all sub-nodes in path, and finally add new value to set at leaf-node
@@ -200,7 +200,8 @@ class TreeO(MutableMapping, MutableSequence, metaclass=TreeOMeta):
                        **kwargs):
         if not isinstance(self, (MutableMapping, MutableSequence)):
             raise ValueError(f"Can't modify base object self having the immutable type {type(self).__name__}.")
-        TreeO.__verify_kwargs__(kwargs, action, "default_node_type", "list_insert", "value_split", "return_node", "mod")
+        TreeO.__verify_kwargs__(kwargs, action, "default_node_type", "list_insert", "value_split", "return_node", "mod",
+                                *(("index",) if action == "insert" else ()))
         node_types = TreeO.__opt__(self, "node_types", node_types=node_types)
         obj = self.obj if isinstance(self, TreeO) else self
         if not kwargs.get("mod", True):
@@ -280,31 +281,30 @@ class TreeO(MutableMapping, MutableSequence, metaclass=TreeOMeta):
     @staticmethod
     def __put_value__(node, value, action, **kwargs):
         if action == "set":
-            node = value
+            return value
         elif action in ("append", "extend", "insert"):
             if not isinstance(node, MutableSequence):
                 if isinstance(node, Iterable):
                     node = list(node)
-                elif node:
-                    if node is not ...:
-                        node = [node]
-                else:
+                elif node is ...:
                     node = []
+                else:
+                    node = [node]
             if action == "insert":
                 node.insert(kwargs["index"], value)
             else:
                 getattr(node, action)(value)
         elif action in ("add", "update"):
-            if action == "update" and isinstance(node, MutableMapping) and isinstance(value, MutableMapping):
+            if action == "update" and isinstance(node, MutableMapping) and isinstance(value, Mapping):
                 node.update(value)
             else:
-                if not isinstance(node, MutableSet) and isinstance(node, Iterable):
-                    node = set(node)
-                elif node:
-                    if not isinstance(node, MutableSet) and node is not ...:
+                if not isinstance(node, MutableSet):
+                    if isinstance(node, Iterable):
+                        node = set(node)
+                    elif node is ...:
+                        node = set()
+                    else:
                         node = {node}
-                else:
-                    node = set()
                 getattr(node, action)(value)
         return node
 

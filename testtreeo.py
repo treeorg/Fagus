@@ -53,10 +53,64 @@ class TestTreeO(unittest.TestCase):
         a.set("q", ("1", 0, 2, 0, 0), list_insert=2, default_node_type="l")
         self.assertEqual(a, b, "Insert into list")
 
+    def test_append(self):
+        a = copy.deepcopy(self.a)
+        b = copy.deepcopy(self.a)
+        b["a"][0].append(5)
+        self.assertEqual(TreeO.append(a, 5, "a 0"), b, "appending to existing list")
+        b["1"][0][3] = list(b["1"][0][3])
+        b["1"][0][3][1] = list(b["1"][0][3][1])
+        b["1"][0][3][1].append("f")
+        b["1"][0][3][1].sort()
+        TreeO.append(a, "f", "1 0 3 1")
+        TreeO.get(a, "1 0 3 1").sort()
+        self.assertEqual(a, b, "appending to set (converting to list first, both sets must be sorted for the test not "
+                               "to fail)")
+        b["1"][0][0] = [1, 5]
+        self.assertEqual(TreeO.append(a, 5, "1 0 0"), b, "Creating list from singleton value and appending to it")
+        b["q"] = [6]
+        self.assertEqual(TreeO.append(a, 6, "q"), b, "Create new list for value at a path that didn't exist before")
+
+    def test_extend(self):
+        a = copy.deepcopy(self.a)
+        b = copy.deepcopy(self.a)
+        b["a"][0].extend((5, 6))
+        self.assertEqual(TreeO.extend(a, (5, 6), "a 0"), b, "appending to existing list")
+        b["1"][0][3] = list(b["1"][0][3])
+        b["1"][0][3][1] = list(b["1"][0][3][1])
+        b["1"][0][3][1].extend("fg")
+        b["1"][0][3][1].sort()
+        TreeO.extend(a, "fg", "1 0 3 1")
+        TreeO.get(a, "1 0 3 1").sort()
+        self.assertEqual(a, b, "extending set (converting to list first, both sets must be sorted for the test not "
+                               "to fail)")
+        b["1"][0][0] = [1, 5, 6]
+        self.assertEqual(TreeO.extend(a, [5, 6], "1 0 0"), b, "Creating list from singleton value and appending to it")
+        b["q"] = [6, 7]
+        self.assertEqual(TreeO.extend(a, [6, 7], "q"), b, "Create new list for value at a path not existing before")
+
+    def test_insert(self):
+        a = copy.deepcopy(self.a)
+        b = copy.deepcopy(self.a)
+        b["a"][0].insert(2, "hei")
+        self.assertEqual(TreeO.insert(a, 2, "hei", "a 0"), b, "appending to existing list")
+        b["1"][0][3] = list(b["1"][0][3])
+        b["1"][0][3][1] = list(b["1"][0][3][1])
+        b["1"][0][3][1].insert(5, "fg")
+        b["1"][0][3][1].sort()
+        TreeO.insert(a, 5, "fg", "1 0 3 1")
+        TreeO.get(a, "1 0 3 1").sort()
+        self.assertEqual(a, b, "extending set (converting to list first, both sets must be sorted for the test not "
+                               "to fail)")
+        b["1"][0][0] = [5, 1]
+        self.assertEqual(TreeO.insert(a, -3, 5, "1 0 0"), b, "Creating list from singleton value and appending to it")
+        b["q"] = [5]
+        self.assertEqual(TreeO.insert(a, -9, 5, "q"), b, "Create new list for value at a path that didn't exist before")
+
     def test_iter(self):
         a = TreeO(self.a, mod=False)
         aq = tuple(a["1 0 3 1"])  # have to create this tuple of the set because it's unpredictable what order
-        # a and q will have in the set. Using this tuple, I make sure the test still works (the order will be sthe same)
+        # a and q will have in the set. Using this tuple, I make sure the test still works (the order will be sth same)
         b = [('1', 0, 0, 1), ('1', 0, 1, True), ('1', 0, 2, 'a'), ('1', 0, 3, 0, 'f'), ('1', 0, 3, 1, aq[0]),
              ('1', 0, 3, 1, aq[1]), ('1', 1, 'a', False), ('1', 1, '1', 0, 1), ('a', 0, 0, 3), ('a', 0, 1, 4),
              ('a', 1, 'b', 1)]
