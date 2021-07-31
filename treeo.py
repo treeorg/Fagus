@@ -319,7 +319,7 @@ class TreeO(MutableMapping, MutableSequence, metaclass=TreeOMeta):
             if original_value is not TreeOMeta.__Empty__:
                 return original_value
         default_value = TreeO.__opt__(self, "default_value", default_value=default)
-        TreeO.set(self, path, default_value, node_types, **kwargs)
+        TreeO.set(self, default_value, path, node_types, **kwargs)
         return default_value
 
     def mod(self: Union[MutableMapping, MutableSequence], mod_function, path, default=..., node_types: str = ...,
@@ -356,7 +356,7 @@ class TreeO(MutableMapping, MutableSequence, metaclass=TreeOMeta):
                 node = node[node_name if isinstance(node, dict) else int(node_name)]
             except (IndexError, ValueError, KeyError):
                 return
-        return node.pop(t_path[-1])
+        return node.pop(int(t_path[-1]) if isinstance(node, Sequence) else t_path[-1])
 
     def serialize(self: Union[dict, list], mod_functions: MutableMapping = ..., path="", **kwargs):
         """Makes sure the object can be serialized so that it can be converted to JSON, YAML etc.

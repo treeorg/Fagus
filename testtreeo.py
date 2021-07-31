@@ -21,6 +21,16 @@ class TestTreeO(unittest.TestCase):
         self.assertEqual(1, TreeO(self.a).get((1, 0, 0), 1), "Path not existing return default that comes from param")
         self.assertEqual(1, TreeO.get((((1, 0), 2), 3), "0 0 0"), "Successfully traversing tuples")
 
+    def test_iter(self):
+        a = TreeO(self.a, mod=False)
+        aq = tuple(a["1 0 3 1"])  # have to create this tuple of the set because it's unpredictable what order
+        # a and q will have in the set. Using this tuple, I make sure the test still works (the order will be sth same)
+        b = [('1', 0, 0, 1), ('1', 0, 1, True), ('1', 0, 2, 'a'), ('1', 0, 3, 0, 'f'), ('1', 0, 3, 1, aq[0]),
+             ('1', 0, 3, 1, aq[1]), ('1', 1, 'a', False), ('1', 1, '1', 0, 1), ('a', 0, 0, 3), ('a', 0, 1, 4),
+             ('a', 1, 'b', 1)]
+        self.assertEqual([x for x in a], b, "Correctly iterating over dicts and lists")
+        self.assertEqual([(0, 0, 3), (0, 1, 4), (1, "b", 1)], a.items("a"), "Correct iterator when path is given")
+
     def test_set(self):
         a = TreeO(self.a, mod=False)
         b = copy.deepcopy(self.a)
@@ -154,15 +164,14 @@ class TestTreeO(unittest.TestCase):
         self.assertEqual(a, b, "Updating dict at node that is not existing yet")
         self.assertRaisesRegex(ValueError, "Can't update dict with value of type .*", a.update, {"hans", "wu"}, "a 1")
 
-    def test_iter(self):
+    def test_setdefault(self):
         a = TreeO(self.a, mod=False)
-        aq = tuple(a["1 0 3 1"])  # have to create this tuple of the set because it's unpredictable what order
-        # a and q will have in the set. Using this tuple, I make sure the test still works (the order will be sth same)
-        b = [('1', 0, 0, 1), ('1', 0, 1, True), ('1', 0, 2, 'a'), ('1', 0, 3, 0, 'f'), ('1', 0, 3, 1, aq[0]),
-             ('1', 0, 3, 1, aq[1]), ('1', 1, 'a', False), ('1', 1, '1', 0, 1), ('a', 0, 0, 3), ('a', 0, 1, 4),
-             ('a', 1, 'b', 1)]
-        self.assertEqual([x for x in a], b, "Correctly iterating over dicts and lists")
-        self.assertEqual([(0, 0, 3), (0, 1, 4), (1, "b", 1)], a.items("a"), "Correct iterator when path is given")
+        b = copy.deepcopy(self.a)
+        self.assertEqual(a.setdefault(5, "a 0 0"), 3, "Setdefault returns existing value")
+        self.assertEqual(a, b, "SetDefault doesn't change if the value is already there")
+        self.assertEqual(a.setdefault(5, "a 7 7", "dll"), 5, "SetDefault returns default value")
+        b["a"].append([5])
+        self.assertEqual(a, b, "SetDefault has added the value to the list")
 
     def test_mod_function(self):
         a = TreeO(self.a, mod=False)
@@ -173,6 +182,17 @@ class TestTreeO(unittest.TestCase):
         b["1"][0].insert(0, 2)
         a.mod(lambda x: x + 4, "1 0 0", 2, list_insert=2)
         self.assertEqual(a, b, "Setting default value")
+
+    def test_pop(self):
+        a = TreeO(self.a, mod=False)
+        b = copy.deepcopy(self.a)
+        self.assertEqual(a.pop("1 0 3"), b["1"][0].pop(3), "Pop correctly drops the value at the position")
+        self.assertEqual(a, b, "Pop has correctly modified the object")
+        a.pop("8 9 10")
+        self.assertEqual(a, b, "Pop did not modify the object as path doesn't exist")
+
+    def test_serialize(self):
+        pass
 
     def test_mul(self):
         a = TreeO(self.a["1"])
