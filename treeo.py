@@ -157,7 +157,7 @@ class TreeO(MutableMapping, MutableSequence, metaclass=TreeOMeta):
         empty, TreeO will try to use TreeO.default_node_type to create new nodes or just use the existing nodes."""
         return TreeO.__build_node__(self, value, path, "append", node_types, **kwargs)
 
-    def extend(self: Union[MutableMapping, MutableSequence], values: Collection, path="", node_types: str = ...,
+    def extend(self: Union[MutableMapping, MutableSequence], values: Iterable, path="", node_types: str = ...,
                **kwargs):
         """Create (if they don't already exist) all sub-nodes in path. Then extend list at leaf-node with the new values
 
@@ -186,7 +186,7 @@ class TreeO(MutableMapping, MutableSequence, metaclass=TreeOMeta):
         empty, TreeO will try to use TreeO.default_node_type to create new nodes or just use the existing nodes."""
         return TreeO.__build_node__(self, value, path, "add", node_types, **kwargs)
 
-    def update(self: Union[MutableMapping, MutableSequence], values: Collection, path="", node_types=..., **kwargs):
+    def update(self: Union[MutableMapping, MutableSequence], values:Iterable, path="", node_types=..., **kwargs):
         """Create (if they don't already exist) all sub-nodes in path, then update set at leaf-node with new values
 
         If the leaf-node is a list, tuple or other value it is converted to a set. That set is then updated with the new
@@ -223,7 +223,7 @@ class TreeO(MutableMapping, MutableSequence, metaclass=TreeOMeta):
                 node_key = next_index if isinstance(node, MutableSequence) else t_path[i]
                 next_index = TreeO.__try_else__(t_path[i + 1], lambda x: int(x), ...) if i < len(t_path) - 1 else ...
                 next_node = list if node_types[i + 1:i + 2] == "l" or not node_types[i + 1:i + 2] and \
-                                    TreeO.__opt__(obj, "default_node_type", **kwargs) == "l" and \
+                                    TreeO.__opt__(self, "default_node_type", **kwargs) == "l" and \
                                     next_index is not ... else dict
                 if isinstance(node, MutableSequence):
                     if node_key is ...:
@@ -267,7 +267,7 @@ class TreeO(MutableMapping, MutableSequence, metaclass=TreeOMeta):
                             node[node_key] = next_node()
                         node = node[node_key]
         else:
-            if isinstance(obj, MutableMapping) and action == "update" and isinstance(value, MutableMapping):
+            if isinstance(obj, MutableMapping) and action == "update" and isinstance(value, Mapping):
                 obj.update(value)
             elif isinstance(obj, MutableSequence) and action in ("append", "extend", "insert"):
                 if action == "insert":
@@ -295,16 +295,17 @@ class TreeO(MutableMapping, MutableSequence, metaclass=TreeOMeta):
             else:
                 getattr(node, action)(value)
         elif action in ("add", "update"):
-            if action == "update" and isinstance(node, MutableMapping) and isinstance(value, Mapping):
-                node.update(value)
+            if node is ...:
+                return dict(value) if isinstance(value, Mapping) else \
+                    set(value) if isinstance(value, Iterable) else {value}
             else:
-                if not isinstance(node, MutableSet):
+                if not isinstance(node, (MutableSet, MutableMapping)):
                     if isinstance(node, Iterable):
                         node = set(node)
-                    elif node is ...:
-                        node = set()
                     else:
                         node = {node}
+                elif isinstance(node, MutableMapping) and not isinstance(value, Mapping):
+                    raise ValueError(f"Can't update dict with value of type {type(value).__name__} not being a Mapping")
                 getattr(node, action)(value)
         return node
 
@@ -341,7 +342,7 @@ class TreeO(MutableMapping, MutableSequence, metaclass=TreeOMeta):
                 new_value = mod_function(old_value)
                 TreeO.set(parent_node, new_value, t_path[-1], **kwargs)
                 return new_value
-        default_value = TreeO.__opt__(obj, "default_value") if default is ... else default
+        default_value = TreeO.__opt__(self, "default_value") if default is ... else default
         TreeO.set(obj, default_value, path, node_types, **kwargs)
         return default_value
 
@@ -357,14 +358,14 @@ class TreeO(MutableMapping, MutableSequence, metaclass=TreeOMeta):
                 return
         return node.pop(t_path[-1])
 
-    def ensure_json(self: Union[dict, list], mod_functions: MutableMapping = ..., path="", **kwargs):
-        """Makes sure the object can be converted to a JSON-string
+    def serialize(self: Union[dict, list], mod_functions: MutableMapping = ..., path="", **kwargs):
+        """Makes sure the object can be serialized so that it can be converted to JSON, YAML etc.
 
-        The only allowed data-types in JSON are: dict, list, bool, float, int, str, None
+        The only allowed data-types for serialization are: dict, list, bool, float, int, str, None
 
-        Sets and tuples are converted to lists. Other objects whose types are not allowed in JSON are modified to a
-        a type that is allowed using the mod_functions-parameter. mod_functions is a dict, with the type of object (or
-        a tuple of types of objects) as key, and a function pointer that can be a lambda as value.
+        Sets and tuples are converted to lists. Other objects whose types are not allowed in serialized objects are
+        modified to a type that is allowed using the mod_functions-parameter. mod_functions is a dict, with the type
+        of object (or a tuple of types of objects) as key, and a function pointer that can be a lambda as value.
 
         The default mod_functions are: {datetime: lambda x: x.isoformat(), date: lambda x: x.isoformat(), time:
         lambda x: x.isoformat(), "default": lambda x: str(x)}
@@ -375,16 +376,15 @@ class TreeO(MutableMapping, MutableSequence, metaclass=TreeOMeta):
         if not isinstance(self, (dict, list)):
             raise ValueError(f"Can't modify base object self having the immutable type {type(self).__name__}.")
         TreeO.__verify_kwargs__(kwargs, "ensure_json", "mod_functions", "mod", "value_split")
-        obj = self.obj if isinstance(self, TreeO) else self
+        node = TreeO.get(self.obj if isinstance(self, TreeO) else self, path, return_node=False, **kwargs)
         if not kwargs.get("mod", True):
-            obj = deepcopy(obj)
-        return TreeO.__ensure_json_r__(TreeO.get(obj, path, return_node=False, **kwargs),
-                                       {**TreeO.__opt__(obj, "mod_functions"),
-                                        **(TreeOMeta.__verify_option__("mod_functions", mod_functions) if
-                                           mod_functions is ... else {})})
+            node = deepcopy(node)
+        return TreeO.__serialize_r__(node, {**TreeO.__opt__(self, "mod_functions"),
+                                            **(TreeOMeta.__verify_option__("mod_functions", mod_functions) if
+                                            mod_functions is ... else {})})
 
     @staticmethod
-    def __ensure_json_r__(node, mod_functions: MutableMapping):
+    def __serialize_r__(node, mod_functions: MutableMapping):
         for k, v in list(node.items() if isinstance(node, MutableMapping) else enumerate(node)):
             ny_k, ny_v = ..., ...
             if not isinstance(k, (bool, float, int, str)) and k is not None:
@@ -392,18 +392,18 @@ class TreeO(MutableMapping, MutableSequence, metaclass=TreeOMeta):
                     if "tuple_keys" in mod_functions:
                         ny_k = mod_functions["tuple_keys"](k)
                     else:
-                        raise ValueError('Dicts with composite keys (tuples) are not supported in JSON. Use the string '
-                                         '"tuple_keys" to define a specific mod_function for these dict-keys.')
+                        raise ValueError('Dicts with composite keys (tuples) are not supported in serialized objects. '
+                                         'Use "tuple_keys" to define a specific mod_function for these dict-keys.')
                 else:
-                    ny_k = TreeO.__ensure_json_value__(k, mod_functions)
+                    ny_k = TreeO.__serializable_value__(k, mod_functions)
             if isinstance(v, Iterable):
                 if isinstance(v, (dict, list)):
-                    TreeO.__ensure_json_r__(v, mod_functions)
+                    TreeO.__serialize_r__(v, mod_functions)
                 else:
                     ny_v = dict(v.items()) if isinstance(v, Mapping) else list(v)
-                    TreeO.__ensure_json_r__(ny_v, mod_functions)
+                    TreeO.__serialize_r__(ny_v, mod_functions)
             elif not isinstance(v, (bool, float, int, str)) and v is not None:
-                ny_v = TreeO.__ensure_json_value__(v, mod_functions)
+                ny_v = TreeO.__serializable_value__(v, mod_functions)
             if ny_k is not ...:
                 node.pop(k)
                 node[ny_k] = v if ny_v is ... else ny_v
@@ -412,7 +412,7 @@ class TreeO(MutableMapping, MutableSequence, metaclass=TreeOMeta):
         return node
 
     @staticmethod
-    def __ensure_json_value__(value, mod_functions):
+    def __serializable_value__(value, mod_functions):
         for types, mod_function in mod_functions.items():
             if type(types) is str:
                 continue
@@ -539,7 +539,6 @@ class TreeO(MutableMapping, MutableSequence, metaclass=TreeOMeta):
     def __delitem__(self, path):  # Enable [] for deleting items at dict-keys at the top-level
         self.pop(path)
 
-    # The following functions are necessary to properly implement MutableMapping, they are all passed to self.obj
     def __iter__(self):
         return iter(TreeO.iter(self))
 

@@ -52,6 +52,13 @@ class TestTreeO(unittest.TestCase):
         b["1"][0].insert(2, [["q"]])
         a.set("q", ("1", 0, 2, 0, 0), list_insert=2, default_node_type="l")
         self.assertEqual(a, b, "Insert into list")
+        b["1"][0].append("hans")
+        b["1"].insert(0, ["wurst"])
+        a.default_node_type = "l"
+        a.set("hans", "1 0 100")
+        a.set("wurst", "1 -40 5")
+        self.assertEqual(a, b, "Add to list at beginning / end by using indexes higher than length / lower than - len"
+                               "")
 
     def test_append(self):
         a = copy.deepcopy(self.a)
@@ -106,6 +113,46 @@ class TestTreeO(unittest.TestCase):
         self.assertEqual(TreeO.insert(a, -3, 5, "1 0 0"), b, "Creating list from singleton value and appending to it")
         b["q"] = [5]
         self.assertEqual(TreeO.insert(a, -9, 5, "q"), b, "Create new list for value at a path that didn't exist before")
+
+    def test_add(self):
+        a = TreeO(self.a, False)
+        b = copy.deepcopy(self.a)
+        b["1"][0][3] = list(b["1"][0][3])
+        b["1"][0][3][0] = {"f", "q"}
+        a.add("q", "1 0 3 0")
+        self.assertEqual(a, b, "Converting single value to set, adding value to it")
+        b["1"][0][3][1].add("hans")
+        a.add("hans", "1 0 3 1")
+        self.assertEqual(a, b, "Adding value to existing set")
+        b["a"][1]["c"] = {5}
+        a.add(5, "a 1 c")
+        self.assertEqual(a, b, "Creating new empty set at position where no value has been before")
+
+    def test_update(self):
+        # update set
+        a = TreeO(self.a, False)
+        b = copy.deepcopy(self.a)
+        b["1"][0][3] = list(b["1"][0][3])
+        b["1"][0][3][0] = {"f", "q", "t", "p"}
+        a.update("qtp", "1 0 3 0")
+        self.assertEqual(a, b, "Converting single value to set, adding new values to it")
+        b["1"][0][3][1].update("hans")
+        a.update("hans", "1 0 3 1")
+        self.assertEqual(a, b, "Adding new values to existing set")
+        b["a"][1]["c"] = {5}
+        a.add(5, "a 1 c")
+        self.assertEqual(a, b, "Creating new empty set at position where no value has been before")
+        # update dict
+        b.update({"hei": 1, "du": "wurst"})
+        a.update({"hei": 1, "du": "wurst"})
+        self.assertEqual(a, b, "Updating base dict")
+        b["a"][1].update({"hei": 1, "du": "wurst"})
+        a.update({"hei": 1, "du": "wurst"}, "a 1")
+        self.assertEqual(a, b, "Updating dict further inside the object")
+        b["k"]={"a": 1}
+        a.update({"a": 1}, "k")
+        self.assertEqual(a, b, "Updating dict at node that is not existing yet")
+        self.assertRaisesRegex(ValueError, "Can't update dict with value of type .*", a.update, {"hans", "wu"}, "a 1")
 
     def test_iter(self):
         a = TreeO(self.a, mod=False)
