@@ -3,6 +3,7 @@ import unittest
 
 from treeo import TreeO
 from copy import deepcopy
+from datetime import datetime, date, time
 
 
 class TestTreeO(unittest.TestCase):
@@ -48,13 +49,13 @@ class TestTreeO(unittest.TestCase):
         self.assertEqual(b, TreeO.set(a, False, "1 0 1"), "Correctly traversing dicts and lists with numeric "
                                                           "indices when the node type is not given explicitly.")
         # verify that base object is writable for set
-        self.assertRaisesRegex(ValueError, "Can't modify base object self having the immutable type ", TreeO.set,
+        self.assertRaisesRegex(TypeError, "Can't modify base object self having the immutable type ", TreeO.set,
                                (((1, 0), 2), 3), 7, "0 0 0")
         # new nodes can only either be lists or dicts, expressed by l's and
         self.assertRaisesRegex(ValueError, "The only allowed characters in .*", TreeO.set, a["1"], "f", "0", "pld")
         # Due to limitations on how references work in Python, the base-object can't be changed. So if the base-object
         # is a list, it can't be converted into a dict. These kind of changes are possible at the lower levels.
-        self.assertRaisesRegex(ValueError, "Your base object is a (.*|see comment)", TreeO.set, a, "f", "0", "lld")
+        self.assertRaisesRegex(TypeError, "Your base object is a (.*|see comment)", TreeO.set, a, "f", "0", "lld")
         # if the user defines that he wants a list, but it's not possible to parse numeric index from t_path raise error
         self.assertRaisesRegex(ValueError, "Can't parse numeric list-index from.*", TreeO.set, a, "f", "1 f", "dl")
         a[("1", 1)] = "hei"
@@ -77,8 +78,7 @@ class TestTreeO(unittest.TestCase):
         a.default_node_type = "l"
         a.set("hans", "1 0 100")
         a.set("wurst", "1 -40 5")
-        self.assertEqual(a, b, "Add to list at beginning / end by using indexes higher than length / lower than - len"
-                               "")
+        self.assertEqual(a, b, "Add to list at beginning / end by using indexes higher than length / lower than - len")
 
     def test_append(self):
         a = copy.deepcopy(self.a)
@@ -202,7 +202,21 @@ class TestTreeO(unittest.TestCase):
         self.assertEqual(a, b, "Pop did not modify the object as path doesn't exist")
 
     def test_serialize(self):
-        pass
+        test_obj = {date(2021, 3, 6): [time(6, 45, 22), datetime(2021, 6, 23, 5, 45, 22)], ("hei", "du"): {3, 4, 5}}
+        a = TreeO(test_obj, mod=False)
+        self.assertRaisesRegex(TypeError, "Can't modify base-object self having the immutable type.*",
+                               TreeO((1, 2, 3, [4, 5, 6], {6, 5})).serialize)
+        self.assertRaisesRegex(ValueError, "Dicts with composite keys \(tuples\) are not supported in.*", a.serialize,
+                               mod=False)
+        b = {"2021-03-06": ["06:45:22", "2021-06-23 05:45:22"], "hei du": [3, 4, 5]}
+        self.assertEqual(a.serialize({"tuple_keys": lambda x: " ".join(x)}), b, "Serialized datetime and tuple-key")
+        self.assertEqual(a.serialize(), b, "Nothing changes if there is nothing to change")
+        a = TreeO(test_obj, mod=False)
+        a[("hei du",)] = a.pop((("hei", "du"),))
+        self.assertEqual(a.serialize(), b, "Also works when no mod-functions are defined in the parameter")
+        # må teste med default mod functions, med redigerte mod-functions (både default og ikke default)
+        # må ha med set og tuple
+        # sammensatte nøkler både med å uten fikse-funksjonen
 
     def test_mul(self):
         a = TreeO(self.a["1"])
