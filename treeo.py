@@ -114,31 +114,42 @@ class TreeO(MutableMapping, MutableSequence, metaclass=TreeOMeta):
                 return ...
         return node
 
-    def iter(self: Union[Mapping, Sequence], path="", mod=True):
+    def iter(self: Union[Mapping, Sequence], max_items: int = -1, path="", **kwargs):
         """Iterate over all sub-nodes at path
 
-        Returns a list with one tuple for each leaf-node. The tuples contain one value for each node until the leaf."""
-        node = TreeO.get(self, path, return_node=False)
-        if not mod:
-            node = deepcopy(node)
+        Returns a list with one tuple for each leaf-node, containing the keys of the parent-nodes until the leaf
+
+        max_items defines the max amount of keys to have in a tuple. E. g. if max_items is four, it means that the keys
+            of the three topmost nodes will be put in the tuple. The last element in the tuple contains the remaining
+            part of the tree at that path as a dict / list. Note that if at some point there are fewer than four levels,
+            the tuple can contain fewer than four items. max_items can be set to -1 to no matter what iterate over all
+            nodes until the leaves.
+
+        path can be used to start iterating at some point inside the TreeO-tree
+        """
+        TreeO.__verify_kwargs__(kwargs, "get", "return_node", "value_split", "mod")
+        node = TreeO.get(self, path, **{**kwargs, "return_node": False})
+        if 0 <= max_items <= 1 or max_items < -1:
+            return ValueError("max_items must be either -1 to always iter to the leaf, or >= 2 to have up to that "
+                              "number of items in the tuples.")
         if isinstance(node, (Mapping, Sequence)):
-            return TreeO.__iter_r__(node)
+            return TreeO.__iter_r__(node, max_items, TreeO.__opt__(self, "return_node", **kwargs))
         else:
             return []
 
     @staticmethod
-    def __iter_r__(node):
+    def __iter_r__(node, max_items, return_node):
         iter_list = []
         for k, v in node.items() if isinstance(node, Mapping) else enumerate(node):
-            if not isinstance(v, str):
+            if not isinstance(v, str) and max_items != 2:
                 if isinstance(v, (Mapping, Sequence)):
-                    for e in TreeO.__iter_r__(v):
+                    for e in TreeO.__iter_r__(v, max_items - 1, return_node):
                         iter_list.append((k, *e))
                     continue
                 elif isinstance(v, Collection):
                     iter_list.extend(((k, e) for e in v))
                     continue
-            iter_list.append((k, v))
+            iter_list.append((k, TreeO(v) if return_node and isinstance(v, (Mapping, Sequence)) else v))
         return iter_list
 
     def set(self: Union[MutableMapping, MutableSequence], value, path, node_types: str = ..., **kwargs):
@@ -297,7 +308,7 @@ class TreeO(MutableMapping, MutableSequence, metaclass=TreeOMeta):
         elif action in ("add", "update"):
             if node is ...:
                 return dict(value) if isinstance(value, Mapping) else \
-                    set(value) if isinstance(value, Iterable) else {value}
+                    set(value) if isinstance(value, Iterable) and not isinstance(value, str) else {value}
             else:
                 if not isinstance(node, (MutableSet, MutableMapping)):
                     if isinstance(node, Iterable):
@@ -445,17 +456,17 @@ class TreeO(MutableMapping, MutableSequence, metaclass=TreeOMeta):
         else:
             return
 
-    def values(self: Union[Mapping, Sequence], path=""):
+    def values(self: Union[Mapping, Sequence], path="", return_node=...):
         """Returns values for node at path"""
         obj = TreeO.get(self, path, return_node=False)
         if isinstance(obj, MutableMapping):
-            return obj.values()
+            return [TreeO(x) for x in obj.values()] if return_node else obj.values()
         else:
-            return list(obj)
+            return [TreeO(x) for x in obj] if return_node else list(obj)
 
-    def items(self: Union[Mapping, Sequence], path="", mod=True):
-        """Returns a list with one tuple for each leaf-node. The tuples have one value for each node until the leaf."""
-        return TreeO.iter(self, path, mod)
+    def items(self: Union[Mapping, Sequence], path="", **kwargs):
+        """Returns a list with one tuple for each leaf - the first value is the key, the second is the child-dict."""
+        return TreeO.iter(self, 2, path, **kwargs)
 
     def clear(self: Union[Mapping, Sequence], path=""):
         """Removes all elements from node at path."""
@@ -540,7 +551,8 @@ class TreeO(MutableMapping, MutableSequence, metaclass=TreeOMeta):
         self.pop(path)
 
     def __iter__(self):
-        return iter(TreeO.iter(self))
+        return iter(self.keys() if isinstance(self.obj if isinstance(self, TreeO) else self, Sequence)
+                    else self.values())
 
     def __eq__(self, other):
         return self.obj == (other.obj if isinstance(other, TreeO) else other)

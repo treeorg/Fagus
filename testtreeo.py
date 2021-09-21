@@ -28,8 +28,18 @@ class TestTreeO(unittest.TestCase):
         b = [('1', 0, 0, 1), ('1', 0, 1, True), ('1', 0, 2, 'a'), ('1', 0, 3, 0, 'f'), ('1', 0, 3, 1, aq[0]),
              ('1', 0, 3, 1, aq[1]), ('1', 1, 'a', False), ('1', 1, '1', 0, 1), ('a', 0, 0, 3), ('a', 0, 1, 4),
              ('a', 1, 'b', 1)]
-        self.assertEqual([x for x in a], b, "Correctly iterating over dicts and lists")
-        self.assertEqual([(0, 0, 3), (0, 1, 4), (1, "b", 1)], a.items("a"), "Correct iterator when path is given")
+        self.assertEqual([x for x in a.iter()], b, "Correctly iterating over dicts and lists")
+        self.assertEqual([(0, 0, 3), (0, 1, 4), (1, "b", 1)], a.iter(-1, "a"), "Correct iterator when path is given")
+        b = [('1', 0, [1, True, 'a', ('f', {'q', 'a'})]), ('1', 1, {'a': False, '1': (1,)}), ('a', 0, [3, 4]),
+             ('a', 1, {'b': 1})]
+        self.assertEqual(b, a.iter(3), "Iterating correctly when max_items is limited to three")
+        b = [('1', 0, 0, 1), ('1', 0, 1, True), ('1', 0, 2, 'a'), ('1', 0, 3, 0, 'f'), ('1', 0, 3, 1, {'q', 'a'}),
+             ('1', 1, 'a', False), ('1', 1, '1', 0, 1), ('a', 0, 0, 3), ('a', 0, 1, 4), ('a', 1, 'b', 1)]
+        self.assertEqual(b, a.iter(5), "Iterating correctly when max_items is limited to five. Some tuples are < 5")
+        self.assertEqual([(0, [3, 4]), (1, {'b': 1})], a.items("a"), "Items gives keys and values")
+        b = [('1', 0, TreeO([1, True, 'a', ('f', {'q', 'a'})])), ('1', 1, TreeO({'a': False, '1': (1,)})),
+             ('a', 0, TreeO([3, 4])), ('a', 1, TreeO({'b': 1}))]
+        self.assertEqual(b, a.iter(3, return_node=True), "Returning nodes as TreeO-objects when return_value=True")
 
     def test_set(self):
         a = TreeO(self.a, mod=False)
