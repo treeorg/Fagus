@@ -127,7 +127,7 @@ class TreeO(MutableMapping, MutableSequence, metaclass=TreeOMeta):
 
         path can be used to start iterating at some point inside the TreeO-tree
         """
-        TreeO.__verify_kwargs__(kwargs, "get", "return_node", "value_split", "mod")
+        TreeO.__verify_kwargs__(kwargs, "iter", "return_node", "value_split", "mod")
         node = TreeO.get(self, path, **{**kwargs, "return_node": False})
         if 0 <= max_items <= 1 or max_items < -1:
             return ValueError("max_items must be either -1 to always iter to the leaf, or >= 2 to have up to that "
@@ -444,11 +444,12 @@ class TreeO(MutableMapping, MutableSequence, metaclass=TreeOMeta):
             raise TypeError(f"Unsupported keyword argument{'s' if len(wrong_kwargs) > 1 else ''} in "
                             f"TreeO.{function_name}(): {' '.join(wrong_kwargs)}")
 
-    def keys(self: Union[Mapping, Sequence], path=""):
+    def keys(self: Union[Mapping, Sequence], path="", **kwargs):
         """Returns keys for node at path
 
         If node is iterable but not a dict, the indices are returned. If node is a single value, [0] is returned."""
-        obj = TreeO.get(self, path, return_node=False)
+        TreeO.__verify_kwargs__(kwargs, "keys", "value_split", "mod")
+        obj = TreeO.get(self, path, **{**kwargs, "return_node": False})
         if isinstance(obj, MutableMapping):
             return obj.keys()
         elif isinstance(obj, Collection):
@@ -456,9 +457,11 @@ class TreeO(MutableMapping, MutableSequence, metaclass=TreeOMeta):
         else:
             return
 
-    def values(self: Union[Mapping, Sequence], path="", return_node=...):
+    def values(self: Union[Mapping, Sequence], path="", **kwargs):
         """Returns values for node at path"""
-        obj = TreeO.get(self, path, return_node=False)
+        TreeO.__verify_kwargs__(kwargs, "values", "return_node", "value_split", "mod")
+        obj = TreeO.get(self, path, **{**kwargs, "return_node": False})
+        return_node = TreeO.__opt__(self, "return_node", **kwargs)
         if isinstance(obj, MutableMapping):
             return [TreeO(x) for x in obj.values()] if return_node else obj.values()
         else:
@@ -466,37 +469,43 @@ class TreeO(MutableMapping, MutableSequence, metaclass=TreeOMeta):
 
     def items(self: Union[Mapping, Sequence], path="", **kwargs):
         """Returns a list with one tuple for each leaf - the first value is the key, the second is the child-dict."""
+        TreeO.__verify_kwargs__(kwargs, "items", "return_node", "value_split", "mod")
         return TreeO.iter(self, 2, path, **kwargs)
 
-    def clear(self: Union[Mapping, Sequence], path=""):
+    def clear(self: Union[Mapping, Sequence], path="", **kwargs):
         """Removes all elements from node at path."""
-        return TreeO.get(self, path, return_node=False).clear()
+        TreeO.__verify_kwargs__(kwargs, "clear", "return_node", "value_split", "mod")
+        TreeO.get(self, path, **{**kwargs, "return_node": False}).clear()
+        return TreeO(self) if not isinstance(self, TreeO) and TreeO.__opt__(self, "return_node", **kwargs) else self
 
-    def contains(self: Union[Mapping, Sequence], value, path=""):
+    def contains(self: Union[Mapping, Sequence], value, path="", **kwargs):
         """Check if value is present in the node at path. Returns value == node if the node isn't iterable."""
-        node = TreeO.get(self, path, return_node=False)
+        TreeO.__verify_kwargs__(kwargs, "contains", "value_split")
+        node = TreeO.get(self, path, return_node=False, **kwargs)
         return value in node if isinstance(node, Collection) else value == node
 
-    def count(self: Union[Mapping, Sequence], path=""):
+    def count(self: Union[Mapping, Sequence], path="", **kwargs):
         """Get the number of child-nodes at path"""
-        node = TreeO.get(self, path)
+        TreeO.__verify_kwargs__(kwargs, "count", "value_split")
+        node = TreeO.get(self, path, return_node=False, **kwargs)
         return len(node) if isinstance(node, Collection) else 1
 
-    def reversed(self: Union[Mapping, Sequence], path=""):
-        """Get reversed child-node at path if that node is a list"""
-        node = TreeO.get(self, path, return_node=False)
+    def reversed(self: Union[Mapping, Sequence], path="", **kwargs):
+        """"Get reversed child-node at path if that node is a list"""
+        TreeO.__verify_kwargs__(kwargs, "reversed", "value_split", "return_node")
+        node = TreeO.get(self, path, **{**kwargs, "return_node": False})
         if isinstance(node, Reversible):
-            return reversed(node)
+            return TreeO(list(reversed(node))) if TreeO.__opt__(self, "return_node", **kwargs) else reversed(node)
         else:
             raise ValueError(f"Cannot reverse node of type {type(node).__name__}.")
 
     def reverse(self: Union[MutableMapping, MutableSequence], path="", **kwargs):
         """Reverse child-node at path if that node is a list"""
-        TreeO.__verify_kwargs__(kwargs, "reverse", "mod", "return_node")
+        TreeO.__verify_kwargs__(kwargs, "reverse", "mod", "value_split", "return_node")
         obj = self.obj if isinstance(self, TreeO) else self
         if kwargs.get("mod", True):
             obj = deepcopy(obj)
-        node = TreeO.get(self, path, **kwargs, return_node=False)
+        node = TreeO.get(self, path, **{**kwargs, "return_node": False})
         if isinstance(node, MutableSequence):
             node.reverse()
             return TreeO(obj) if TreeO.__opt__(self, "return_node", **kwargs) else obj
