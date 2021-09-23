@@ -169,7 +169,7 @@ class TestTreeO(unittest.TestCase):
         b["a"][1].update({"hei": 1, "du": "wurst"})
         a.update({"hei": 1, "du": "wurst"}, "a 1")
         self.assertEqual(a, b, "Updating dict further inside the object")
-        b["k"]={"a": 1}
+        b["k"] = {"a": 1}
         a.update({"a": 1}, "k")
         self.assertEqual(a, b, "Updating dict at node that is not existing yet")
         self.assertRaisesRegex(ValueError, "Can't update dict with value of type .*", a.update, {"hans", "wu"}, "a 1")
@@ -192,6 +192,24 @@ class TestTreeO(unittest.TestCase):
         b["1"][0].insert(0, 2)
         a.mod(lambda x: x + 4, "1 0 0", 2, list_insert=2)
         self.assertEqual(a, b, "Setting default value")
+
+        def fancy_mod1(old_value):
+            return old_value * 2
+
+        b["1"][0][0] = fancy_mod1(b["1"][0][0])
+        a.mod(fancy_mod1, "1 0 0")
+        self.assertEqual(b, a, "Using function pointer that works like a lambda - one param, one arg")
+        b["1"][0][0] = fancy_mod1(b["1"][0][0])
+        a.mod((fancy_mod1,), "1 0 0")
+        self.assertEqual(b, a, "Function pointer in tuple with only default param")
+
+        def fancy_mod2(old_value, arg1, arg2, arg3, **kwargs):
+            return sum([old_value, arg1, arg2, arg3, *kwargs.values()])
+
+        b["1"][0][0] += 1 + 2 + 3 + 4 + 5
+        a.mod((fancy_mod2, [1, 2, 3], dict(kwarg1=4, kwarg2=5)), "1 0 0")
+        self.assertEqual(b, a, "Complex function taking keyword-arguments and ordinary arguments")
+        self.assertRaisesRegex(TypeError, "Valid types for mod_function: lambda.*", a.mod, (fancy_mod2, "hei"), "1 0 0")
 
     def test_pop(self):
         a = TreeO(self.a, mod=False)
@@ -224,7 +242,7 @@ class TestTreeO(unittest.TestCase):
         a = TreeO([3, 2, 1])
         b = TreeO([5, 4, 3])
         # print(a - 3)
-        #b.get(1, krzpk=1, hanswurst=7)
+        # b.get(1, krzpk=1, hanswurst=7)
 
 
 if __name__ == '__main__':
