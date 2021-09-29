@@ -1,8 +1,7 @@
 import copy
 import unittest
-
+from ipaddress import IPv4Address, IPv6Address, IPv4Network, IPv6Network, ip_address
 from treeo import TreeO
-from copy import deepcopy
 from datetime import datetime, date, time
 
 
@@ -135,7 +134,7 @@ class TestTreeO(unittest.TestCase):
         self.assertEqual(TreeO.insert(a, -9, 5, "q"), b, "Create new list for value at a path that didn't exist before")
 
     def test_add(self):
-        a = TreeO(self.a, False)
+        a = TreeO(self.a, mod=False)
         b = copy.deepcopy(self.a)
         b["1"][0][3] = list(b["1"][0][3])
         b["1"][0][3][0] = {"f", "q"}
@@ -150,7 +149,7 @@ class TestTreeO(unittest.TestCase):
 
     def test_update(self):
         # update set
-        a = TreeO(self.a, False)
+        a = TreeO(self.a, mod=False)
         b = copy.deepcopy(self.a)
         b["1"][0][3] = list(b["1"][0][3])
         b["1"][0][3][0] = {"f", "q", "t", "p"}
@@ -207,7 +206,7 @@ class TestTreeO(unittest.TestCase):
             return sum([old_value, arg1, arg2, arg3, *kwargs.values()])
 
         b["1"][0][0] += 1 + 2 + 3 + 4 + 5
-        a.mod((fancy_mod2, [1, 2, 3], dict(kwarg1=4, kwarg2=5)), "1 0 0")
+        a.mod((fancy_mod2, [1, 2], dict(kwarg1=4), [3], dict(kwarg2=5)), "1 0 0", )
         self.assertEqual(b, a, "Complex function taking keyword-arguments and ordinary arguments")
         self.assertRaisesRegex(TypeError, "Valid types for mod_function: lambda.*", a.mod, (fancy_mod2, "hei"), "1 0 0")
 
@@ -224,7 +223,7 @@ class TestTreeO(unittest.TestCase):
         a = TreeO(test_obj, mod=False)
         self.assertRaisesRegex(TypeError, "Can't modify base-object self having the immutable type.*",
                                TreeO((1, 2, 3, [4, 5, 6], {6, 5})).serialize)
-        self.assertRaisesRegex(ValueError, "Dicts with composite keys \(tuples\) are not supported in.*", a.serialize,
+        self.assertRaisesRegex(ValueError, "Dicts with composite keys \\(tuples\\) are not supported in.*", a.serialize,
                                mod=False)
         b = {"2021-03-06": ["06:45:22", "2021-06-23 05:45:22"], "hei du": [3, 4, 5]}
         self.assertEqual(a.serialize({"tuple_keys": lambda x: " ".join(x)}), b, "Serialized datetime and tuple-key")
@@ -232,9 +231,34 @@ class TestTreeO(unittest.TestCase):
         a = TreeO(test_obj, mod=False)
         a[("hei du",)] = a.pop((("hei", "du"),))
         self.assertEqual(a.serialize(), b, "Also works when no mod-functions are defined in the parameter")
-        # må teste med default mod functions, med redigerte mod-functions (både default og ikke default)
-        # må ha med set og tuple
-        # sammensatte nøkler både med å uten fikse-funksjonen
+        a = TreeO(TreeO(self.a, mod=False).serialize())
+        a["1 0 3 1"].sort()
+        self.assertEqual({'1': [[1, True, 'a', ['f', ['a', 'q']]], {'a': False, '1': [1]}], 'a': [[3, 4], {'b': 1}]},
+                         a, "Removing tuples / sets in complex dict / list tree")
+        a = TreeO(default_node_type="l")
+        a["a 1"] = ip_address("::1")
+        a.append(ip_address("127.0.0.1"), "a 0")
+        a["a -8"] = IPv4Network("192.168.178.0/24")
+        a["a 6"] = IPv6Network("2001:0db8:85a3::/80")
+        self.assertEqual({'a': ['192.168.178.0/24', ['::1', '127.0.0.1'], '2001:db8:85a3::/80']},
+                         a.serialize(mod=False), "Only using default function with str on IP-objects")
+
+        def fancy_network_mask(network, format_string: str, **kwargs):
+            if type(network) == IPv4Network:
+                return format_string % (network, network.netmask) + kwargs.get("broadcast", " and the bc-address ") + \
+                       str(network.broadcast_address)
+            return format_string % (network, network.netmask)
+
+        self.assertEqual(
+            {'a': ['The network 192.168.178.0/24 with the netmask 255.255.255.0 and the broadcast-address '
+                   '192.168.178.255', ['::1 0000:0000:0000:0000:0000:0000:0000:0001', 'local'],
+                   'The network 2001:db8:85a3::/80 with the netmask ffff:ffff:ffff:ffff:ffff::']},
+            a.serialize({IPv6Address: lambda x: f"{x.compressed} {x.exploded}",
+                         "default": lambda x: "global" if x.is_global else "local",
+                         (IPv4Network, IPv6Network): (fancy_network_mask, ["The network %s with the netmask %s"],
+                                                      dict(broadcast=" and the broadcast-address "))}, mod=False),
+            "Complex mod-functions with function pointer, args, kwargs, lambdas and tuple-types, overriding default"
+        )
 
     def test_mul(self):
         a = TreeO(self.a["1"])

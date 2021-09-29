@@ -52,7 +52,9 @@ class TreeOMeta(ABCMeta):
         mod_functions=({datetime: lambda x: x.isoformat(" ", "seconds"), date: lambda x: x.isoformat(),
                         time: lambda x: x.isoformat("seconds"), "default": lambda x: str(x)}, MutableMapping,
                        lambda x: all((k in ("default", "tuple_keys") or all(isinstance(y, type) for y in (k if
-                                     TreeO.__is__(k, Iterable) else (k,)))) and callable(v) for k, v in x.items()),
+                                     TreeO.__is__(k, Iterable) else (k,)))) and
+                                     (callable(v[0]) and all([TreeO.__is__(a, Mapping, Sequence) for a in v[1:]])
+                                      if TreeO.__is__(v, Sequence) else callable(v)) for k, v in x.items()),
                        "mod_functions must be a dict with types (or tuples of types) as keys and functions as values."),
         value_split=(" ", str),
         return_node=(False, bool)
@@ -435,7 +437,7 @@ class TreeO(MutableMapping, MutableSequence, metaclass=TreeOMeta):
                                          'Use "tuple_keys" to define a specific mod_function for these dict-keys.')
                 else:
                     ny_k = TreeO.__serializable_value__(k, mod_functions)
-            if TreeO.__is__(v, Iterable):
+            if TreeO.__is__(v, Collection):
                 if isinstance(v, (dict, list)):
                     TreeO.__serialize_r__(v, mod_functions)
                 else:
@@ -453,9 +455,11 @@ class TreeO(MutableMapping, MutableSequence, metaclass=TreeOMeta):
     @staticmethod
     def __serializable_value__(value, mod_functions):
         for types, mod_function in mod_functions.items():
-            if type(types) is str:
-                continue
-            if type(value) == types or TreeO.__is__(Collection, types) and type(value) in types:
+            if type(value) == types or (TreeO.__is__(types, Collection) and type(value) in types):
+                if isinstance(mod_function, Sequence):
+                    return mod_function[0](
+                        value, *(a for al in mod_function[1:] if TreeO.__is__(al, Sequence) for a in al),
+                        **{k: v for d in mod_function[1:] if isinstance(d, Mapping) for k, v in d.items()})
                 return mod_function(value)
         return mod_functions["default"](value)
 
