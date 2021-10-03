@@ -466,8 +466,8 @@ class TreeO(MutableMapping, MutableSequence, metaclass=TreeOMeta):
     def __opt__(self: Union[Mapping, Sequence], option_name: str, **kwargs):
         if kwargs.get(option_name, ...) is not ...:
             return TreeO.__verify_option__(option_name, kwargs[option_name])
-        return self.__options__[option_name] if isinstance(self, TreeO) and option_name in self.__options__ else \
-            getattr(TreeO, option_name)
+        return self.__options__[option_name] if isinstance(self, TreeO) and isinstance(self.__options__, dict)\
+                                                and option_name in self.__options__ else getattr(TreeO, option_name)
 
     @staticmethod
     def __verify_kwargs__(kwargs: dict, function_name, *allowed_kwargs):
@@ -548,13 +548,17 @@ class TreeO(MutableMapping, MutableSequence, metaclass=TreeOMeta):
         """This function is not implemented in TreeO"""
         raise NotImplementedError("popitem() is not implemented in TreeO")
 
-    def __init__(self, obj: Union[Mapping, Sequence] = None, mod=True):
+    def __init__(self, obj: Union[Mapping, Sequence] = None, **kwargs):
         if obj is None:
             obj = [] if TreeO.default_node_type == "l" else {}
-        if not mod:
+        TreeO.__verify_kwargs__(kwargs, "init", "mod", *TreeO.__default_options__)
+        if not kwargs.get("mod", True):
             obj = deepcopy(obj)
         self.obj = obj() if isinstance(obj, TreeO) else obj
-        self.__options__ = {}
+        self.__options__ = None
+        for kw, value in kwargs.items():
+            if kw != "mod":
+                setattr(self, kw, value)
 
     def __call__(self):
         return self.obj
@@ -563,7 +567,7 @@ class TreeO(MutableMapping, MutableSequence, metaclass=TreeOMeta):
         if attr == "obj":
             return self.obj
         elif hasattr(TreeO, attr):
-            return self.__options__.get(attr, getattr(TreeO, attr))
+            return (self.__options__ if isinstance(self.__options__, dict) else {}).get(attr, getattr(TreeO, attr))
         else:
             return self.get(attr.lstrip(TreeO.__opt__(self, "value_split") if isinstance(attr, str) else attr))
 
@@ -574,6 +578,8 @@ class TreeO(MutableMapping, MutableSequence, metaclass=TreeOMeta):
         if attr in ("obj", "__options__"):
             super(TreeO, self).__setattr__(attr, value)
         elif attr in TreeO.__default_options__:
+            if self.__options__ is None:
+                super(TreeO, self).__setattr__("__options__", {})
             self.__options__[attr] = TreeO.__verify_option__(attr, value)
         else:
             self.set(value, attr.lstrip(TreeO.__opt__(self, "value_split") if isinstance(attr, str) else attr))
@@ -585,6 +591,8 @@ class TreeO(MutableMapping, MutableSequence, metaclass=TreeOMeta):
         if hasattr(TreeO, path):
             if path in self.__options__:
                 del self.__options__[path]
+                if not self.__options__:
+                    self.__options__ = None
         else:
             self.pop(path.lstrip(TreeO.__opt__(self, "value_split") if isinstance(path, str) else path))
 
