@@ -519,8 +519,8 @@ class TreeO(MutableMapping, MutableSequence, metaclass=TreeOMeta):
     def count(self: Union[Mapping, Sequence], path="", **kwargs):
         """Get the number of child-nodes at path"""
         TreeO.__verify_kwargs__(kwargs, "count", "value_split")
-        node = TreeO.get(self, path, return_node=False, **kwargs)
-        return len(node) if TreeO.__is__(node, Collection) else 1
+        node = TreeO.get(self, path, TreeO.__Empty__, return_node=False, **kwargs)
+        return len(node) if TreeO.__is__(node, Collection) else 0 if node is TreeO.__Empty__ else 1
 
     def reversed(self: Union[Mapping, Sequence], path="", **kwargs):
         """"Get reversed child-node at path if that node is a list"""
@@ -546,7 +546,7 @@ class TreeO(MutableMapping, MutableSequence, metaclass=TreeOMeta):
 
     def popitem(self):
         """This function is not implemented in TreeO"""
-        raise NotImplementedError("popitem() is not implemented in TreeO")
+        pass
 
     def __init__(self, obj: Union[Mapping, Sequence] = None, **kwargs):
         if obj is None:

@@ -260,6 +260,14 @@ class TestTreeO(unittest.TestCase):
             "Complex mod-functions with function pointer, args, kwargs, lambdas and tuple-types, overriding default"
         )
 
+    def test_count(self):
+        self.assertEqual(4, TreeO.count(self.a, "1 0"), "Counting an existing list")
+        self.assertEqual(2, TreeO.count(self.a, "1 1"), "Counting an existing dict")
+        self.assertEqual(2, TreeO.count(self.a, "1 0 3 1"), "Counting an existing set")
+        self.assertEqual(0, TreeO.count(self.a, "Hei god morgen"), "When the node doesn't exist, return 0")
+        self.assertEqual(1, TreeO.count(self.a, "1 0 1"), "When the node is a simple value, return 1")
+
+
     def test_mul(self):
         a = TreeO(self.a["1"])
         # print(1 * a)
