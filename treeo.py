@@ -1,8 +1,16 @@
 from copy import deepcopy
 import re
 from abc import ABCMeta
-from collections.abc import Collection, Mapping, Sequence, MutableMapping, MutableSequence, Reversible, Iterable, \
-    MutableSet
+from collections.abc import (
+    Collection,
+    Mapping,
+    Sequence,
+    MutableMapping,
+    MutableSequence,
+    Reversible,
+    Iterable,
+    MutableSet,
+)
 from datetime import date, datetime, time
 from typing import Union
 
@@ -24,7 +32,8 @@ class TreeOMeta(ABCMeta):
             if len(opt_cls) > 1 and not isinstance(value, opt_cls[1]):
                 raise TypeError(
                     f"Can't apply {option_name} because {option_name} needs to be a {opt_cls[1].__name__}, "
-                    f"and you provided a {value.__class__.__name__}.")
+                    f"and you provided a {value.__class__.__name__}."
+                )
             if len(opt_cls) > 3 and not opt_cls[2](value):
                 raise ValueError(opt_cls[3])
             return value
@@ -41,23 +50,51 @@ class TreeOMeta(ABCMeta):
             return default
 
     __default_options__ = dict(
-        default_node_type=("d", str, lambda x: x in ("d", "l"), "Default_node_type must be either \"d\" for dict "
-                                                                "or \"l\" for list."),
+        default_node_type=(
+            "d",
+            str,
+            lambda x: x in ("d", "l"),
+            'Default_node_type must be either "d" for dict ' 'or "l" for list.',
+        ),
         default_value=(None,),
-        list_insert=(0, int, lambda x: x >= 0, "List-insert must be a positive int. By default (list_insert == 0), "
-                                               "all existing list-indices will be traversed. If list-insert > 0, a "
-                                               "new node will be inserted in the n'th list that is traversed."),
-        node_types=("", str, lambda x: bool(re.fullmatch("[dl]*", x)), "The only allowed characters in node_types are "
-                                                                       "d (for dict) and l (for list)."),
-        mod_functions=({datetime: lambda x: x.isoformat(" ", "seconds"), date: lambda x: x.isoformat(),
-                        time: lambda x: x.isoformat("seconds"), "default": lambda x: str(x)}, MutableMapping,
-                       lambda x: all((k in ("default", "tuple_keys") or all(isinstance(y, type) for y in (k if
-                                     TreeO.__is__(k, Iterable) else (k,)))) and
-                                     (callable(v[0]) and all([TreeO.__is__(a, Mapping, Sequence) for a in v[1:]])
-                                      if TreeO.__is__(v, Sequence) else callable(v)) for k, v in x.items()),
-                       "mod_functions must be a dict with types (or tuples of types) as keys and functions as values."),
+        list_insert=(
+            0,
+            int,
+            lambda x: x >= 0,
+            "List-insert must be a positive int. By default (list_insert == 0), "
+            "all existing list-indices will be traversed. If list-insert > 0, a "
+            "new node will be inserted in the n'th list that is traversed.",
+        ),
+        node_types=(
+            "",
+            str,
+            lambda x: bool(re.fullmatch("[dl]*", x)),
+            "The only allowed characters in node_types are d (for dict) and l (for list).",
+        ),
+        mod_functions=(
+            {
+                datetime: lambda x: x.isoformat(" ", "seconds"),
+                date: lambda x: x.isoformat(),
+                time: lambda x: x.isoformat("seconds"),
+                "default": lambda x: str(x),
+            },
+            MutableMapping,
+            lambda x: all(
+                (
+                    k in ("default", "tuple_keys")
+                    or all(isinstance(y, type) for y in (k if TreeO.__is__(k, Iterable) else (k,)))
+                )
+                and (
+                    callable(v[0]) and all([TreeO.__is__(a, Mapping, Sequence) for a in v[1:]])
+                    if TreeO.__is__(v, Sequence)
+                    else callable(v)
+                )
+                for k, v in x.items()
+            ),
+            "mod_functions must be a dict with types (or tuples of types) as keys and functions as values.",
+        ),
         value_split=(" ", str),
-        return_node=(False, bool)
+        return_node=(False, bool),
     )
 
     def __new__(mcs, name, bases, dct):
@@ -67,17 +104,21 @@ class TreeOMeta(ABCMeta):
         return obj
 
     def __setattr__(cls, attr, value):
-        super(TreeOMeta, cls).__setattr__(attr, value if hasattr(TreeOMeta, attr) or attr in ("__abstractmethods__",
-                                          "_abc_impl") else TreeOMeta.__verify_option__(attr, value))
+        super(TreeOMeta, cls).__setattr__(
+            attr,
+            value
+            if hasattr(TreeOMeta, attr) or attr in ("__abstractmethods__", "_abc_impl")
+            else TreeOMeta.__verify_option__(attr, value),
+        )
 
 
 class TreeO(MutableMapping, MutableSequence, metaclass=TreeOMeta):
-    """TreeO (TreeObject) is a wrapper-class for complex, nested objects of dicts and lists in Python. The base-object 
+    """TreeO (TreeObject) is a wrapper-class for complex, nested objects of dicts and lists in Python. The base-object
     is always modified directly. If you don't want to modify an object TreeO(obj.copy) to modify a copy instead.
 
-    To get "hello" from a = TreeO([["good", "morning"], ["hello, "world"]], you can use a[(0, 1)]. The tuple (0, 1) 
+    To get "hello" from a = TreeO([["good", "morning"], ["hello, "world"]], you can use a[(0, 1)]. The tuple (0, 1)
     is the path-parameter that is used to traverse a. At first, index 0 is picked in the top-most list, and then the 2nd
-    element is picked from the inner list. The path-parameter can be any Collection data structure. The keys must be 
+    element is picked from the inner list. The path-parameter can be any Collection data structure. The keys must be
     either integers for lists, or any hashable object for dicts. For convenience, the keys can also be put in a single
     string separated by spaces, so a["0 1"] also returns "hello".
 
@@ -102,8 +143,11 @@ class TreeO(MutableMapping, MutableSequence, metaclass=TreeOMeta):
                     break
         if not kwargs.get("mod", True):
             node = deepcopy(node)
-        return TreeO(node) if TreeO.__is__(node, Mapping, Sequence) and TreeO.__opt__(self, "return_node", **kwargs) \
+        return (
+            TreeO(node)
+            if TreeO.__is__(node, Mapping, Sequence) and TreeO.__opt__(self, "return_node", **kwargs)
             else node
+        )
 
     def __get_parent__(self: Union[MutableMapping, MutableSequence], t_path: tuple, **kwargs):
         """Internal function giving the parent_node"""
@@ -139,8 +183,10 @@ class TreeO(MutableMapping, MutableSequence, metaclass=TreeOMeta):
         TreeO.__verify_kwargs__(kwargs, "iter", "return_node", "value_split", "mod")
         node = TreeO.get(self, path, **{**kwargs, "return_node": False})
         if 0 <= max_items <= 1 or max_items < -1:
-            return ValueError("max_items must be either -1 to always iter to the leaf, or >= 2 to have up to that "
-                              "number of items in the tuples.")
+            return ValueError(
+                "max_items must be either -1 to always iter to the leaf, or >= 2 to have up to that "
+                "number of items in the tuples."
+            )
         if TreeO.__is__(node, Mapping, Sequence):
             return TreeO.__iter_r__(node, max_items, TreeO.__opt__(self, "return_node", **kwargs))
         else:
@@ -177,8 +223,9 @@ class TreeO(MutableMapping, MutableSequence, metaclass=TreeOMeta):
         empty, TreeO will try to use TreeO.default_node_type to create new nodes or just use the existing nodes."""
         return TreeO.__build_node__(self, value, path, "append", node_types, **kwargs)
 
-    def extend(self: Union[MutableMapping, MutableSequence], values: Iterable, path="", node_types: str = ...,
-               **kwargs):
+    def extend(
+        self: Union[MutableMapping, MutableSequence], values: Iterable, path="", node_types: str = ..., **kwargs
+    ):
         """Create (if they don't already exist) all sub-nodes in path. Then extend list at leaf-node with the new values
 
         If the leaf-node is a set, tuple or other value it is converted to a list. Then the new values are appended.
@@ -187,8 +234,9 @@ class TreeO(MutableMapping, MutableSequence, metaclass=TreeOMeta):
         empty, TreeO will try to use TreeO.default_node_type to create new nodes or just use the existing nodes."""
         return TreeO.__build_node__(self, values, path, "extend", node_types, **kwargs)
 
-    def insert(self: Union[MutableMapping, MutableSequence], index: int, value, path="", node_types: str = ...,
-               **kwargs):
+    def insert(
+        self: Union[MutableMapping, MutableSequence], index: int, value, path="", node_types: str = ..., **kwargs
+    ):
         """Create (if they don't already exist) all sub-nodes in path. Insert new value at index in list at leaf-node
 
         If the leaf-node is a set, tuple or other value it is converted to a list. Then insert new value at index
@@ -216,12 +264,21 @@ class TreeO(MutableMapping, MutableSequence, metaclass=TreeOMeta):
         empty, TreeO will try to use TreeO.default_node_type to create new nodes or just use the existing nodes."""
         return TreeO.__build_node__(self, values, path, "update", **kwargs)
 
-    def __build_node__(self: Union[MutableMapping, MutableSequence], value, path, action: str, node_types: str = ...,
-                       **kwargs):
+    def __build_node__(
+        self: Union[MutableMapping, MutableSequence], value, path, action: str, node_types: str = ..., **kwargs
+    ):
         if not TreeO.__is__(self, MutableMapping, MutableSequence):
             raise TypeError(f"Can't modify base object self having the immutable type {type(self).__name__}.")
-        TreeO.__verify_kwargs__(kwargs, action, "default_node_type", "list_insert", "value_split", "return_node", "mod",
-                                *(("index",) if action == "insert" else ()))
+        TreeO.__verify_kwargs__(
+            kwargs,
+            action,
+            "default_node_type",
+            "list_insert",
+            "value_split",
+            "return_node",
+            "mod",
+            *(("index",) if action == "insert" else ()),
+        )
         node_types = TreeO.__opt__(self, "node_types", node_types=node_types)
         obj = self.obj if isinstance(self, TreeO) else self
         if not kwargs.get("mod", True):
@@ -231,20 +288,33 @@ class TreeO(MutableMapping, MutableSequence, metaclass=TreeOMeta):
             next_index = TreeO.__try_else__(t_path[0], lambda x: int(x), ...)
             list_insert = TreeO.__opt__(self, "list_insert", **kwargs)
             node = obj
-            if isinstance(obj, MutableMapping) and node_types[0:1] == "l" or \
-                    TreeO.__is__(obj, MutableSequence) and (node_types[0:1] == "d" or next_index is ...):
-                raise TypeError(f"Your base object is a {type(obj).__name__}. Due to limitations in how references "
-                                f"work in Python, TreeO can't convert that base-object to a "
-                                f"{'list' if node_types[0:1] == 'l' else 'dict'}, which was requested %s." % (
-                                    f"because {t_path[0]} is no numeric list-index"
-                                    if TreeO.__is__(obj, MutableSequence) and not t_path[0].lstrip("-").isdigit() else
-                                    f"by the first character in node_types being {node_types[0:1]}"))
+            if (
+                isinstance(obj, MutableMapping)
+                and node_types[0:1] == "l"
+                or TreeO.__is__(obj, MutableSequence)
+                and (node_types[0:1] == "d" or next_index is ...)
+            ):
+                raise TypeError(
+                    f"Your base object is a {type(obj).__name__}. Due to limitations in how references "
+                    f"work in Python, TreeO can't convert that base-object to a "
+                    f"{'list' if node_types[0:1] == 'l' else 'dict'}, which was requested %s."
+                    % (
+                        f"because {t_path[0]} is no numeric list-index"
+                        if TreeO.__is__(obj, MutableSequence) and not t_path[0].lstrip("-").isdigit()
+                        else f"by the first character in node_types being {node_types[0:1]}"
+                    )
+                )
             for i in range(len(t_path)):
                 node_key = next_index if TreeO.__is__(node, MutableSequence) else t_path[i]
                 next_index = TreeO.__try_else__(t_path[i + 1], lambda x: int(x), ...) if i < len(t_path) - 1 else ...
-                next_node = list if node_types[i + 1:i + 2] == "l" or not node_types[i + 1:i + 2] and \
-                                    TreeO.__opt__(self, "default_node_type", **kwargs) == "l" and \
-                                    next_index is not ... else dict
+                next_node = (
+                    list
+                    if node_types[i + 1 : i + 2] == "l"
+                    or not node_types[i + 1 : i + 2]
+                    and TreeO.__opt__(self, "default_node_type", **kwargs) == "l"
+                    and next_index is not ...
+                    else dict
+                )
                 if TreeO.__is__(node, MutableSequence):
                     if node_key is ...:
                         raise ValueError(f"Can't parse numeric list-index from {node_key}.")
@@ -263,12 +333,19 @@ class TreeO(MutableMapping, MutableSequence, metaclass=TreeOMeta):
                         if list_insert == 1:
                             node.insert(node_key, next_node())
                         else:
-                            if not TreeO.__is__(node[node_key], MutableMapping, MutableSequence) and \
-                                    TreeO.__is__(node[node_key], Iterable):
-                                node[node_key] = dict(node[node_key].items()) if isinstance(node[node_key], Mapping) \
+                            if not TreeO.__is__(node[node_key], MutableMapping, MutableSequence) and TreeO.__is__(
+                                node[node_key], Iterable
+                            ):
+                                node[node_key] = (
+                                    dict(node[node_key].items())
+                                    if isinstance(node[node_key], Mapping)
                                     else list(node[node_key])
-                            if next_node != node[node_key].__class__ if node_types[i + 1:i + 2] else \
-                                    TreeO.__is__(node[node_key], MutableSequence) and next_index is ...:
+                                )
+                            if (
+                                next_node != node[node_key].__class__
+                                if node_types[i + 1 : i + 2]
+                                else TreeO.__is__(node[node_key], MutableSequence) and next_index is ...
+                            ):
                                 node[node_key] = next_node()
                         list_insert -= 1
                         node = node[node_key]
@@ -276,14 +353,21 @@ class TreeO(MutableMapping, MutableSequence, metaclass=TreeOMeta):
                     if i == len(t_path) - 1:
                         node[node_key] = TreeO.__put_value__(node.get(node_key, ...), value, action, **kwargs)
                     else:
-                        if not TreeO.__is__(node.get(node_key), MutableMapping, MutableSequence) and \
-                                TreeO.__is__(node.get(node_key), Iterable):
-                            node[node_key] = dict(node[node_key].items()) if isinstance(node[node_key], Mapping) \
+                        if not TreeO.__is__(node.get(node_key), MutableMapping, MutableSequence) and TreeO.__is__(
+                            node.get(node_key), Iterable
+                        ):
+                            node[node_key] = (
+                                dict(node[node_key].items())
+                                if isinstance(node[node_key], Mapping)
                                 else list(node[node_key])
+                            )
                         elif node.get(node_key, TreeOMeta.__Empty__) is TreeOMeta.__Empty__:
                             node[node_key] = next_node()
-                        if next_node != node[node_key].__class__ if node_types[i + 1:i + 2] else \
-                                TreeO.__is__(node[node_key], MutableSequence) and next_index is ...:
+                        if (
+                            next_node != node[node_key].__class__
+                            if node_types[i + 1 : i + 2]
+                            else TreeO.__is__(node[node_key], MutableSequence) and next_index is ...
+                        ):
                             node[node_key] = next_node()
                         node = node[node_key]
         else:
@@ -316,8 +400,13 @@ class TreeO(MutableMapping, MutableSequence, metaclass=TreeOMeta):
                 getattr(node, action)(value)
         elif action in ("add", "update"):
             if node is ...:
-                return dict(value) if isinstance(value, Mapping) else \
-                    set(value) if TreeO.__is__(value, Iterable) else {value}
+                return (
+                    dict(value)
+                    if isinstance(value, Mapping)
+                    else set(value)
+                    if TreeO.__is__(value, Iterable)
+                    else {value}
+                )
             else:
                 if not isinstance(node, (MutableSet, MutableMapping)):
                     if TreeO.__is__(node, Iterable):
@@ -342,8 +431,15 @@ class TreeO(MutableMapping, MutableSequence, metaclass=TreeOMeta):
         TreeO.set(self, default_value, path, node_types, **kwargs)
         return default_value
 
-    def mod(self: Union[MutableMapping, MutableSequence], mod_function, path, default=..., node_types: str = ...,
-            replace_value=True, **kwargs):
+    def mod(
+        self: Union[MutableMapping, MutableSequence],
+        mod_function,
+        path,
+        default=...,
+        node_types: str = ...,
+        replace_value=True,
+        **kwargs,
+    ):
         """Modifies the value at path using the function-pointer mod_function
 
         mod can be used like this TreeO.mod(obj, "kitchen spoon", lambda x: x+1, 1) to count the number of spoons in
@@ -373,14 +469,22 @@ class TreeO(MutableMapping, MutableSequence, metaclass=TreeOMeta):
             if old_value is not TreeOMeta.__Empty__:
                 if callable(mod_function):
                     new_value = mod_function(old_value)
-                elif TreeO.__is__(mod_function, Sequence) and len(mod_function) > 0 and callable(mod_function[0]) and \
-                        all((TreeO.__is__(x, Mapping, Sequence) for x in mod_function[1:])):
+                elif (
+                    TreeO.__is__(mod_function, Sequence)
+                    and len(mod_function) > 0
+                    and callable(mod_function[0])
+                    and all((TreeO.__is__(x, Mapping, Sequence) for x in mod_function[1:]))
+                ):
                     new_value = mod_function[0](
-                        old_value, *(a for al in mod_function[1:] if TreeO.__is__(al, Sequence) for a in al),
-                        **{k: v for d in mod_function[1:] if isinstance(d, Mapping) for k, v in d.items()})
+                        old_value,
+                        *(a for al in mod_function[1:] if TreeO.__is__(al, Sequence) for a in al),
+                        **{k: v for d in mod_function[1:] if isinstance(d, Mapping) for k, v in d.items()},
+                    )
                 else:
-                    raise TypeError("Valid types for mod_function: lambda, function_pointer_taking_one_arg or"
-                                    "(function_pointer, (arg1, arg2, ...), {keyword1: kwarg1, keyword2: kwarg2, ...})")
+                    raise TypeError(
+                        "Valid types for mod_function: lambda, function_pointer_taking_one_arg or"
+                        "(function_pointer, (arg1, arg2, ...), {keyword1: kwarg1, keyword2: kwarg2, ...})"
+                    )
                 if replace_value:
                     TreeO.set(parent_node, new_value, t_path[-1], **kwargs)
                 return new_value
@@ -421,8 +525,13 @@ class TreeO(MutableMapping, MutableSequence, metaclass=TreeOMeta):
         node = TreeO.get(self, path, return_node=False, **kwargs)
         if not kwargs.get("mod", True):
             node = deepcopy(node)
-        return TreeO.__serialize_r__(node, {**TreeO.__opt__(self, "mod_functions"), **(TreeOMeta.__verify_option__(
-            "mod_functions", {} if mod_functions is ... else mod_functions))})
+        return TreeO.__serialize_r__(
+            node,
+            {
+                **TreeO.__opt__(self, "mod_functions"),
+                **(TreeOMeta.__verify_option__("mod_functions", {} if mod_functions is ... else mod_functions)),
+            },
+        )
 
     @staticmethod
     def __serialize_r__(node, mod_functions: MutableMapping):
@@ -433,8 +542,10 @@ class TreeO(MutableMapping, MutableSequence, metaclass=TreeOMeta):
                     if "tuple_keys" in mod_functions:
                         ny_k = mod_functions["tuple_keys"](k)
                     else:
-                        raise ValueError('Dicts with composite keys (tuples) are not supported in serialized objects. '
-                                         'Use "tuple_keys" to define a specific mod_function for these dict-keys.')
+                        raise ValueError(
+                            "Dicts with composite keys (tuples) are not supported in serialized objects. "
+                            'Use "tuple_keys" to define a specific mod_function for these dict-keys.'
+                        )
                 else:
                     ny_k = TreeO.__serializable_value__(k, mod_functions)
             if TreeO.__is__(v, Collection):
@@ -458,23 +569,30 @@ class TreeO(MutableMapping, MutableSequence, metaclass=TreeOMeta):
             if type(value) == types or (TreeO.__is__(types, Collection) and type(value) in types):
                 if isinstance(mod_function, Sequence):
                     return mod_function[0](
-                        value, *(a for al in mod_function[1:] if TreeO.__is__(al, Sequence) for a in al),
-                        **{k: v for d in mod_function[1:] if isinstance(d, Mapping) for k, v in d.items()})
+                        value,
+                        *(a for al in mod_function[1:] if TreeO.__is__(al, Sequence) for a in al),
+                        **{k: v for d in mod_function[1:] if isinstance(d, Mapping) for k, v in d.items()},
+                    )
                 return mod_function(value)
         return mod_functions["default"](value)
 
     def __opt__(self: Union[Mapping, Sequence], option_name: str, **kwargs):
         if kwargs.get(option_name, ...) is not ...:
             return TreeO.__verify_option__(option_name, kwargs[option_name])
-        return self.__options__[option_name] if isinstance(self, TreeO) and isinstance(self.__options__, dict)\
-                                                and option_name in self.__options__ else getattr(TreeO, option_name)
+        return (
+            self.__options__[option_name]
+            if isinstance(self, TreeO) and isinstance(self.__options__, dict) and option_name in self.__options__
+            else getattr(TreeO, option_name)
+        )
 
     @staticmethod
     def __verify_kwargs__(kwargs: dict, function_name, *allowed_kwargs):
         wrong_kwargs = tuple(filter(lambda x: x not in allowed_kwargs, kwargs))
         if wrong_kwargs:
-            raise TypeError(f"Unsupported keyword argument{'s' if len(wrong_kwargs) > 1 else ''} in "
-                            f"TreeO.{function_name}(): {' '.join(wrong_kwargs)}")
+            raise TypeError(
+                f"Unsupported keyword argument{'s' if len(wrong_kwargs) > 1 else ''} in "
+                f"TreeO.{function_name}(): {' '.join(wrong_kwargs)}"
+            )
 
     def keys(self: Union[Mapping, Sequence], path="", **kwargs):
         """Returns keys for node at path
@@ -523,7 +641,7 @@ class TreeO(MutableMapping, MutableSequence, metaclass=TreeOMeta):
         return len(node) if TreeO.__is__(node, Collection) else 0 if node is TreeO.__Empty__ else 1
 
     def reversed(self: Union[Mapping, Sequence], path="", **kwargs):
-        """"Get reversed child-node at path if that node is a list"""
+        """Get reversed child-node at path if that node is a list"""
         TreeO.__verify_kwargs__(kwargs, "reversed", "value_split", "return_node")
         node = TreeO.get(self, path, **{**kwargs, "return_node": False})
         if TreeO.__is__(node, Reversible):
@@ -600,8 +718,9 @@ class TreeO(MutableMapping, MutableSequence, metaclass=TreeOMeta):
         self.pop(path)
 
     def __iter__(self):
-        return iter(self.keys() if isinstance(self.obj if isinstance(self, TreeO) else self, Sequence)
-                    else self.values())
+        return iter(
+            self.keys() if isinstance(self.obj if isinstance(self, TreeO) else self, Sequence) else self.values()
+        )
 
     def __eq__(self, other):
         return self.obj == (other.obj if isinstance(other, TreeO) else other)

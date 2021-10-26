@@ -1,6 +1,6 @@
 import copy
 import unittest
-from ipaddress import IPv4Address, IPv6Address, IPv4Network, IPv6Network, ip_address
+from ipaddress import IPv6Address, IPv4Network, IPv6Network, ip_address
 from treeo import TreeO
 from datetime import datetime, date, time
 
@@ -25,31 +25,68 @@ class TestTreeO(unittest.TestCase):
         a = TreeO(self.a, mod=False)
         aq = tuple(a["1 0 3 1"])  # have to create this tuple of the set because it's unpredictable what order
         # a and q will have in the set. Using this tuple, I make sure the test still works (the order will be sth same)
-        b = [('1', 0, 0, 1), ('1', 0, 1, True), ('1', 0, 2, 'a'), ('1', 0, 3, 0, 'f'), ('1', 0, 3, 1, aq[0]),
-             ('1', 0, 3, 1, aq[1]), ('1', 1, 'a', False), ('1', 1, '1', 0, 1), ('a', 0, 0, 3), ('a', 0, 1, 4),
-             ('a', 1, 'b', 1)]
+        b = [
+            ("1", 0, 0, 1),
+            ("1", 0, 1, True),
+            ("1", 0, 2, "a"),
+            ("1", 0, 3, 0, "f"),
+            ("1", 0, 3, 1, aq[0]),
+            ("1", 0, 3, 1, aq[1]),
+            ("1", 1, "a", False),
+            ("1", 1, "1", 0, 1),
+            ("a", 0, 0, 3),
+            ("a", 0, 1, 4),
+            ("a", 1, "b", 1),
+        ]
         self.assertEqual([x for x in a.iter()], b, "Correctly iterating over dicts and lists")
         self.assertEqual([(0, 0, 3), (0, 1, 4), (1, "b", 1)], a.iter(-1, "a"), "Correct iterator when path is given")
-        b = [('1', 0, [1, True, 'a', ('f', {'q', 'a'})]), ('1', 1, {'a': False, '1': (1,)}), ('a', 0, [3, 4]),
-             ('a', 1, {'b': 1})]
+        b = [
+            ("1", 0, [1, True, "a", ("f", {"q", "a"})]),
+            ("1", 1, {"a": False, "1": (1,)}),
+            ("a", 0, [3, 4]),
+            ("a", 1, {"b": 1}),
+        ]
         self.assertEqual(b, a.iter(3), "Iterating correctly when max_items is limited to three")
-        b = [('1', 0, 0, 1), ('1', 0, 1, True), ('1', 0, 2, 'a'), ('1', 0, 3, 0, 'f'), ('1', 0, 3, 1, {'q', 'a'}),
-             ('1', 1, 'a', False), ('1', 1, '1', 0, 1), ('a', 0, 0, 3), ('a', 0, 1, 4), ('a', 1, 'b', 1)]
+        b = [
+            ("1", 0, 0, 1),
+            ("1", 0, 1, True),
+            ("1", 0, 2, "a"),
+            ("1", 0, 3, 0, "f"),
+            ("1", 0, 3, 1, {"q", "a"}),
+            ("1", 1, "a", False),
+            ("1", 1, "1", 0, 1),
+            ("a", 0, 0, 3),
+            ("a", 0, 1, 4),
+            ("a", 1, "b", 1),
+        ]
         self.assertEqual(b, a.iter(5), "Iterating correctly when max_items is limited to five. Some tuples are < 5")
-        self.assertEqual([(0, [3, 4]), (1, {'b': 1})], a.items("a"), "Items gives keys and values")
-        b = [('1', 0, TreeO([1, True, 'a', ('f', {'q', 'a'})])), ('1', 1, TreeO({'a': False, '1': (1,)})),
-             ('a', 0, TreeO([3, 4])), ('a', 1, TreeO({'b': 1}))]
+        self.assertEqual([(0, [3, 4]), (1, {"b": 1})], a.items("a"), "Items gives keys and values")
+        b = [
+            ("1", 0, TreeO([1, True, "a", ("f", {"q", "a"})])),
+            ("1", 1, TreeO({"a": False, "1": (1,)})),
+            ("a", 0, TreeO([3, 4])),
+            ("a", 1, TreeO({"b": 1})),
+        ]
         self.assertEqual(b, a.iter(3, return_node=True), "Returning nodes as TreeO-objects when return_value=True")
 
     def test_set(self):
         a = TreeO(self.a, mod=False)
         b = copy.deepcopy(self.a)
         b["1"][0][1] = False
-        self.assertEqual(b, TreeO.set(a, False, "1 0 1"), "Correctly traversing dicts and lists with numeric "
-                                                          "indices when the node type is not given explicitly.")
+        self.assertEqual(
+            b,
+            TreeO.set(a, False, "1 0 1"),
+            "Correctly traversing dicts and lists with numeric indices when the node type is not given explicitly.",
+        )
         # verify that base object is writable for set
-        self.assertRaisesRegex(TypeError, "Can't modify base object self having the immutable type ", TreeO.set,
-                               (((1, 0), 2), 3), 7, "0 0 0")
+        self.assertRaisesRegex(
+            TypeError,
+            "Can't modify base object self having the immutable type ",
+            TreeO.set,
+            (((1, 0), 2), 3),
+            7,
+            "0 0 0",
+        )
         # new nodes can only either be lists or dicts, expressed by l's and
         self.assertRaisesRegex(ValueError, "The only allowed characters in .*", TreeO.set, a["1"], "f", "0", "pld")
         # Due to limitations on how references work in Python, the base-object can't be changed. So if the base-object
@@ -90,8 +127,9 @@ class TestTreeO(unittest.TestCase):
         b["1"][0][3][1].sort()
         TreeO.append(a, "f", "1 0 3 1")
         TreeO.get(a, "1 0 3 1").sort()
-        self.assertEqual(a, b, "appending to set (converting to list first, both sets must be sorted for the test not "
-                               "to fail)")
+        self.assertEqual(
+            a, b, "appending to set (converting to list first, both sets must be sorted for the test not to fail)"
+        )
         b["1"][0][0] = [1, 5]
         self.assertEqual(TreeO.append(a, 5, "1 0 0"), b, "Creating list from singleton value and appending to it")
         b["q"] = [6]
@@ -108,8 +146,9 @@ class TestTreeO(unittest.TestCase):
         b["1"][0][3][1].sort()
         TreeO.extend(a, "fg", "1 0 3 1")
         TreeO.get(a, "1 0 3 1").sort()
-        self.assertEqual(a, b, "extending set (converting to list first, both sets must be sorted for the test not "
-                               "to fail)")
+        self.assertEqual(
+            a, b, "extending set (converting to list first, both sets must be sorted for the test not to fail)"
+        )
         b["1"][0][0] = [1, 5, 6]
         self.assertEqual(TreeO.extend(a, [5, 6], "1 0 0"), b, "Creating list from singleton value and appending to it")
         b["q"] = [6, 7]
@@ -126,8 +165,9 @@ class TestTreeO(unittest.TestCase):
         b["1"][0][3][1].sort()
         TreeO.insert(a, 5, "fg", "1 0 3 1")
         TreeO.get(a, "1 0 3 1").sort()
-        self.assertEqual(a, b, "extending set (converting to list first, both sets must be sorted for the test not "
-                               "to fail)")
+        self.assertEqual(
+            a, b, "extending set (converting to list first, both sets must be sorted for the test not to fail)"
+        )
         b["1"][0][0] = [5, 1]
         self.assertEqual(TreeO.insert(a, -3, 5, "1 0 0"), b, "Creating list from singleton value and appending to it")
         b["q"] = [5]
@@ -206,7 +246,10 @@ class TestTreeO(unittest.TestCase):
             return sum([old_value, arg1, arg2, arg3, *kwargs.values()])
 
         b["1"][0][0] += 1 + 2 + 3 + 4 + 5
-        a.mod((fancy_mod2, [1, 2], dict(kwarg1=4), [3], dict(kwarg2=5)), "1 0 0", )
+        a.mod(
+            (fancy_mod2, [1, 2], dict(kwarg1=4), [3], dict(kwarg2=5)),
+            "1 0 0",
+        )
         self.assertEqual(b, a, "Complex function taking keyword-arguments and ordinary arguments")
         self.assertRaisesRegex(TypeError, "Valid types for mod_function: lambda.*", a.mod, (fancy_mod2, "hei"), "1 0 0")
 
@@ -221,10 +264,14 @@ class TestTreeO(unittest.TestCase):
     def test_serialize(self):
         test_obj = {date(2021, 3, 6): [time(6, 45, 22), datetime(2021, 6, 23, 5, 45, 22)], ("hei", "du"): {3, 4, 5}}
         a = TreeO(test_obj, mod=False)
-        self.assertRaisesRegex(TypeError, "Can't modify base-object self having the immutable type.*",
-                               TreeO((1, 2, 3, [4, 5, 6], {6, 5})).serialize)
-        self.assertRaisesRegex(ValueError, "Dicts with composite keys \\(tuples\\) are not supported in.*", a.serialize,
-                               mod=False)
+        self.assertRaisesRegex(
+            TypeError,
+            "Can't modify base-object self having the immutable type.*",
+            TreeO((1, 2, 3, [4, 5, 6], {6, 5})).serialize,
+        )
+        self.assertRaisesRegex(
+            ValueError, "Dicts with composite keys \\(tuples\\) are not supported in.*", a.serialize, mod=False
+        )
         b = {"2021-03-06": ["06:45:22", "2021-06-23 05:45:22"], "hei du": [3, 4, 5]}
         self.assertEqual(a.serialize({"tuple_keys": lambda x: " ".join(x)}), b, "Serialized datetime and tuple-key")
         self.assertEqual(a.serialize(), b, "Nothing changes if there is nothing to change")
@@ -233,31 +280,53 @@ class TestTreeO(unittest.TestCase):
         self.assertEqual(a.serialize(), b, "Also works when no mod-functions are defined in the parameter")
         a = TreeO(TreeO(self.a, mod=False).serialize())
         a["1 0 3 1"].sort()
-        self.assertEqual({'1': [[1, True, 'a', ['f', ['a', 'q']]], {'a': False, '1': [1]}], 'a': [[3, 4], {'b': 1}]},
-                         a, "Removing tuples / sets in complex dict / list tree")
+        self.assertEqual(
+            {"1": [[1, True, "a", ["f", ["a", "q"]]], {"a": False, "1": [1]}], "a": [[3, 4], {"b": 1}]},
+            a,
+            "Removing tuples / sets in complex dict / list tree",
+        )
         a = TreeO(default_node_type="l")
         a["a 1"] = ip_address("::1")
         a.append(ip_address("127.0.0.1"), "a 0")
         a["a -8"] = IPv4Network("192.168.178.0/24")
         a["a 6"] = IPv6Network("2001:0db8:85a3::/80")
-        self.assertEqual({'a': ['192.168.178.0/24', ['::1', '127.0.0.1'], '2001:db8:85a3::/80']},
-                         a.serialize(mod=False), "Only using default function with str on IP-objects")
+        self.assertEqual(
+            {"a": ["192.168.178.0/24", ["::1", "127.0.0.1"], "2001:db8:85a3::/80"]},
+            a.serialize(mod=False),
+            "Only using default function with str on IP-objects",
+        )
 
         def fancy_network_mask(network, format_string: str, **kwargs):
             if type(network) == IPv4Network:
-                return format_string % (network, network.netmask) + kwargs.get("broadcast", " and the bc-address ") + \
-                       str(network.broadcast_address)
+                return (
+                    format_string % (network, network.netmask)
+                    + kwargs.get("broadcast", " and the bc-address ")
+                    + str(network.broadcast_address)
+                )
             return format_string % (network, network.netmask)
 
         self.assertEqual(
-            {'a': ['The network 192.168.178.0/24 with the netmask 255.255.255.0 and the broadcast-address '
-                   '192.168.178.255', ['::1 0000:0000:0000:0000:0000:0000:0000:0001', 'local'],
-                   'The network 2001:db8:85a3::/80 with the netmask ffff:ffff:ffff:ffff:ffff::']},
-            a.serialize({IPv6Address: lambda x: f"{x.compressed} {x.exploded}",
-                         "default": lambda x: "global" if x.is_global else "local",
-                         (IPv4Network, IPv6Network): (fancy_network_mask, ["The network %s with the netmask %s"],
-                                                      dict(broadcast=" and the broadcast-address "))}, mod=False),
-            "Complex mod-functions with function pointer, args, kwargs, lambdas and tuple-types, overriding default"
+            {
+                "a": [
+                    "The network 192.168.178.0/24 with the netmask 255.255.255.0 and the broadcast-address "
+                    "192.168.178.255",
+                    ["::1 0000:0000:0000:0000:0000:0000:0000:0001", "local"],
+                    "The network 2001:db8:85a3::/80 with the netmask ffff:ffff:ffff:ffff:ffff::",
+                ]
+            },
+            a.serialize(
+                {
+                    IPv6Address: lambda x: f"{x.compressed} {x.exploded}",
+                    "default": lambda x: "global" if x.is_global else "local",
+                    (IPv4Network, IPv6Network): (
+                        fancy_network_mask,
+                        ["The network %s with the netmask %s"],
+                        dict(broadcast=" and the broadcast-address "),
+                    ),
+                },
+                mod=False,
+            ),
+            "Complex mod-functions with function pointer, args, kwargs, lambdas and tuple-types, overriding default",
         )
 
     def test_count(self):
@@ -266,7 +335,6 @@ class TestTreeO(unittest.TestCase):
         self.assertEqual(2, TreeO.count(self.a, "1 0 3 1"), "Counting an existing set")
         self.assertEqual(0, TreeO.count(self.a, "Hei god morgen"), "When the node doesn't exist, return 0")
         self.assertEqual(1, TreeO.count(self.a, "1 0 1"), "When the node is a simple value, return 1")
-
 
     def test_mul(self):
         a = TreeO(self.a["1"])
@@ -277,5 +345,5 @@ class TestTreeO(unittest.TestCase):
         # b.get(1, krzpk=1, hanswurst=7)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()
