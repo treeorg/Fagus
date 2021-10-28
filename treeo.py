@@ -144,7 +144,7 @@ class TreeO(MutableMapping, MutableSequence, metaclass=TreeOMeta):
         if not kwargs.get("mod", True):
             node = deepcopy(node)
         return (
-            TreeO(node)
+            TreeO._child(self, node)
             if TreeO.__is__(node, Mapping, Sequence) and TreeO._opt(self, "return_node", **kwargs)
             else node
         )
@@ -188,23 +188,22 @@ class TreeO(MutableMapping, MutableSequence, metaclass=TreeOMeta):
                 "number of items in the tuples."
             )
         if TreeO.__is__(node, Mapping, Sequence):
-            return TreeO._iter_r(node, max_items, TreeO._opt(self, "return_node", **kwargs))
+            return TreeO._iter_r(self, node, max_items, TreeO._opt(self, "return_node", **kwargs))
         else:
             return []
 
-    @staticmethod
-    def _iter_r(node, max_items, return_node):
+    def _iter_r(self: Union[Mapping, Sequence], node, max_items, return_node):
         iter_list = []
         for k, v in node.items() if isinstance(node, Mapping) else enumerate(node):
             if max_items != 2:
                 if TreeO.__is__(v, Mapping, Sequence):
-                    for e in TreeO._iter_r(v, max_items - 1, return_node):
+                    for e in TreeO._iter_r(self, v, max_items - 1, return_node):
                         iter_list.append((k, *e))
                     continue
                 elif TreeO.__is__(v, Collection):
                     iter_list.extend(((k, e) for e in v))
                     continue
-            iter_list.append((k, TreeO(v) if return_node and TreeO.__is__(v, Mapping, Sequence) else v))
+            iter_list.append((k, TreeO._child(self, v) if return_node and TreeO.__is__(v, Mapping, Sequence) else v))
         return iter_list
 
     def set(self: Union[MutableMapping, MutableSequence], value, path, node_types: str = ..., **kwargs):
@@ -310,9 +309,9 @@ class TreeO(MutableMapping, MutableSequence, metaclass=TreeOMeta):
                 next_node = (
                     list
                     if node_types[i + 1 : i + 2] == "l"
-                       or not node_types[i + 1 : i + 2]
-                       and TreeO._opt(self, "default_node_type", **kwargs) == "l"
-                       and next_index is not ...
+                    or not node_types[i + 1 : i + 2]
+                    and TreeO._opt(self, "default_node_type", **kwargs) == "l"
+                    and next_index is not ...
                     else dict
                 )
                 if TreeO.__is__(node, MutableSequence):
@@ -380,7 +379,7 @@ class TreeO(MutableMapping, MutableSequence, metaclass=TreeOMeta):
                     getattr(obj, action)(value)
             else:
                 raise ValueError(f"Can't {action} value {'to' if action == 'add' else 'in'} base-{type(obj).__name__}.")
-        return TreeO(obj) if TreeO._opt(self, "return_node", **kwargs) else obj
+        return TreeO._child(self, obj) if TreeO._opt(self, "return_node", **kwargs) else obj
 
     @staticmethod
     def _put_value(node, value, action, **kwargs):
@@ -613,9 +612,9 @@ class TreeO(MutableMapping, MutableSequence, metaclass=TreeOMeta):
         obj = TreeO.get(self, path, **{**kwargs, "return_node": False})
         return_node = TreeO._opt(self, "return_node", **kwargs)
         if isinstance(obj, MutableMapping):
-            return [TreeO(x) for x in obj.values()] if return_node else obj.values()
+            return [TreeO._child(self, x) for x in obj.values()] if return_node else obj.values()
         else:
-            return [TreeO(x) for x in obj] if return_node else list(obj)
+            return [TreeO._child(self, x) for x in obj] if return_node else list(obj)
 
     def items(self: Union[Mapping, Sequence], path="", **kwargs):
         """Returns a list with one tuple for each leaf - the first value is the key, the second is the child-dict."""
@@ -645,7 +644,11 @@ class TreeO(MutableMapping, MutableSequence, metaclass=TreeOMeta):
         TreeO._verify_kwargs(kwargs, "reversed", "value_split", "return_node")
         node = TreeO.get(self, path, **{**kwargs, "return_node": False})
         if TreeO.__is__(node, Reversible):
-            return TreeO(list(reversed(node))) if TreeO._opt(self, "return_node", **kwargs) else reversed(node)
+            return (
+                TreeO._child(self, list(reversed(node)))
+                if TreeO._opt(self, "return_node", **kwargs)
+                else reversed(node)
+            )
         else:
             raise TypeError(f"Cannot reverse node of type {type(node).__name__}.")
 
@@ -658,7 +661,7 @@ class TreeO(MutableMapping, MutableSequence, metaclass=TreeOMeta):
         node = TreeO.get(self, path, **{**kwargs, "return_node": False})
         if TreeO.__is__(node, MutableSequence):
             node.reverse()
-            return TreeO(obj) if TreeO._opt(self, "return_node", **kwargs) else obj
+            return TreeO._child(self, obj) if TreeO._opt(self, "return_node", **kwargs) else obj
         else:
             raise TypeError(f"Cannot reverse node of type {type(node).__name__}.")
 
@@ -672,11 +675,21 @@ class TreeO(MutableMapping, MutableSequence, metaclass=TreeOMeta):
         TreeO._verify_kwargs(kwargs, "init", "mod", *TreeO.__default_options__)
         if not kwargs.get("mod", True):
             obj = deepcopy(obj)
-        self.obj = obj() if isinstance(obj, TreeO) else obj
-        self._options = None
+        if isinstance(obj, TreeO):
+            self.obj = obj()
+            self._options = None if self._options is None else self._options.copy()
+        else:
+            self.obj = obj
+            self._options = None
         for kw, value in kwargs.items():
             if kw != "mod":
                 setattr(self, kw, value)
+
+    def _child(self: Union[Mapping, Sequence], obj: Union[Mapping, Sequence] = None, **kwargs) -> "TreeO":
+        new_obj = TreeO(obj, **kwargs)
+        if isinstance(self, TreeO):
+            new_obj._options = None if self._options is None else self._options.copy()
+        return new_obj
 
     def __call__(self):
         return self.obj
@@ -718,9 +731,7 @@ class TreeO(MutableMapping, MutableSequence, metaclass=TreeOMeta):
         self.pop(path)
 
     def __iter__(self):
-        return iter(
-            self.keys() if isinstance(self.obj if isinstance(self, TreeO) else self, Sequence) else self.values()
-        )
+        return iter(self.values())
 
     def __eq__(self, other):
         return self.obj == (other.obj if isinstance(other, TreeO) else other)
@@ -773,7 +784,7 @@ class TreeO(MutableMapping, MutableSequence, metaclass=TreeOMeta):
             res = [*a, *(b if TreeO.__is__(b, Iterable) else (b,))]
         else:
             raise TypeError(f"Unsupported operand types for +: {type(a).__name__} and {type(b).__name__}")
-        return TreeO(res) if TreeO._opt(self if isinstance(self, TreeO) else other, "return_node") else res
+        return self._child(res) if TreeO._opt(self if isinstance(self, TreeO) else other, "return_node") else res
 
     def __radd__(self, other):
         return TreeO.__add__(other, self)
@@ -785,7 +796,7 @@ class TreeO(MutableMapping, MutableSequence, metaclass=TreeOMeta):
             res = {k: v for k, v in obj.items() if k in other}
         else:  # isinstance(self(), Sequence):
             res = list(filter(lambda x: x not in other, obj))
-        return TreeO(res) if TreeO._opt(self if isinstance(self, TreeO) else other, "return_node") else res
+        return self._child(res) if TreeO._opt(self if isinstance(self, TreeO) else other, "return_node") else res
 
     def __rsub__(self, other):
         return TreeO.__sub__(other, self)
@@ -795,7 +806,7 @@ class TreeO(MutableMapping, MutableSequence, metaclass=TreeOMeta):
             raise TypeError("To use the * (times)-operator, times must be an int")
         if not TreeO.__is__(self(), Sequence):
             raise TypeError("Your base-object must a tuple or list to get multiplied.")
-        return TreeO(self() * times) if TreeO._opt(self, "return_node") else self() * times
+        return self._child(self() * times) if TreeO._opt(self, "return_node") else self() * times
 
     def __rmul__(self, other):
         return TreeO.__mul__(self, other)
