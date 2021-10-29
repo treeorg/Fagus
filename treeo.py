@@ -15,6 +15,20 @@ from datetime import date, datetime, time
 from typing import Union
 
 
+class Funk:
+    def __init__(self, function_pointer: callable, old_value_position: int = 1, *args, **kwargs):
+        self.function_pointer = function_pointer
+        self.old_value_pos = old_value_position
+        self.args = args
+        self.kwargs = kwargs
+
+    def __call__(self, old_value):
+        args = list(self.args)
+        if self.old_value_pos != 0:
+            args.insert(self.old_value_pos if self.old_value_pos < 0 else self.old_value_pos - 1, old_value)
+        return self.function_pointer(*args, **self.kwargs)
+
+
 class TreeOMeta(ABCMeta):
     class __Empty__:
         pass
@@ -80,18 +94,13 @@ class TreeOMeta(ABCMeta):
             },
             MutableMapping,
             lambda x: all(
-                (
-                    k in ("default", "tuple_keys")
-                    or all(isinstance(y, type) for y in (k if TreeO.__is__(k, Iterable) else (k,)))
-                )
-                and (
-                    callable(v[0]) and all([TreeO.__is__(a, Mapping, Sequence) for a in v[1:]])
-                    if TreeO.__is__(v, Sequence)
-                    else callable(v)
-                )
+                k in ("default", "tuple_keys")
+                or all(isinstance(y, type) for y in (k if TreeO.__is__(k, Iterable) else (k,)))
+                and callable(v)
                 for k, v in x.items()
             ),
-            "mod_functions must be a dict with types (or tuples of types) as keys and functions as values.",
+            "mod_functions must be a dict with types (or tuples of types) as keys and function pointers "
+            "(either lambda or wrapped in Funk-objects) as values.",
         ),
         value_split=(" ", str),
         return_node=(False, bool),
@@ -432,7 +441,7 @@ class TreeO(MutableMapping, MutableSequence, metaclass=TreeOMeta):
 
     def mod(
         self: Union[MutableMapping, MutableSequence],
-        mod_function,
+        mod_function: Union[Funk, callable],
         path,
         default=...,
         node_types: str = ...,
@@ -566,12 +575,6 @@ class TreeO(MutableMapping, MutableSequence, metaclass=TreeOMeta):
     def _serializable_value(value, mod_functions):
         for types, mod_function in mod_functions.items():
             if type(value) == types or (TreeO.__is__(types, Collection) and type(value) in types):
-                if isinstance(mod_function, Sequence):
-                    return mod_function[0](
-                        value,
-                        *(a for al in mod_function[1:] if TreeO.__is__(al, Sequence) for a in al),
-                        **{k: v for d in mod_function[1:] if isinstance(d, Mapping) for k, v in d.items()},
-                    )
                 return mod_function(value)
         return mod_functions["default"](value)
 

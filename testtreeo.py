@@ -1,7 +1,7 @@
 import copy
 import unittest
 from ipaddress import IPv6Address, IPv4Network, IPv6Network, ip_address
-from treeo import TreeO
+from treeo import TreeO, Funk
 from datetime import datetime, date, time
 
 
@@ -246,10 +246,7 @@ class TestTreeO(unittest.TestCase):
             return sum([old_value, arg1, arg2, arg3, *kwargs.values()])
 
         b["1"][0][0] += 1 + 2 + 3 + 4 + 5
-        a.mod(
-            (fancy_mod2, [1, 2], dict(kwarg1=4), [3], dict(kwarg2=5)),
-            "1 0 0",
-        )
+        a.mod(Funk(fancy_mod2, 1, 1, 2, 3, kwarg1=4, kwarg2=5), "1 0 0")
         self.assertEqual(b, a, "Complex function taking keyword-arguments and ordinary arguments")
         self.assertRaisesRegex(TypeError, "Valid types for mod_function: lambda.*", a.mod, (fancy_mod2, "hei"), "1 0 0")
 
@@ -318,10 +315,11 @@ class TestTreeO(unittest.TestCase):
                 {
                     IPv6Address: lambda x: f"{x.compressed} {x.exploded}",
                     "default": lambda x: "global" if x.is_global else "local",
-                    (IPv4Network, IPv6Network): (
+                    (IPv4Network, IPv6Network): Funk(
                         fancy_network_mask,
-                        ["The network %s with the netmask %s"],
-                        dict(broadcast=" and the broadcast-address "),
+                        1,
+                        "The network %s with the netmask %s",
+                        broadcast=" and the broadcast-address ",
                     ),
                 },
                 mod=False,
