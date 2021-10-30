@@ -102,6 +102,7 @@ class TreeOMeta(ABCMeta):
             "mod_functions must be a dict with types (or tuples of types) as keys and function pointers "
             "(either lambda or wrapped in Funk-objects) as values.",
         ),
+        iter_fill=(..., object),
         value_split=(" ", str),
         return_node=(False, bool),
     )
@@ -189,7 +190,8 @@ class TreeO(MutableMapping, MutableSequence, metaclass=TreeOMeta):
 
         path can be used to start iterating at some point inside the TreeO-tree
         """
-        TreeO._verify_kwargs(kwargs, "iter", "return_node", "value_split", "mod")
+        TreeO._verify_kwargs(kwargs, "iter", "return_node", "value_split", "mod", "iter_fill")
+        iter_fill = kwargs.pop("iter_fill", ...)
         node = TreeO.get(self, path, **{**kwargs, "return_node": False})
         if 0 <= max_items <= 1 or max_items < -1:
             return ValueError(
@@ -197,22 +199,36 @@ class TreeO(MutableMapping, MutableSequence, metaclass=TreeOMeta):
                 "number of items in the tuples."
             )
         if TreeO.__is__(node, Mapping, Sequence):
-            return TreeO._iter_r(self, node, max_items, TreeO._opt(self, "return_node", **kwargs))
+            return TreeO._iter_r(
+                self,
+                node,
+                max_items,
+                TreeO._opt(self, "return_node", **kwargs),
+                TreeO._opt(self, "iter_fill", iter_fill=iter_fill),
+            )
         else:
             return []
 
-    def _iter_r(self: Union[Mapping, Sequence], node, max_items, return_node):
+    def _iter_r(self: Union[Mapping, Sequence], node, max_items, return_node, iter_fill):
         iter_list = []
         for k, v in node.items() if isinstance(node, Mapping) else enumerate(node):
             if max_items != 2:
                 if TreeO.__is__(v, Mapping, Sequence):
-                    for e in TreeO._iter_r(self, v, max_items - 1, return_node):
+                    for e in TreeO._iter_r(self, v, max_items - 1, return_node, iter_fill):
                         iter_list.append((k, *e))
                     continue
                 elif TreeO.__is__(v, Collection):
-                    iter_list.extend(((k, e) for e in v))
+                    iter_list.extend(
+                        (k, *e, *(() if iter_fill is ... else (iter_fill,) * (max_items - 3))) for e in enumerate(v)
+                    )
                     continue
-            iter_list.append((k, TreeO._child(self, v) if return_node and TreeO.__is__(v, Mapping, Sequence) else v))
+            iter_list.append(
+                (
+                    k,
+                    TreeO._child(self, v) if return_node and TreeO.__is__(v, Mapping, Sequence) else v,
+                    *(() if iter_fill is ... else (iter_fill,) * (max_items - 2)),
+                )
+            )
         return iter_list
 
     def set(self: Union[MutableMapping, MutableSequence], value, path, node_types: str = ..., **kwargs):

@@ -30,8 +30,8 @@ class TestTreeO(unittest.TestCase):
             ("1", 0, 1, True),
             ("1", 0, 2, "a"),
             ("1", 0, 3, 0, "f"),
-            ("1", 0, 3, 1, aq[0]),
-            ("1", 0, 3, 1, aq[1]),
+            ("1", 0, 3, 1, 0, aq[0]),
+            ("1", 0, 3, 1, 1, aq[1]),
             ("1", 1, "a", False),
             ("1", 1, "1", 0, 1),
             ("a", 0, 0, 3),
@@ -40,6 +40,11 @@ class TestTreeO(unittest.TestCase):
         ]
         self.assertEqual([x for x in a.iter()], b, "Correctly iterating over dicts and lists")
         self.assertEqual([(0, 0, 3), (0, 1, 4), (1, "b", 1)], a.iter(-1, "a"), "Correct iterator when path is given")
+        for i, l in enumerate(b):
+            b[i] = (*l, *((None,) * (7 - len(l))))
+        self.assertEqual(
+            b, a.iter(7, iter_fill=None), "Correctly filling up when intended count in tuples is constant, here 7"
+        )
         b = [
             ("1", 0, [1, True, "a", ("f", {"q", "a"})]),
             ("1", 1, {"a": False, "1": (1,)}),
