@@ -1,7 +1,8 @@
 import copy
+import json
 import unittest
 from ipaddress import IPv6Address, IPv4Network, IPv6Network, ip_address
-from treeo import TreeO, Funk
+from treeo import TreeO, TFunc, TFilter
 from datetime import datetime, date, time
 
 
@@ -22,57 +23,124 @@ class TestTreeO(unittest.TestCase):
         self.assertEqual(1, TreeO.get((((1, 0), 2), 3), "0 0 0"), "Successfully traversing tuples")
 
     def test_iter(self):
-        a = TreeO(self.a, mod=False)
-        aq = tuple(a["1 0 3 1"])  # have to create this tuple of the set because it's unpredictable what order
-        # a and q will have in the set. Using this tuple, I make sure the test still works (the order will be sth same)
-        b = [
-            ("1", 0, 0, 1),
-            ("1", 0, 1, True),
-            ("1", 0, 2, "a"),
-            ("1", 0, 3, 0, "f"),
-            ("1", 0, 3, 1, 0, aq[0]),
-            ("1", 0, 3, 1, 1, aq[1]),
-            ("1", 1, "a", False),
-            ("1", 1, "1", 0, 1),
-            ("a", 0, 0, 3),
-            ("a", 0, 1, 4),
-            ("a", 1, "b", 1),
-        ]
-        self.assertEqual([x for x in a.iter()], b, "Correctly iterating over dicts and lists")
-        self.assertEqual([(0, 0, 3), (0, 1, 4), (1, "b", 1)], a.iter(-1, "a"), "Correct iterator when path is given")
-        for i, l in enumerate(b):
-            b[i] = (*l, *((None,) * (7 - len(l))))
-        self.assertEqual(
-            b, a.iter(7, iter_fill=None), "Correctly filling up when intended count in tuples is constant, here 7"
-        )
-        b = [
-            ("1", 0, [1, True, "a", ("f", {"q", "a"})]),
-            ("1", 1, {"a": False, "1": (1,)}),
-            ("a", 0, [3, 4]),
-            ("a", 1, {"b": 1}),
-        ]
-        self.assertEqual(b, a.iter(3), "Iterating correctly when max_items is limited to three")
-        b = [
-            ("1", 0, 0, 1),
-            ("1", 0, 1, True),
-            ("1", 0, 2, "a"),
-            ("1", 0, 3, 0, "f"),
-            ("1", 0, 3, 1, {"q", "a"}),
-            ("1", 1, "a", False),
-            ("1", 1, "1", 0, 1),
-            ("a", 0, 0, 3),
-            ("a", 0, 1, 4),
-            ("a", 1, "b", 1),
-        ]
-        self.assertEqual(b, a.iter(5), "Iterating correctly when max_items is limited to five. Some tuples are < 5")
-        self.assertEqual([(0, [3, 4]), (1, {"b": 1})], a.items("a"), "Items gives keys and values")
-        b = [
-            ("1", 0, TreeO([1, True, "a", ("f", {"q", "a"})])),
-            ("1", 1, TreeO({"a": False, "1": (1,)})),
-            ("a", 0, TreeO([3, 4])),
-            ("a", 1, TreeO({"b": 1})),
-        ]
-        self.assertEqual(b, a.iter(3, return_node=True), "Returning nodes as TreeO-objects when return_value=True")
+        # a = TreeO(self.a, mod=False)
+        # aq = tuple(a["1 0 3 1"])  # have to create this tuple of the set because it's unpredictable what order
+        # # a and q will have in the set. Using this tuple, I make sure the test still works (the order will be sth same)
+        # b = [
+        #     ("1", 0, 0, 1),
+        #     ("1", 0, 1, True),
+        #     ("1", 0, 2, "a"),
+        #     ("1", 0, 3, 0, "f"),
+        #     ("1", 0, 3, 1, 0, aq[0]),
+        #     ("1", 0, 3, 1, 1, aq[1]),
+        #     ("1", 1, "a", False),
+        #     ("1", 1, "1", 0, 1),
+        #     ("a", 0, 0, 3),
+        #     ("a", 0, 1, 4),
+        #     ("a", 1, "b", 1),
+        # ]
+        # self.assertEqual([x for x in a.iter()], b, "Correctly iterating over dicts and lists")
+        # self.assertEqual([(0, 0, 3), (0, 1, 4), (1, "b", 1)], a.iter(-1, "a"), "Correct iterator when path is given")
+        # for i, l in enumerate(b):
+        #     b[i] = (*l, *((None,) * (7 - len(l))))
+        # self.assertEqual(
+        #     b, a.iter(7, iter_fill=None), "Correctly filling up when intended count in tuples is constant, here 7"
+        # )
+        # b = [
+        #     ("1", 0, [1, True, "a", ("f", {"q", "a"})]),
+        #     ("1", 1, {"a": False, "1": (1,)}),
+        #     ("a", 0, [3, 4]),
+        #     ("a", 1, {"b": 1}),
+        # ]
+        # self.assertEqual(b, a.iter(3), "Iterating correctly when max_items is limited to three")
+        # b = [
+        #     ("1", 0, 0, 1),
+        #     ("1", 0, 1, True),
+        #     ("1", 0, 2, "a"),
+        #     ("1", 0, 3, 0, "f"),
+        #     ("1", 0, 3, 1, {"q", "a"}),
+        #     ("1", 1, "a", False),
+        #     ("1", 1, "1", 0, 1),
+        #     ("a", 0, 0, 3),
+        #     ("a", 0, 1, 4),
+        #     ("a", 1, "b", 1),
+        # ]
+        # self.assertEqual(b, a.iter(5), "Iterating correctly when max_items is limited to five. Some tuples are < 5")
+        # self.assertEqual([(0, [3, 4]), (1, {"b": 1})], a.items("a"), "Items gives keys and values")
+        # b = [
+        #     ("1", 0, TreeO([1, True, "a", ("f", {"q", "a"})])),
+        #     ("1", 1, TreeO({"a": False, "1": (1,)})),
+        #     ("a", 0, TreeO([3, 4])),
+        #     ("a", 1, TreeO({"b": 1})),
+        # ]
+        # self.assertEqual(b, a.iter(3, return_node=True), "Returning nodes as TreeO-objects when return_value=True")
+        # self.assertEqual(
+        #     a.iter(4, "", filter_=TFilter("a", 1, lambda x: x % 2 != 0, filter_types="---")),
+        #     a.iter(4, "", filter_=TFilter("1", 0, lambda x: x % 2 == 0)),
+        #     "Two opposite filters giving the same results on the data",
+        # )
+        with open("api-eksempel.json") as fp:
+            a = TreeO(json.load(fp))
+        # b = [
+        #     (0, "source", "id", 5141),
+        #     (1, "source", "id", 6110),
+        #     (2, "source", "id", 6110),
+        #     (3, "source", "id", 6110),
+        #     (4, "source", "id", 6110),
+        #     (5, "source", "id", 6110),
+        #     (6, "source", "id", 6110),
+        #     (7, "source", "id", 6110),
+        #     (8, "source", "id", 6110),
+        #     (9, "source", "id", 6110),
+        #     (10, "source", "id", 6110),
+        #     (11, "source", "id", 6110),
+        #     (12, "source", "id", 6110),
+        #     (13, "source", "id", 6110),
+        #     (14, "source", "id", 6110),
+        #     (15, "source", "id", 6110),
+        #     (354, "source", "id", 5662),
+        #     (355, "source", "id", 5662),
+        #     (356, "source", "id", 5662),
+        #     (357, "source", "id", 5662),
+        #     (358, "source", "id", 5662),
+        #     (359, "source", "id", 5662),
+        #     (360, "source", "id", 5662),
+        #     (361, "source", "id", 5662),
+        #     (362, "source", "id", 5662),
+        #     (363, "source", "id", 5662),
+        #     (364, "source", "id", 5662),
+        #     (365, "source", "id", 5662),
+        #     (366, "source", "id", 5662),
+        #     (367, "source", "id", 5662),
+        #     (368, "source", "id", 5662),
+        #     (369, "source", "id", 5662),
+        #     (370, "source", "id", 5662),
+        #     (371, "source", "id", 5662),
+        #     (372, "source", "id", 5662),
+        #     (373, "source", "id", 5662),
+        #     (374, "source", "id", 5662),
+        #     (375, "source", "id", 5662),
+        #     (376, "source", "id", 5662),
+        #     (377, "source", "id", 5662),
+        #     (412, "source", "id", 5900),
+        # ]
+        # f = a.iter(-1, "data", TFilter(True, "source", "id", lambda x: x > 5000))
+        # self.assertEqual(b, f, "Iterating over all source-ids that are > 5000, testing lambda and true and default")
+        sample = [5863, 3392, 4204, 3549, 6396, 6634, 4255, 8184, 3950, 5470, 1291, 5862, 9004, 7760, 4470, 3592, 9973, 433, 2861, 292, 2042, 458, 5730, 553, 3896, 4502, 4500, 5291, 2283, 1352, 7466, 4321, 5241, 7069, 7974, 6300, 3066, 6492, 415, 5585, 7539, 83, 9618, 6324, 9307, 776, 7786, 2821, 7730, 523, 2201, 5355, 4574, 2129, 853, 5975, 9636, 1933, 6711, 3807, 5904, 2946, 5908, 6246, 6847, 7678, 1710, 2553, 1015, 5490, 6192, 4088, 2048, 6709, 6744, 5692, 4881, 5311, 9121, 2616, 7338, 4676, 8741, 5378, 21, 4796, 7306, 2903, 7644, 3338, 761, 4223, 4647, 3921, 8701, 3070, 3245, 1780, 1909, 1047]
+
+        f = a.iter(-1, "data", TFilter(True, (TFilter("source", "id", lambda x: x > 5000, check_only=True), "state")))
+        print(f)
+
+    def test_filter(self):
+        with open("api-eksempel-raw.json") as fp:
+            a = TreeO(json.load(fp))
+        sample = [9824, 3573, 1547, 8059, 101, 6018, 7725, 646, 6711, 1794]
+ 
+        sample = [5863, 3392, 4204, 3549, 6396, 6634, 4255, 8184, 3950, 5470, 1291, 5862, 9004, 7760, 4470, 3592, 9973, 433, 2861, 292, 2042, 458, 5730, 553, 3896, 4502, 4500, 5291, 2283, 1352, 7466, 4321, 5241, 7069, 7974, 6300, 3066, 6492, 415, 5585, 7539, 83, 9618, 6324, 9307, 776, 7786, 2821, 7730, 523, 2201, 5355, 4574, 2129, 853, 5975, 9636, 1933, 6711, 3807, 5904, 2946, 5908, 6246, 6847, 7678, 1710, 2553, 1015, 5490, 6192, 4088, 2048, 6709, 6744, 5692, 4881, 5311, 9121, 2616, 7338, 4676, 8741, 5378, 21, 4796, 7306, 2903, 7644, 3338, 761, 4223, 4647, 3921, 8701, 3070, 3245, 1780, 1909, 1047]
+        b = a.filter(TFilter((TFilter("data", sample), True)), mod=False)
+        #f = TFilter((TFilter("data", 0, "state", 2, check_only=True),))
+        #res = f.match_check_filter(a, 0)
+        pass
 
     def test_set(self):
         a = TreeO(self.a, mod=False)
@@ -251,7 +319,7 @@ class TestTreeO(unittest.TestCase):
             return sum([old_value, arg1, arg2, arg3, *kwargs.values()])
 
         b["1"][0][0] += 1 + 2 + 3 + 4 + 5
-        a.mod(Funk(fancy_mod2, 1, 1, 2, 3, kwarg1=4, kwarg2=5), "1 0 0")
+        a.mod(TFunc(fancy_mod2, 1, 1, 2, 3, kwarg1=4, kwarg2=5), "1 0 0")
         self.assertEqual(b, a, "Complex function taking keyword-arguments and ordinary arguments")
         self.assertRaisesRegex(TypeError, "Valid types for mod_function: lambda.*", a.mod, (fancy_mod2, "hei"), "1 0 0")
 
@@ -320,7 +388,7 @@ class TestTreeO(unittest.TestCase):
                 {
                     IPv6Address: lambda x: f"{x.compressed} {x.exploded}",
                     "default": lambda x: "global" if x.is_global else "local",
-                    (IPv4Network, IPv6Network): Funk(
+                    (IPv4Network, IPv6Network): TFunc(
                         fancy_network_mask,
                         1,
                         "The network %s with the netmask %s",

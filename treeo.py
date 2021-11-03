@@ -12,21 +12,135 @@ from collections.abc import (
     MutableSet,
 )
 from datetime import date, datetime, time
-from typing import Union
+from typing import Union, Set
 
 
-class Funk:
-    def __init__(self, function_pointer: callable, old_value_position: int = 1, *args, **kwargs):
+class TFunc:
+    def __init__(self, function_pointer: callable, old_value_position: Union[int, str] = 1, *args, **kwargs):
         self.function_pointer = function_pointer
         self.old_value_pos = old_value_position
         self.args = args
         self.kwargs = kwargs
 
     def __call__(self, old_value):
+        if isinstance(self.old_value_pos, str):
+            return self.function_pointer(*self.args, **self.kwargs, **{self.old_value_pos: old_value})
         args = list(self.args)
         if self.old_value_pos != 0:
             args.insert(self.old_value_pos if self.old_value_pos < 0 else self.old_value_pos - 1, old_value)
         return self.function_pointer(*args, **self.kwargs)
+
+
+class TFilter:
+    def __init__(self, *args, **kwargs):
+        self.filter_types = kwargs.pop("filter_types", "")
+        if not isinstance(self.filter_types, str) or not bool(re.fullmatch("[+-]*", self.filter_types)):
+            raise ValueError(
+                f"{self.filter_types} is invalid for filter_types. It must be a str consisting of only + and -"
+            )
+        self.check_only = kwargs.pop("check_only", False)
+        if kwargs:
+            raise TypeError(
+                f"Unsupported keyword argument{'s' if len(kwargs) > 1 else ''} in TFilter(): {' '.join(kwargs)}"
+            )
+        self.args = list(args)
+        for i, arg in enumerate(self.args):
+            if isinstance(arg, str) and arg != re.escape(arg):
+                self[i] = re.compile(arg)
+            elif not isinstance(arg, Mapping) and TreeO.__is__(arg, Collection):
+                if not isinstance(arg, MutableSequence):
+                    self[i] = list(arg)
+                for j, e in enumerate(arg):
+                    if isinstance(arg, str) and arg != re.escape(arg):
+                        self[i] = re.compile(arg)
+                    elif isinstance(e, TFilter) and e.check_only:
+                        self[i] = list(arg)
+                        if not hasattr(self, "check_only_filters"):
+                            self.check_only_filters = {}
+                        if i not in self.check_only_filters:
+                            self.check_only_filters[i] = []
+                        if not isinstance(self.args[i], MutableSequence):
+                            self[i] = list(self[i])
+                        self.check_only_filters[i].append(self.args[i].pop(j))
+            elif isinstance(arg, TFilter):
+                raise ValueError(
+                    "Detected subfilter as standalone arg, which makes no sense. "
+                    "Put subfilters into lists of alternative values / filters."
+                )
+
+    def __getitem__(self, index: int):
+        try:
+            return self.args[index]
+        except IndexError:
+            return True
+
+    def __setitem__(self, key, value):
+        try:
+            self.args[key] = value
+        except IndexError:
+            pass
+
+    def match(self, value, index):
+        filter_arg, included = self[index], self.included(index)
+        for e in filter_arg if TreeO.__is__(filter_arg, Collection) else (filter_arg,):
+            if e is True:
+                return True, self, index + 1
+            elif isinstance(e, TFilter):
+                match, filter_, index_ = e.match(value, 0)
+                if match:
+                    return included == match, filter_, index_
+            elif callable(e):
+                return included == e(value), self, index + 1
+            elif isinstance(e, re.Pattern):
+                return included == bool(filter_arg.fullmatch(value)), self, index + 1
+            elif included == (e == value):
+                return True, self, index + 1
+        return False, self, index + 1
+
+    def match_list(self, value, index, node_length):
+        if not isinstance(value, int) or not (-node_length <= value < node_length):
+            return False, self, index + 1
+        filter_arg, included = self[index], self.included(index)
+        for e in filter_arg if TreeO.__is__(filter_arg, Collection) else (filter_arg,):
+            if e is True:
+                return True, self, index + 1
+            elif isinstance(e, TFilter) and not e.check_only:
+                match, filter_, index_ = e.match_list(value, 0, node_length)
+                if match:
+                    return included == match, filter_, index_
+            elif callable(e):
+                return included == e(value), self, index + 1
+            elif included == (e == value):
+                return True, self, index + 1
+        return False, self, index + 1
+
+    def match_check_filter(self, node, index):
+        if hasattr(self, "check_only_filters") and index in self.check_only_filters:
+            for filter_ in self.check_only_filters[index]:
+                match = filter_.__check_match_filter_r__(node)
+                if not match:
+                    return False
+        return True
+
+    def __check_match_filter_r__(self, node, index: int = 0):
+        for k, v in node.items() if isinstance(node, Mapping) else enumerate(node):
+            if isinstance(node, Mapping):
+                match_k = self.match(k, index)
+            elif TreeO.__is__(node, Sequence):
+                match_k = self.match_list(k, index, len(node))
+            else:
+                match_k = True, self, index
+            if match_k[0]:
+                if TreeO.__is__(v, Collection):
+                    match_v = match_k[1].__check_match_filter_r__(v, match_k[2])
+                else:
+                    match_v, *_ = match_k[1].match(v, match_k[2])
+                if match_v:
+                    return True
+        return False
+
+    def included(self, index):
+        return self.filter_types[index : index + 1] != "-"
 
 
 class TreeOMeta(ABCMeta):
@@ -135,7 +249,7 @@ class TreeO(MutableMapping, MutableSequence, metaclass=TreeOMeta):
     TreeO can be used as an object by instantiating it, but it's also possible to use all methods statically without
     even an object, so that a = {}; TreeO.set(a, "top med", 1) and a = TreeO({}); a.set("top med", 1) do the same."""
 
-    def get(self: Union[Mapping, Sequence], path="", default=..., **kwargs):
+    def get(self: Union[Mapping, Sequence], path: Iterable = "", default=..., **kwargs):
         """Retrieves value from path. If the value doesn't exist, default is returned."""
         TreeO._verify_kwargs(kwargs, "get", "return_node", "value_split", "mod")
         node = self.obj if isinstance(self, TreeO) else self
@@ -177,7 +291,7 @@ class TreeO(MutableMapping, MutableSequence, metaclass=TreeOMeta):
                 return ...
         return node
 
-    def iter(self: Union[Mapping, Sequence], max_items: int = -1, path="", **kwargs):
+    def iter(self: Union[Mapping, Sequence], max_items: int = -1, path="", filter_: TFilter = None, **kwargs):
         """Iterate over all sub-nodes at path
 
         Returns a list with one tuple for each leaf-node, containing the keys of the parent-nodes until the leaf
@@ -190,8 +304,9 @@ class TreeO(MutableMapping, MutableSequence, metaclass=TreeOMeta):
 
         path can be used to start iterating at some point inside the TreeO-tree
         """
-        TreeO._verify_kwargs(kwargs, "iter", "return_node", "value_split", "mod", "iter_fill")
+        TreeO._verify_kwargs(kwargs, "iter", "return_node", "value_split", "mod", "iter_fill", "reduce")
         iter_fill = kwargs.pop("iter_fill", ...)
+        reduce = kwargs.pop("reduce", None)
         node = TreeO.get(self, path, **{**kwargs, "return_node": False})
         if 0 <= max_items <= 1 or max_items < -1:
             return ValueError(
@@ -199,37 +314,127 @@ class TreeO(MutableMapping, MutableSequence, metaclass=TreeOMeta):
                 "number of items in the tuples."
             )
         if TreeO.__is__(node, Mapping, Sequence):
-            return TreeO._iter_r(
+            iter_list = TreeO._iter_r(
                 self,
                 node,
                 max_items,
                 TreeO._opt(self, "return_node", **kwargs),
                 TreeO._opt(self, "iter_fill", iter_fill=iter_fill),
+                filter_,
             )
+            if reduce is not None:
+                if isinstance(reduce, Collection) and all(isinstance(e, int) for e in reduce):
+                    return [tuple(e[i] for i in reduce if -len(e) <= i < len(e)) for e in iter_list]
+                elif isinstance(reduce, int):
+                    return [e[reduce] for e in iter_list if -len(e) <= reduce < len(e)]
+                else:
+                    raise TypeError(
+                        f"Invalid type {type(reduce).__name__} for reduce parameter. Must be int or list of ints."
+                    )
+            else:
+                return iter_list
         else:
             return []
 
-    def _iter_r(self: Union[Mapping, Sequence], node, max_items, return_node, iter_fill):
+    def _iter_r(
+        self: Union[Mapping, Sequence],
+        node,
+        max_items,
+        return_node: bool,
+        iter_fill,
+        filter_: TFilter = None,
+        index: int = 0,
+    ):
         iter_list = []
         for k, v in node.items() if isinstance(node, Mapping) else enumerate(node):
+            filter__, index_ = filter_, index + 1
+            if isinstance(filter_, TFilter):
+                if isinstance(node, Mapping):
+                    match_k, filter__, index_ = filter_.match(k, index)
+                elif isinstance(node, Sequence):
+                    match_k, filter__, index_ = filter_.match_list(k, index, len(node))
+                else:
+                    match_k = True
+                if match_k:
+                    if not TreeO.__is__(v, Mapping, Sequence):
+                        if TreeO.__is__(v, Collection):
+                            v = set(e for e in v if filter__.match(e, index_))
+                        else:
+                            match_v, filter__, index_ = filter__.match(v, index_)
+                            if not match_v:
+                                continue
+                else:
+                    continue
             if max_items != 2:
                 if TreeO.__is__(v, Mapping, Sequence):
-                    for e in TreeO._iter_r(self, v, max_items - 1, return_node, iter_fill):
-                        iter_list.append((k, *e))
+                    new_v = TreeO._iter_r(self, v, max_items - 1, return_node, iter_fill, filter__, index_)
+                    if filter__.match_check_filter(v, index_) if isinstance(filter__, TFilter) else True:
+                        for e in new_v:
+                            iter_list.append((k, *e))
                     continue
                 elif TreeO.__is__(v, Collection):
                     iter_list.extend(
                         (k, *e, *(() if iter_fill is ... else (iter_fill,) * (max_items - 3))) for e in enumerate(v)
                     )
                     continue
-            iter_list.append(
-                (
-                    k,
-                    TreeO._child(self, v) if return_node and TreeO.__is__(v, Mapping, Sequence) else v,
-                    *(() if iter_fill is ... else (iter_fill,) * (max_items - 2)),
+            if filter__.match_check_filter(v, index_) if isinstance(filter__, TFilter) else True:
+                iter_list.append(
+                    (
+                        k,
+                        TreeO._child(self, v) if return_node and TreeO.__is__(v, Mapping, Sequence) else v,
+                        *(() if iter_fill is ... else (iter_fill,) * (max_items - 2)),
+                    )
                 )
-            )
         return iter_list
+
+    def filter(self: Union[MutableMapping, MutableSequence], filter_: TFilter, path="", **kwargs):
+        TreeO._verify_kwargs(kwargs, "iter", "value_split", "mod", "return_node")
+        obj = self.obj if isinstance(self, TreeO) else self
+        if not kwargs.get("mod", True):
+            obj = deepcopy(obj)
+        if path:
+            filtered = TreeO._filter_r(TreeO.get(obj, path, [], **{**kwargs, "return_node": False}), filter_)
+            if not filter_.match_check_filter(filtered, 0):
+                filtered.clear()
+            TreeO.set(self, filtered, path)
+        else:
+            filtered = TreeO._filter_r(obj, filter_)
+            obj.clear()
+            if filter_.match_check_filter(filtered, 0):
+                getattr(obj, "update" if isinstance(obj, MutableMapping) else "extend")(filtered)
+        return TreeO._child(self, obj) if TreeO._opt(self, "return_node", **kwargs) else obj
+
+    @staticmethod
+    def _filter_r(node: Union[Mapping, Sequence], filter_: TFilter, index: int = 0):
+        if isinstance(node, Mapping):
+            new_node, action = {}, None
+        elif isinstance(node, Sequence):
+            new_node, action = [], "append"
+        else:
+            new_node, action = set(), "add"
+        for k, v in node.items() if isinstance(node, Mapping) else enumerate(node):
+            if action == "add":
+                match_k = True, filter_, index + 1
+            elif isinstance(node, Mapping):
+                match_k = filter_.match(k, index)
+            else:
+                match_k = filter_.match_list(k, index, len(node))
+            if match_k[0]:
+                if TreeO.__is__(v, Collection):
+                    new_v = TreeO._filter_r(v, *match_k[1:])
+                    if bool(new_v):
+                        match_v = match_k[1].match_check_filter(v, match_k[2])
+                    else:
+                        match_v = bool(v) == bool(new_v)
+                    v = new_v
+                else:
+                    match_v, *_ = match_k[1].match(v, match_k[2])
+                if match_v:
+                    if action:
+                        getattr(new_node, action)(v)
+                    else:
+                        new_node[k] = v
+        return new_node
 
     def set(self: Union[MutableMapping, MutableSequence], value, path, node_types: str = ..., **kwargs):
         """Create (if they don't already exist) all sub-nodes in path, and finally set value at leaf-node
@@ -457,7 +662,7 @@ class TreeO(MutableMapping, MutableSequence, metaclass=TreeOMeta):
 
     def mod(
         self: Union[MutableMapping, MutableSequence],
-        mod_function: Union[Funk, callable],
+        mod_function: Union[TFunc, callable],
         path,
         default=...,
         node_types: str = ...,
