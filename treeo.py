@@ -12,7 +12,7 @@ from collections.abc import (
     MutableSet,
 )
 from datetime import date, datetime, time
-from typing import Union, Set
+from typing import Union
 
 
 class TFunc:
@@ -33,40 +33,49 @@ class TFunc:
 
 class TFilter:
     def __init__(self, *args, **kwargs):
-        self.filter_types = kwargs.pop("filter_types", "")
-        if not isinstance(self.filter_types, str) or not bool(re.fullmatch("[+-]*", self.filter_types)):
+        self.inexclude = kwargs.pop("inexclude", "")
+        if not isinstance(self.inexclude, str) or not bool(re.fullmatch("[+-]*", self.inexclude)):
             raise ValueError(
-                f"{self.filter_types} is invalid for filter_types. It must be a str consisting of only + and -"
+                f"{self.inexclude} is invalid for inexclude. It must be a str consisting of only + (to include) and "
+                f"- (to exclude). If nothing has been specified all filteres will be treated as include (+)-filters."
             )
-        self.check_only = kwargs.pop("check_only", False)
+        self.type = kwargs.pop("type", "")
+        if not isinstance(self.type, str) and not self.type[0:1] in ("", "c", "v"):
+            raise ValueError('type must be a str, either starting with "c"(heck) or "v"(alue). "" means default filter')
+        self.type = {"c": "check", "v": "value", "": ""}[self.type[0:1]]
         if kwargs:
             raise TypeError(
                 f"Unsupported keyword argument{'s' if len(kwargs) > 1 else ''} in TFilter(): {' '.join(kwargs)}"
             )
         self.args = list(args)
-        for i, arg in enumerate(self.args):
-            if isinstance(arg, str) and arg != re.escape(arg):
-                self[i] = re.compile(arg)
-            elif not isinstance(arg, Mapping) and TreeO.__is__(arg, Collection):
-                if not isinstance(arg, MutableSequence):
-                    self[i] = list(arg)
-                for j, e in enumerate(arg):
-                    if isinstance(arg, str) and arg != re.escape(arg):
-                        self[i] = re.compile(arg)
-                    elif isinstance(e, TFilter) and e.check_only:
+        if self.type == "value" and (
+            len(args) != 1 or not all(callable(e) for e in (args[0] if TreeO.__is__(args[0], Sequence) else args))
+        ):
+            raise TypeError("A value-filter must have exactly one argument. Either a lambda, or a list of lambdas")
+        else:
+            for i, arg in enumerate(self.args):
+                if isinstance(arg, str) and arg != re.escape(arg):
+                    self[i] = re.compile(arg)
+                elif not isinstance(arg, Mapping) and TreeO.__is__(arg, Collection):
+                    if not isinstance(arg, MutableSequence):
                         self[i] = list(arg)
-                        if not hasattr(self, "check_only_filters"):
-                            self.check_only_filters = {}
-                        if i not in self.check_only_filters:
-                            self.check_only_filters[i] = []
-                        if not isinstance(self.args[i], MutableSequence):
-                            self[i] = list(self[i])
-                        self.check_only_filters[i].append(self.args[i].pop(j))
-            elif isinstance(arg, TFilter):
-                raise ValueError(
-                    "Detected subfilter as standalone arg, which makes no sense. "
-                    "Put subfilters into lists of alternative values / filters."
-                )
+                    for j, e in enumerate(arg):
+                        if isinstance(arg, str) and arg != re.escape(arg):
+                            self[i] = re.compile(arg)
+                        elif isinstance(e, TFilter):
+                            self[i] = list(arg)
+                            if not hasattr(self, "extra_filters"):
+                                self.extra_filters = {}
+                            if i not in self.extra_filters:
+                                self.extra_filters[i] = []
+                            if not isinstance(self.args[i], MutableSequence):
+                                self[i] = list(self[i])
+                            self.extra_filters[i].append(self.args[i].pop(j))
+                elif isinstance(arg, TFilter):
+                    raise ValueError(
+                        "Detected subfilter as standalone arg, which makes no sense. "
+                        "Put subfilters into lists of alternative values / filters."
+                    )
 
     def __getitem__(self, index: int):
         try:
@@ -104,7 +113,7 @@ class TFilter:
         for e in filter_arg if TreeO.__is__(filter_arg, Collection) else (filter_arg,):
             if e is True:
                 return True, self, index + 1
-            elif isinstance(e, TFilter) and not e.check_only:
+            elif isinstance(e, TFilter):
                 match, filter_, index_ = e.match_list(value, 0, node_length)
                 if match:
                     return included == match, filter_, index_
@@ -114,15 +123,21 @@ class TFilter:
                 return True, self, index + 1
         return False, self, index + 1
 
-    def match_check_filter(self, node, index):
-        if hasattr(self, "check_only_filters") and index in self.check_only_filters:
-            for filter_ in self.check_only_filters[index]:
-                match = filter_.__check_match_filter_r__(node)
-                if not match:
-                    return False
+    def match_extra_filters(self, node, index):
+        if hasattr(self, "extra_filters") and index in self.extra_filters:
+            for filter_ in self.extra_filters[index]:
+                if filter_.type == "check":
+                    match = filter_.__match_check_filter_r(node)
+                    if not match:
+                        return False
+                else:  # value filter
+                    for test in (filter_[0],) if callable(filter_[0]) else filter_[0]:
+                        match = test[node]
+                        if not match:
+                            return False
         return True
 
-    def __check_match_filter_r__(self, node, index: int = 0):
+    def __match_check_filter_r(self, node, index: int = 0):
         for k, v in node.items() if isinstance(node, Mapping) else enumerate(node):
             if isinstance(node, Mapping):
                 match_k = self.match(k, index)
@@ -132,7 +147,7 @@ class TFilter:
                 match_k = True, self, index
             if match_k[0]:
                 if TreeO.__is__(v, Collection):
-                    match_v = match_k[1].__check_match_filter_r__(v, match_k[2])
+                    match_v = match_k[1].__match_check_filter_r(v, match_k[2])
                 else:
                     match_v, *_ = match_k[1].match(v, match_k[2])
                 if match_v:
@@ -140,7 +155,7 @@ class TFilter:
         return False
 
     def included(self, index):
-        return self.filter_types[index : index + 1] != "-"
+        return self.inexclude[index : index + 1] != "-"
 
 
 class TreeOMeta(ABCMeta):
@@ -167,15 +182,6 @@ class TreeOMeta(ABCMeta):
             return value
         else:
             raise ValueError(f"The option named {option_name} is not defined in TreeO.")
-
-    @staticmethod
-    def __try_else__(value, mod_function, default):
-        if not callable(mod_function):
-            raise ValueError("mod_function must be a callable function pointer.")
-        try:
-            return mod_function(value)
-        except Exception:
-            return default
 
     __default_options__ = dict(
         default_node_type=(
@@ -251,7 +257,7 @@ class TreeO(MutableMapping, MutableSequence, metaclass=TreeOMeta):
 
     def get(self: Union[Mapping, Sequence], path: Iterable = "", default=..., **kwargs):
         """Retrieves value from path. If the value doesn't exist, default is returned."""
-        TreeO._verify_kwargs(kwargs, "get", "return_node", "value_split", "mod")
+        TreeO._verify_kwargs(kwargs, "get", "return_node", "value_split", "cp")
         node = self.obj if isinstance(self, TreeO) else self
         t_path = path.split(TreeO._opt(self, "value_split", **kwargs)) if isinstance(path, str) else tuple(path)
         if path:
@@ -265,8 +271,8 @@ class TreeO(MutableMapping, MutableSequence, metaclass=TreeOMeta):
                 except (IndexError, ValueError, KeyError):
                     node = TreeO._opt(self, "default_value", default_value=default)
                     break
-        if not kwargs.get("mod", True):
-            node = deepcopy(node)
+        if kwargs.get("cp", False):
+            node = TreeO.__copy__(node) if kwargs.get("cp").startswith("s") else deepcopy(node)
         return (
             TreeO._child(self, node)
             if TreeO.__is__(node, Mapping, Sequence) and TreeO._opt(self, "return_node", **kwargs)
@@ -304,7 +310,7 @@ class TreeO(MutableMapping, MutableSequence, metaclass=TreeOMeta):
 
         path can be used to start iterating at some point inside the TreeO-tree
         """
-        TreeO._verify_kwargs(kwargs, "iter", "return_node", "value_split", "mod", "iter_fill", "reduce")
+        TreeO._verify_kwargs(kwargs, "iter", "return_node", "value_split", "cp", "iter_fill", "reduce")
         iter_fill = kwargs.pop("iter_fill", ...)
         reduce = kwargs.pop("reduce", None)
         node = TreeO.get(self, path, **{**kwargs, "return_node": False})
@@ -368,7 +374,7 @@ class TreeO(MutableMapping, MutableSequence, metaclass=TreeOMeta):
             if max_items != 2:
                 if TreeO.__is__(v, Mapping, Sequence):
                     new_v = TreeO._iter_r(self, v, max_items - 1, return_node, iter_fill, filter__, index_)
-                    if filter__.match_check_filter(v, index_) if isinstance(filter__, TFilter) else True:
+                    if filter__.match_extra_filters(v, index_) if isinstance(filter__, TFilter) else True:
                         for e in new_v:
                             iter_list.append((k, *e))
                     continue
@@ -377,7 +383,7 @@ class TreeO(MutableMapping, MutableSequence, metaclass=TreeOMeta):
                         (k, *e, *(() if iter_fill is ... else (iter_fill,) * (max_items - 3))) for e in enumerate(v)
                     )
                     continue
-            if filter__.match_check_filter(v, index_) if isinstance(filter__, TFilter) else True:
+            if filter__.match_extra_filters(v, index_) if isinstance(filter__, TFilter) else True:
                 iter_list.append(
                     (
                         k,
@@ -388,19 +394,19 @@ class TreeO(MutableMapping, MutableSequence, metaclass=TreeOMeta):
         return iter_list
 
     def filter(self: Union[MutableMapping, MutableSequence], filter_: TFilter, path="", **kwargs):
-        TreeO._verify_kwargs(kwargs, "iter", "value_split", "mod", "return_node")
+        TreeO._verify_kwargs(kwargs, "iter", "value_split", "cp", "return_node")
         obj = self.obj if isinstance(self, TreeO) else self
-        if not kwargs.get("mod", True):
-            obj = deepcopy(obj)
+        if kwargs.get("cp", False):
+            obj = TreeO.__copy__(obj) if kwargs.get("cp").startswith("s") else deepcopy(obj)
         if path:
             filtered = TreeO._filter_r(TreeO.get(obj, path, [], **{**kwargs, "return_node": False}), filter_)
-            if not filter_.match_check_filter(filtered, 0):
+            if not filter_.match_extra_filters(filtered, 0):
                 filtered.clear()
             TreeO.set(self, filtered, path)
         else:
             filtered = TreeO._filter_r(obj, filter_)
             obj.clear()
-            if filter_.match_check_filter(filtered, 0):
+            if filter_.match_extra_filters(filtered, 0):
                 getattr(obj, "update" if isinstance(obj, MutableMapping) else "extend")(filtered)
         return TreeO._child(self, obj) if TreeO._opt(self, "return_node", **kwargs) else obj
 
@@ -423,7 +429,7 @@ class TreeO(MutableMapping, MutableSequence, metaclass=TreeOMeta):
                 if TreeO.__is__(v, Collection):
                     new_v = TreeO._filter_r(v, *match_k[1:])
                     if bool(new_v):
-                        match_v = match_k[1].match_check_filter(v, match_k[2])
+                        match_v = match_k[1].match_extra_filters(v, match_k[2])
                     else:
                         match_v = bool(v) == bool(new_v)
                     v = new_v
@@ -505,16 +511,16 @@ class TreeO(MutableMapping, MutableSequence, metaclass=TreeOMeta):
             "list_insert",
             "value_split",
             "return_node",
-            "mod",
+            "cp",
             *(("index",) if action == "insert" else ()),
         )
         node_types = TreeO._opt(self, "node_types", node_types=node_types)
         obj = self.obj if isinstance(self, TreeO) else self
-        if not kwargs.get("mod", True):
-            obj = deepcopy(obj)
+        if kwargs.get("cp", False):
+            obj = TreeO.__copy__(obj) if kwargs.get("cp").startswith("s") else deepcopy(obj)
         if path:
             t_path = path.split(TreeO._opt(self, "value_split", **kwargs)) if isinstance(path, str) else tuple(path)
-            next_index = TreeO.__try_else__(t_path[0], lambda x: int(x), ...)
+            next_index = TreeO._index(t_path[0], ...)
             list_insert = TreeO._opt(self, "list_insert", **kwargs)
             node = obj
             if (
@@ -535,7 +541,7 @@ class TreeO(MutableMapping, MutableSequence, metaclass=TreeOMeta):
                 )
             for i in range(len(t_path)):
                 node_key = next_index if TreeO.__is__(node, MutableSequence) else t_path[i]
-                next_index = TreeO.__try_else__(t_path[i + 1], lambda x: int(x), ...) if i < len(t_path) - 1 else ...
+                next_index = TreeO._index(t_path[i + 1], ...) if i < len(t_path) - 1 else ...
                 next_node = (
                     list
                     if node_types[i + 1 : i + 2] == "l"
@@ -610,6 +616,13 @@ class TreeO(MutableMapping, MutableSequence, metaclass=TreeOMeta):
             else:
                 raise ValueError(f"Can't {action} value {'to' if action == 'add' else 'in'} base-{type(obj).__name__}.")
         return TreeO._child(self, obj) if TreeO._opt(self, "return_node", **kwargs) else obj
+
+    @staticmethod
+    def _index(value, default):
+        try:
+            return int(value)
+        except (ValueError, TypeError):
+            return default
 
     @staticmethod
     def _put_value(node, value, action, **kwargs):
@@ -687,10 +700,10 @@ class TreeO(MutableMapping, MutableSequence, metaclass=TreeOMeta):
 
         node_types can be used to manually define if the nodes along path are supposed to be lists or dicts. If left
             empty, TreeO will try to use TreeO.default_node_type to create new nodes or just use the existing nodes."""
-        TreeO._verify_kwargs(kwargs, "mod", "default_node_type", "list_insert", "value_split", "mod")
+        TreeO._verify_kwargs(kwargs, "mod", "default_node_type", "list_insert", "value_split", "cp")
         obj = self.obj if isinstance(self, TreeO) else self
-        if not kwargs.get("mod", True):
-            obj = deepcopy(obj)
+        if kwargs.get("cp", False):
+            obj = TreeO.__copy__(obj) if kwargs.get("cp").startswith("s") else deepcopy(obj)
         t_path = path.split(TreeO._opt(self, "value_split", **kwargs)) if isinstance(path, str) else tuple(path)
         parent_node = TreeO._parent(self, t_path, **kwargs)
         if TreeO.__is__(parent_node, MutableMapping, MutableSequence):
@@ -750,10 +763,10 @@ class TreeO(MutableMapping, MutableSequence, metaclass=TreeOMeta):
         function is lambda x: str(x) that replaces the object with its string-representation."""
         if not isinstance(self.obj if isinstance(self, TreeO) else self, (dict, list)):
             raise TypeError(f"Can't modify base-object self having the immutable type {type(self).__name__}.")
-        TreeO._verify_kwargs(kwargs, "serialize", "mod", "value_split")
+        TreeO._verify_kwargs(kwargs, "serialize", "cp", "value_split")
         node = TreeO.get(self, path, return_node=False, **kwargs)
-        if not kwargs.get("mod", True):
-            node = deepcopy(node)
+        if kwargs.get("cp", False):
+            node = TreeO.__copy__(node) if kwargs.get("cp").startswith("s") else deepcopy(node)
         return TreeO._serialize_r(
             node,
             {
@@ -810,6 +823,10 @@ class TreeO(MutableMapping, MutableSequence, metaclass=TreeOMeta):
 
     @staticmethod
     def _verify_kwargs(kwargs: dict, function_name, *allowed_kwargs):
+        if "cp" in kwargs and "cp" in allowed_kwargs:
+            cp = kwargs.get("cp")
+            if cp[0:1] not in ("d", "s") if isinstance(cp, str) else cp is not False:
+                raise ValueError('The cp kwarg must be either False for no copy, or "d"(eep) or "s"(hallow).')
         wrong_kwargs = tuple(filter(lambda x: x not in allowed_kwargs, kwargs))
         if wrong_kwargs:
             raise TypeError(
@@ -821,7 +838,7 @@ class TreeO(MutableMapping, MutableSequence, metaclass=TreeOMeta):
         """Returns keys for node at path
 
         If node is iterable but not a dict, the indices are returned. If node is a single value, [0] is returned."""
-        TreeO._verify_kwargs(kwargs, "keys", "value_split", "mod")
+        TreeO._verify_kwargs(kwargs, "keys", "value_split", "cp")
         obj = TreeO.get(self, path, **{**kwargs, "return_node": False})
         if isinstance(obj, MutableMapping):
             return obj.keys()
@@ -832,7 +849,7 @@ class TreeO(MutableMapping, MutableSequence, metaclass=TreeOMeta):
 
     def values(self: Union[Mapping, Sequence], path="", **kwargs):
         """Returns values for node at path"""
-        TreeO._verify_kwargs(kwargs, "values", "return_node", "value_split", "mod")
+        TreeO._verify_kwargs(kwargs, "values", "return_node", "value_split", "cp")
         obj = TreeO.get(self, path, **{**kwargs, "return_node": False})
         return_node = TreeO._opt(self, "return_node", **kwargs)
         if isinstance(obj, MutableMapping):
@@ -842,12 +859,12 @@ class TreeO(MutableMapping, MutableSequence, metaclass=TreeOMeta):
 
     def items(self: Union[Mapping, Sequence], path="", **kwargs):
         """Returns a list with one tuple for each leaf - the first value is the key, the second is the child-dict."""
-        TreeO._verify_kwargs(kwargs, "items", "return_node", "value_split", "mod")
+        TreeO._verify_kwargs(kwargs, "items", "return_node", "value_split", "cp")
         return TreeO.iter(self, 2, path, **kwargs)
 
     def clear(self: Union[Mapping, Sequence], path="", **kwargs):
         """Removes all elements from node at path."""
-        TreeO._verify_kwargs(kwargs, "clear", "return_node", "value_split", "mod")
+        TreeO._verify_kwargs(kwargs, "clear", "return_node", "value_split", "cp")
         TreeO.get(self, path, **{**kwargs, "return_node": False}).clear()
         return TreeO(self) if not isinstance(self, TreeO) and TreeO._opt(self, "return_node", **kwargs) else self
 
@@ -878,10 +895,10 @@ class TreeO(MutableMapping, MutableSequence, metaclass=TreeOMeta):
 
     def reverse(self: Union[MutableMapping, MutableSequence], path="", **kwargs):
         """Reverse child-node at path if that node is a list"""
-        TreeO._verify_kwargs(kwargs, "reverse", "mod", "value_split", "return_node")
+        TreeO._verify_kwargs(kwargs, "reverse", "cp", "value_split", "return_node")
         obj = self.obj if isinstance(self, TreeO) else self
-        if kwargs.get("mod", True):
-            obj = deepcopy(obj)
+        if kwargs.get("cp", True):
+            obj = TreeO.__copy__(obj) if kwargs.get("cp").startswith("s") else deepcopy(obj)
         node = TreeO.get(self, path, **{**kwargs, "return_node": False})
         if TreeO.__is__(node, MutableSequence):
             node.reverse()
@@ -896,9 +913,9 @@ class TreeO(MutableMapping, MutableSequence, metaclass=TreeOMeta):
     def __init__(self, obj: Union[Mapping, Sequence] = None, **kwargs):
         if obj is None:
             obj = [] if TreeO.default_node_type == "l" else {}
-        TreeO._verify_kwargs(kwargs, "init", "mod", *TreeO.__default_options__)
-        if not kwargs.get("mod", True):
-            obj = deepcopy(obj)
+        TreeO._verify_kwargs(kwargs, "init", "cp", *TreeO.__default_options__)
+        if kwargs.get("cp", False):
+            obj = TreeO.__copy__(obj) if kwargs.get("cp").startswith("s") else deepcopy(obj)
         if isinstance(obj, TreeO):
             self.obj = obj()
             self._options = None if self._options is None else self._options.copy()
@@ -906,7 +923,7 @@ class TreeO(MutableMapping, MutableSequence, metaclass=TreeOMeta):
             self.obj = obj
             self._options = None
         for kw, value in kwargs.items():
-            if kw != "mod":
+            if kw != "cp":
                 setattr(self, kw, value)
 
     def _child(self: Union[Mapping, Sequence], obj: Union[Mapping, Sequence] = None, **kwargs) -> "TreeO":
@@ -914,6 +931,14 @@ class TreeO(MutableMapping, MutableSequence, metaclass=TreeOMeta):
         if isinstance(self, TreeO):
             new_obj._options = None if self._options is None else self._options.copy()
         return new_obj
+
+    def __copy__(self: Union[Mapping, Sequence]):
+        obj = self.obj if isinstance(self, TreeO) else self
+        new_node = obj.copy()
+        for k, v in obj.items() if isinstance(obj, Mapping) else enumerate(obj):
+            if hasattr(v, "copy"):
+                new_node[k] = TreeO.__copy__(v) if TreeO.__is__(v, Mapping, Sequence) else v.copy()
+        return new_node
 
     def __call__(self):
         return self.obj

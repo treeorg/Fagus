@@ -1,0 +1,251 @@
+{
+  "responseCode": 200,
+  "limit": 10000,
+  "offset": 0,
+  "count": 0,
+  "metaData": {},
+  "messages": [],
+  "data": [
+    {
+      "id": 662,
+      "lastModified": 1562556727000,
+      "sourceId": 889,
+      "source": {
+        "id": 889,
+        "alias": "file-analyzer-domain",
+        "name": "File-Analyzer"
+      },
+      "roleId": 182,
+      "role": {
+        "id": 182,
+        "alias": "sandbox",
+        "name": "Intel from sandbox runs"
+      },
+      "firstSeen": 1548169200000,
+      "lastSeen": 1561951800000,
+      "numObservations": 1,
+      "state": 2,
+      "comment": "105311",
+      "domainName": {
+        "fqdn": "pogoda.interia.pl"
+      }
+    },
+    {
+      "id": 762,
+      "lastModified": 1587844846000,
+      "sourceId": 5662,
+      "source": {
+        "id": 5662,
+        "alias": "abuse_urlhaus-domain",
+        "name": "abuse_urlhaus"
+      },
+      "roleId": 33,
+      "role": {
+        "id": 33,
+        "alias": "malware-server",
+        "name": "Malware server"
+      },
+      "firstSeen": 1548169200000,
+      "lastSeen": 1552989600000,
+      "numObservations": 1,
+      "state": 1,
+      "comment": null,
+      "domainName": {
+        "fqdn": "airconpro.co.za"
+      }
+    },
+    {
+      "id": 7205133,
+      "lastModified": 1382603318000,
+      "sourceId": 299,
+      "source": {
+        "id": 299,
+        "alias": "jib-c5",
+        "name": "JIB (diff)"
+      },
+      "roleId": 33,
+      "role": {
+        "id": 33,
+        "alias": "malware-server",
+        "name": "Malware server"
+      },
+      "firstSeen": 1382600400000,
+      "lastSeen": 1384504800000,
+      "numObservations": 1,
+      "state": 3,
+      "comment": null,
+      "domainName": {
+        "fqdn": "ssun.arrowservice.net"
+      }
+    },
+    {
+      "id": 7205567,
+      "lastModified": 1382603319000,
+      "sourceId": 299,
+      "source": {
+        "id": 299,
+        "alias": "jib-c5",
+        "name": "JIB (diff)"
+      },
+      "roleId": 33,
+      "role": {
+        "id": 33,
+        "alias": "malware-server",
+        "name": "Malware server"
+      },
+      "firstSeen": 1382600400000,
+      "lastSeen": 1384504800000,
+      "numObservations": 1,
+      "state": 3,
+      "comment": null,
+      "domainName": {
+        "fqdn": "spckl.bigish.net"
+      }
+    },
+    {
+      "id": 9922401,
+      "lastModified": 1385016682000,
+      "sourceId": 301,
+      "source": {
+        "id": 301,
+        "alias": "joxeankoret-c4",
+        "name": "Joxeankoret (diff)"
+      },
+      "roleId": 33,
+      "role": {
+        "id": 33,
+        "alias": "malware-server",
+        "name": "Malware server"
+      },
+      "firstSeen": 1385016663000,
+      "lastSeen": 1385664000000,
+      "numObservations": 1,
+      "state": 3,
+      "comment": null,
+      "domainName": {
+        "fqdn": "dlp.dlsofteclipse.com"
+      }
+    },
+    {
+      "id": 9924883,
+      "lastModified": 1385016698000,
+      "sourceId": 253,
+      "source": {
+        "id": 253,
+        "alias": "et_iqrisk_blackhole-c3",
+        "name": "ET IQRisk Blackhole"
+      },
+      "roleId": 33,
+      "role": {
+        "id": 33,
+        "alias": "malware-server",
+        "name": "Malware server"
+      },
+      "firstSeen": 1385016663000,
+      "lastSeen": 1385664000000,
+      "numObservations": 1,
+      "state": 3,
+      "comment": null,
+      "domainName": {
+        "fqdn": "24705.dns7a.com"
+      }
+    },
+    {
+      "id": 9925507,
+      "lastModified": 1385016701000,
+      "sourceId": 253,
+      "source": {
+        "id": 253,
+        "alias": "et_iqrisk_blackhole-c3",
+        "name": "ET IQRisk Blackhole"
+      },
+      "roleId": 33,
+      "role": {
+        "id": 33,
+        "alias": "malware-server",
+        "name": "Malware server"
+      },
+      "firstSeen": 1385016663000,
+      "lastSeen": 1385664000000,
+      "numObservations": 1,
+      "state": 3,
+      "comment": null,
+      "domainName": {
+        "fqdn": "36894.dnsy7.net"
+      }
+    },
+    {
+      "id": 9931215,
+      "lastModified": 1385016744000,
+      "sourceId": 277,
+      "source": {
+        "id": 277,
+        "alias": "dshield-c5",
+        "name": "DShield (diff)"
+      },
+      "roleId": 33,
+      "role": {
+        "id": 33,
+        "alias": "malware-server",
+        "name": "Malware server"
+      },
+      "firstSeen": 1385016663000,
+      "lastSeen": 1385664000000,
+      "numObservations": 1,
+      "state": 3,
+      "comment": null,
+      "domainName": {
+        "fqdn": "branded.ontheweb.nu"
+      }
+    },
+    {
+      "id": 9938283,
+      "lastModified": 1385016799000,
+      "sourceId": 277,
+      "source": {
+        "id": 277,
+        "alias": "dshield-c5",
+        "name": "DShield (diff)"
+      },
+      "roleId": 33,
+      "role": {
+        "id": 33,
+        "alias": "malware-server",
+        "name": "Malware server"
+      },
+      "firstSeen": 1385016663000,
+      "lastSeen": 1385664000000,
+      "numObservations": 1,
+      "state": 3,
+      "comment": null,
+      "domainName": {
+        "fqdn": "dla.vkomunizme.ru.com"
+      }
+    },
+    {
+      "id": 9938553,
+      "lastModified": 1385016802000,
+      "sourceId": 277,
+      "source": {
+        "id": 277,
+        "alias": "dshield-c5",
+        "name": "DShield (diff)"
+      },
+      "roleId": 33,
+      "role": {
+        "id": 33,
+        "alias": "malware-server",
+        "name": "Malware server"
+      },
+      "firstSeen": 1385016663000,
+      "lastSeen": 1385664000000,
+      "numObservations": 1,
+      "state": 3,
+      "comment": null,
+      "domainName": {
+        "fqdn": "audkrukptpzfyirhxslnlyh.biz"
+      }
+    }
+  ],
+  "size": 10000
+}
