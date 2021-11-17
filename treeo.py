@@ -1387,10 +1387,12 @@ class TreeO(MutableMapping, MutableSequence, metaclass=TreeOMeta):
         return bool(self.obj)
 
     def __repr__(self):
-        return self.obj.__repr__()
+        return "TreeO(%s)" % ", ".join(
+            (repr(self.obj), *(f"{e[0]}={repr(e[1])}" for e in (self._options.items() if self._options else ())))
+        )
 
     def __str__(self):
-        return self.obj.__repr__()
+        return str(self.obj)
 
     def __iadd__(self, value):
         if isinstance(self(), MutableMapping):
