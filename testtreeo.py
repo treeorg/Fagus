@@ -7,6 +7,11 @@ from treeo import TreeO, TFunc, TFilter, TCopy, TType
 from datetime import datetime, date, time
 
 
+class HashableDict(dict):
+    def __hash__(self):
+        return hash(frozenset(self.items()))
+
+
 class TestTreeO(unittest.TestCase):
     def setUp(self) -> None:
         self.a = None
@@ -23,6 +28,7 @@ class TestTreeO(unittest.TestCase):
         self.assertIn("q", TreeO.get(self.a, ("1", 0, 3, 1)), "Path existing, return value at path")
         self.assertEqual(1, TreeO(self.a).get((1, 0, 0), 1), "Path not existing return default that comes from param")
         self.assertEqual(1, TreeO.get((((1, 0), 2), 3), "0 0 0"), "Successfully traversing tuples")
+        del TreeO.default_value
 
     def test_iter(self):
         a = TreeO(self.a, copy=TCopy.SHALLOW)
@@ -76,6 +82,10 @@ class TestTreeO(unittest.TestCase):
             ("a", 1, TreeO({"b": 1})),
         ]
         self.assertEqual(b, a.iter(3, return_node=True), "Returning nodes as TreeO-objects when return_value=True")
+        self.assertTrue(
+            all(isinstance(e, TreeO) for e in a.iter(3, return_node=True, reduce=-1)),
+            "return_node actually returns back nodes if the nodes at the end are suitable to be converted",
+        )
         self.assertEqual(
             a.iter(4, "", filter_=TFilter("a", 1, lambda x: x % 2 != 0, inexclude="---")),
             a.iter(4, "", filter_=TFilter("1", 0, lambda x: x % 2 == 0)),
@@ -175,7 +185,7 @@ class TestTreeO(unittest.TestCase):
         b = a.iter(
             filter_=TFilter("responseCode|limit|data", ..., ("role.*", re.compile("source.*")), string_as_re=True)
         )
-        self.assertEqual(True, all(e in b for e in c), "Checking if it works to convert str to regex when requested")
+        self.assertTrue(all(e in b for e in c), "Checking if it works to convert str to regex when requested")
         filter_args = ["a|c", ("abc", "a.*")]
         self.assertEqual(filter_args, TFilter(*filter_args).args, "No str args are changed if string_as_re=False")
         self.assertEqual(
@@ -183,6 +193,20 @@ class TestTreeO(unittest.TestCase):
             TFilter(*filter_args, string_as_re=True).args,
             "The correct str's are replaced with re-patterns if string_as_re=False",
         )
+        b = {
+            (..., ..., 0, 8),
+            (..., ..., 1, 7),
+            (..., ..., ..., 5),
+            (..., ..., ..., 6),
+            (..., 0, "a"),
+            (..., 1, "q"),
+            (..., ..., 0, 5),
+            (..., ..., 1, "h", "M"),
+            (..., ..., 0, "l"),
+            (..., ..., 1, "q"),
+        }
+        f = {("a", "q"), frozenset(((5, HashableDict({"h": "M"})), ("l", "q"))), frozenset((frozenset((5, 6)), (8, 7)))}
+        self.assertEqual(b, set(TreeO.iter(f)), "Iterating through sets, some sets stacked in sets")
 
     def test_filter(self):
         with open("test-data.json") as fp:
@@ -226,11 +250,11 @@ class TestTreeO(unittest.TestCase):
         self.assertRaisesRegex(ValueError, "Can't parse numeric list-index from.*", TreeO.set, a, "f", "1 f", "dl")
         a[("1", 1)] = "hei"
         b["1"][1] = "hei"
-        self.assertEqual(b, a, "Using __set_item__ to set a value")
+        self.assertEqual(b, a(), "Using __set_item__ to set a value")
         a.value_split = "_"
         a.a_1_b = 2
         b["a"][1]["b"] = 2
-        self.assertEqual(a, b, "Using another path separator and __setattr__")
+        self.assertEqual(a(), b, "Using another path separator and __setattr__")
         b["1"] = {"0": {"0": {"g": [9, 5]}}}
         self.assertEqual(b, a.set({"g": [9, 5]}, "1øæ0øæ0", "ddd", value_split="øæ"), "Replace list with dict")
         self.assertEqual([[["a"]]], TreeO.set([], "a", "1 1 1", default_node_type="l"), "Only create lists")
@@ -238,13 +262,13 @@ class TestTreeO(unittest.TestCase):
         b = copy.deepcopy(a())
         b["1"][0].insert(2, [["q"]])
         a.set("q", ("1", 0, 2, 0, 0), list_insert=2, default_node_type="l")
-        self.assertEqual(a, b, "Insert into list")
+        self.assertEqual(a(), b, "Insert into list")
         b["1"][0].append("hans")
         b["1"].insert(0, ["wurst"])
         a.default_node_type = "l"
         a.set("hans", "1 0 100")
         a.set("wurst", "1 -40 5")
-        self.assertEqual(a, b, "Add to list at beginning / end by using indexes higher than length / lower than - len")
+        self.assertEqual(a(), b, "Add to list at beginning / end by using indexes higher than len / lower than - len")
 
     def test_append(self):
         a = copy.deepcopy(self.a)
@@ -309,13 +333,13 @@ class TestTreeO(unittest.TestCase):
         b["1"][0][3] = list(b["1"][0][3])
         b["1"][0][3][0] = {"f", "q"}
         a.add("q", "1 0 3 0")
-        self.assertEqual(a, b, "Converting single value to set, adding value to it")
+        self.assertEqual(a(), b, "Converting single value to set, adding value to it")
         b["1"][0][3][1].add("hans")
         a.add("hans", "1 0 3 1")
-        self.assertEqual(a, b, "Adding value to existing set")
+        self.assertEqual(a(), b, "Adding value to existing set")
         b["a"][1]["c"] = {5}
         a.add(5, "a 1 c")
-        self.assertEqual(a, b, "Creating new empty set at position where no value has been before")
+        self.assertEqual(a(), b, "Creating new empty set at position where no value has been before")
 
     def test_update(self):
         # update set
@@ -324,69 +348,69 @@ class TestTreeO(unittest.TestCase):
         b["1"][0][3] = list(b["1"][0][3])
         b["1"][0][3][0] = {"f", "q", "t", "p"}
         a.update("qtp", "1 0 3 0")
-        self.assertEqual(a, b, "Converting single value to set, adding new values to it")
+        self.assertEqual(a(), b, "Converting single value to set, adding new values to it")
         b["1"][0][3][1].update("hans")
         a.update("hans", "1 0 3 1")
-        self.assertEqual(a, b, "Adding new values to existing set")
+        self.assertEqual(a(), b, "Adding new values to existing set")
         b["a"][1]["c"] = {5}
         a.add(5, "a 1 c")
-        self.assertEqual(a, b, "Creating new empty set at position where no value has been before")
+        self.assertEqual(a(), b, "Creating new empty set at position where no value has been before")
         # update dict
         b.update({"hei": 1, "du": "wurst"})
         a.update({"hei": 1, "du": "wurst"})
-        self.assertEqual(a, b, "Updating base dict")
+        self.assertEqual(a(), b, "Updating base dict")
         b["a"][1].update({"hei": 1, "du": "wurst"})
         a.update({"hei": 1, "du": "wurst"}, "a 1")
-        self.assertEqual(a, b, "Updating dict further inside the object")
+        self.assertEqual(a(), b, "Updating dict further inside the object")
         b["k"] = {"a": 1}
         a.update({"a": 1}, "k")
-        self.assertEqual(a, b, "Updating dict at node that is not existing yet")
+        self.assertEqual(a(), b, "Updating dict at node that is not existing yet")
         self.assertRaisesRegex(ValueError, "Can't update dict with value of type .*", a.update, {"hans", "wu"}, "a 1")
 
     def test_setdefault(self):
         a = TreeO(self.a, copy=TCopy.SHALLOW)
         b = copy.deepcopy(self.a)
         self.assertEqual(a.setdefault("a 0 0", 5), 3, "Setdefault returns existing value")
-        self.assertEqual(a, b, "SetDefault doesn't change if the value is already there")
+        self.assertEqual(a(), b, "SetDefault doesn't change if the value is already there")
         self.assertEqual(a.setdefault("a 7 7", 5, "dll"), 5, "SetDefault returns default value")
         b["a"].append([5])
-        self.assertEqual(a, b, "SetDefault has added the value to the list")
+        self.assertEqual(a(), b, "SetDefault has added the value to the list")
 
     def test_mod_function(self):
         a = TreeO(self.a, copy=TCopy.SHALLOW)
         b = copy.deepcopy(self.a)
         b["1"][0][0] += 4
         a.mod(lambda x: x + 4, "1 0 0", 6)
-        self.assertEqual(a, b, "Modifying existing number")
+        self.assertEqual(a(), b, "Modifying existing number")
         b["1"][0].insert(0, 2)
         a.mod(lambda x: x + 4, "1 0 0", 2, list_insert=2)
-        self.assertEqual(a, b, "Setting default value")
+        self.assertEqual(a(), b, "Setting default value")
 
         def fancy_mod1(old_value):
             return old_value * 2
 
         b["1"][0][0] = fancy_mod1(b["1"][0][0])
         a.mod(fancy_mod1, "1 0 0")
-        self.assertEqual(b, a, "Using function pointer that works like a lambda - one param, one arg")
+        self.assertEqual(b, a(), "Using function pointer that works like a lambda - one param, one arg")
         b["1"][0][0] = fancy_mod1(b["1"][0][0])
         a.mod((fancy_mod1,), "1 0 0")
-        self.assertEqual(b, a, "Function pointer in tuple with only default param")
+        self.assertEqual(b, a(), "Function pointer in tuple with only default param")
 
         def fancy_mod2(old_value, arg1, arg2, arg3, **kwargs):
             return sum([old_value, arg1, arg2, arg3, *kwargs.values()])
 
         b["1"][0][0] += 1 + 2 + 3 + 4 + 5
         a.mod(TFunc(fancy_mod2, 1, 1, 2, 3, kwarg1=4, kwarg2=5), "1 0 0")
-        self.assertEqual(b, a, "Complex function taking keyword-arguments and ordinary arguments")
+        self.assertEqual(b, a(), "Complex function taking keyword-arguments and ordinary arguments")
         self.assertRaisesRegex(TypeError, "Valid types for mod_function: lambda.*", a.mod, (fancy_mod2, "hei"), "1 0 0")
 
     def test_pop(self):
         a = TreeO(self.a, copy=TCopy.SHALLOW)
         b = copy.deepcopy(self.a)
         self.assertEqual(a.pop("1 0 3"), b["1"][0].pop(3), "Pop correctly drops the value at the position")
-        self.assertEqual(a, b, "Pop has correctly modified the object")
+        self.assertEqual(a(), b, "Pop has correctly modified the object")
         a.pop("8 9 10")
-        self.assertEqual(a, b, "Pop did not modify the object as path doesn't exist")
+        self.assertEqual(a(), b, "Pop did not modify the object as path doesn't exist")
 
     def test_serialize(self):
         test_obj = {date(2021, 3, 6): [time(6, 45, 22), datetime(2021, 6, 23, 5, 45, 22)], ("hei", "du"): {3, 4, 5}}
@@ -409,7 +433,7 @@ class TestTreeO(unittest.TestCase):
         a["1 0 3 1"].sort()
         self.assertEqual(
             {"1": [[1, True, "a", ["f", ["a", "q"]]], {"a": False, "1": [1]}], "a": [[3, 4], {"b": 1}]},
-            a,
+            a(),
             "Removing tuples / sets in complex dict / list tree",
         )
         a = TreeO(default_node_type="l")
@@ -470,6 +494,30 @@ class TestTreeO(unittest.TestCase):
         self.assertEqual(0, TreeO.count(self.a, "Hei god morgen"), "When the node doesn't exist, return 0")
         self.assertEqual(1, TreeO.count(self.a, "1 0 1"), "When the node is a simple value, return 1")
 
+    def test_values(self):
+        with open("test-data.json") as fp:
+            a = TreeO(json.load(fp))
+        self.assertEqual(tuple(a.values()), tuple(a.values()), "The same dict-values if the base node is a dict")
+        b = [
+            9922401,
+            1385016682000,
+            301,
+            TreeO({"id": 301, "alias": "joxeankoret-c4", "name": "Joxeankoret (diff)"}),
+            33,
+            TreeO({"id": 33, "alias": "malware-server", "name": "Malware server"}),
+            1385016663000,
+            1385664000000,
+            1,
+            3,
+            None,
+            TreeO({"fqdn": "dlp.dlsofteclipse.com"}),
+        ]
+        self.assertEqual(b, a.values("data 4", return_node=True), "Returning correctly nodes in a dict, with TreeO's")
+        b = (200, 10000, 0, 0, TreeO({}), TreeO([]), a.get("data", return_node=True), 10000)
+        self.assertEqual(b, tuple(a.values(return_node=True)), "Correctly returning nodes in a dict")
+        self.assertEqual((), a.values("data 12"), "Returning empty tuple for a path that doesn't exist")
+        self.assertEqual((10000,), a.values("size"), "Singleton value is returned alone in a tuple")
+
     def test_mul(self):
         a = TreeO(self.a["1"])
         # print(1 * a)
@@ -477,6 +525,22 @@ class TestTreeO(unittest.TestCase):
         b = TreeO([5, 4, 3])
         # print(a - 3)
         # b.get(1, krzpk=1, hanswurst=7)
+
+    def test_copy(self):
+        a = copy.deepcopy(self.a)
+        b = TreeO(a, copy=TCopy.SHALLOW)
+        self.assertEqual(a, b(), "Shallow-copy is actually equal to the original object if it isn't changed")
+        b.pop("a")
+        self.assertNotEqual(a, b(), "Can pop at base-level without affecting the original object")
+        b = TreeO(a, copy=TCopy.SHALLOW)
+        b["f"] = 2
+        self.assertNotEqual(a, b(), "Can add at base-level without affecting the original object")
+        b = TreeO(a).copy()
+        b["1 0 0"] = 100
+        self.assertNotEqual(a, b(), "Can change node deeply in the original object without affecting original object")
+        b = TreeO(a, copy=TCopy.SHALLOW)
+        b.pop("1 0 3")
+        self.assertNotEqual(a, b(), "Can pop deeply in the object without affecting the original object")
 
 
 if __name__ == "__main__":
