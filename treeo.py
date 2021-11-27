@@ -5,6 +5,7 @@ from collections.abc import (
     Collection,
     Mapping,
     Sequence,
+    Set,
     MutableMapping,
     MutableSequence,
     Reversible,
@@ -16,39 +17,17 @@ from enum import Enum, auto
 from typing import Union, Tuple, Any, Optional, List
 
 
-class TType(Enum):
-    """Filter-types for TFilter
-
-    DEFAULT:
-        What matches this filter will actually be visible in the result. When a TFilter is passed as an argument to a
-        a function in TreeO, it always has to be a DEFAULT-filter. Inside that DEFAULT-filter on the top, CHECK- and
-        DEFAULT-filters can be defined for additional verification
-
-    CHECK:
-        This type of filter is used to additionally verify nodes that have matched the parent DEFAULT-filter. You can
-        use this if you want to filter on values which you don't want to appear in the result.
-
-    VALUE:
-        DEFAULT and CHECK-filters only check the keys and leaf-values while filtering. This special type of filter can
-        be used to select nodes based on their properties (e. g. select all the nodes that contain at least 10 elements)
-    """
-
-    DEFAULT = auto()
-    CHECK = auto()
-    VALUE = auto()
-
-
 class _None:
     """Dummy type used internally in TFilter and TreeO to represent non-existing while allowing None as a value"""
 
     pass
 
 
-class TFilter:
-    """This class is used to specify filter-rules used for filtering trees of dicts and lists in TreeO"""
+class TFilterBase:
+    """Base-class for all filters used in TreeO, providing basic functions shared by all filters"""
 
-    def __init__(self, *filter_args, inexclude: str = "", ttype: TType = TType.DEFAULT, string_as_re: bool = False):
-        """Initializes TFilter and verifies the arguments passed to it
+    def __init__(self, *filter_args, inexclude: str = ""):
+        """Basic constructor for all filter-classes used in TreeO
 
         Args:
             *filter_args: Each argument filters one key in the tree, the last argument filters the leaf-value. You can
@@ -57,59 +36,129 @@ class TFilter:
             inexclude: In some cases it's easier to specify that a filter shall match everything except b, rather than
                 match a. ~ can be used to specify for each argument if the filter shall include it (+) or exclude it
                 (-). Valid example: "++-+". If this parameter isn't specified, all args will be treated as (+).
-            ttype: filter-type, must be one of DEFAULT, CHECK and NODE (see TFilter.Types documentation). CHECK and NODE
-                are only supported in subfilters
+        """
+        if not bool(re.fullmatch("[+-]*", inexclude)):
+            raise ValueError(
+                f"{inexclude} is invalid for inexclude. It must be a str consisting of only + (to include) and "
+                f"- (to exclude). If nothing has been specified all filters will be treated as include (+)-filters."
+            )
+        self.inexclude = inexclude
+        self.args = filter_args
+
+    def included(self, index) -> bool:
+        """This function returns if the filter should be an include-filter (+) or an exclude-filter (-) at a given index
+
+        Args:
+            index: index in filter-arguments that shall be interpreted as include- or exclude-filter
+
+        Returns:
+            bool that is True if it is an include-filter, and False if it is an Exclude-Filter, defaults to True if
+                undefined at index
+        """
+        return self.inexclude[index : index + 1] != "-"
+
+    def match_node(self, node: Collection, _=None) -> bool:
+        """This method is overridden by TCheckFilter and TValueFilter, and otherwise not in use"""
+        pass
+
+
+class TValueFilter(TFilterBase):
+    """This special type of filter can be used to inspect the entire node
+
+    It can be used to e. g. select all the nodes that contain at least 10 elements. See README.md for an example"""
+
+    def __init__(self, *filter_args, inexclude: str = "", invert: bool = False):
+        """
+
+        Args:
+            *filter_args: Each argument filters one key in the tree, the last argument filters the leaf-value. You can
+                put a list of values to match different values in the same filter. In this list, you can also specify
+                subfilters to match different grains differently.
+            inexclude: In some cases it's easier to specify that a filter shall match everything except b, rather than
+                match a. ~ can be used to specify for each argument if the filter shall include it (+) or exclude it
+                (-). Valid example: "++-+". If this parameter isn't specified, all args will be treated as (+).
+            invert: Invert this whole filter to match if it doesn't match. E. g. if you want to select all the nodes
+                that don't have a certain property.
+        """
+        if not all(callable(arg) or TreeO.__is__(arg, Collection) for arg in filter_args):
+            raise TypeError(
+                "The args of a value-filter must either be lambdas, "
+                "or dicts / lists / sets the whole node is compared with."
+            )
+        self.invert = invert
+        super().__init__(*filter_args, inexclude=inexclude)
+
+    def match_node(self, node: Collection, _=None) -> bool:
+        """Verify that a node matches TValueFilter
+
+        Args:
+            node: node to check
+            _: this argument is ignored
+
+        Returns:
+            bool whether the filter matched
+        """
+        for i, arg in enumerate(self.args):
+            if self.included(i) != (arg(node) if callable(arg) else node == arg):
+                return False
+        return True
+
+
+class TKeyFilter(TFilterBase):
+    """Base class for filters in TreeO that inspect key-values to determine whether the filter matched"""
+
+    def __init__(self, *filter_args, inexclude: str = "", string_as_re: bool = False):
+        """Initializes TKeyFilter and verifies the arguments passed to it
+
+        Args:
+            *filter_args: Each argument filters one key in the tree, the last argument filters the leaf-value. You can
+                put a list of values to match different values in the same filter. In this list, you can also specify
+                subfilters to match different grains differently.
+            inexclude: In some cases it's easier to specify that a filter shall match everything except b, rather than
+                match a. ~ can be used to specify for each argument if the filter shall include it (+) or exclude it
+                (-). Valid example: "++-+". If this parameter isn't specified, all args will be treated as (+).
             string_as_re: If this is set to True, it will be evaluated for all str's if they'd match differently as a
                 regex, and in the latter case match these strings as regex patterns. E.g. re.match("a.*", b) will match
                 differently than "a.*" == b. In this case, "a.*" will be used as a regex-pattern. However
                 re.match("abc", b) will give the same result as "abc" == b, so here "abc" == b will be used.
         """
-        self.inexclude = inexclude
-        if not bool(re.fullmatch("[+-]*", self.inexclude)):
-            raise ValueError(
-                f"{self.inexclude} is invalid for inexclude. It must be a str consisting of only + (to include) and "
-                f"- (to exclude). If nothing has been specified all filteres will be treated as include (+)-filters."
-            )
-        self.ttype = ttype
-        self.args = list(filter_args)
-        if self.ttype == TType.VALUE:
-            if not all(callable(arg) or TreeO.__is__(arg, Mapping, Sequence) for arg in filter_args):
-                raise TypeError(
-                    "The args of a value-filter must either be lambdas, "
-                    "or dicts / lists the whole node is compared with."
-                )
-        else:
-            for i, arg in enumerate(self.args):
-                if string_as_re and isinstance(arg, str) and arg != re.escape(arg):
-                    self[i] = re.compile(arg)
-                elif not isinstance(arg, Mapping) and TreeO.__is__(arg, Collection):
-                    for j, e in enumerate(arg):
-                        if string_as_re and isinstance(e, str) and e != re.escape(e):
+        super().__init__(*filter_args, inexclude=inexclude)
+        self.args = list(self.args)
+        for i, arg in enumerate(self.args):
+            if string_as_re and isinstance(arg, str) and arg != re.escape(arg):
+                self[i] = re.compile(arg)
+            elif TreeO.__is__(arg, Collection, is_not=Mapping):
+                for j, e in enumerate(arg):
+                    if string_as_re and isinstance(e, str) and e != re.escape(e):
+                        if not isinstance(arg, MutableSequence):
+                            self[i] = list(arg)
+                        self[i][j] = re.compile(e)
+                    elif isinstance(e, TFilterBase):
+                        # Sort out TCheckFilter and TValueFilter from args to extra_filters. Skip if TFilter has a
+                        # TFilter as a child, or TCheckFilter has a TCheckFilter as a child
+                        if isinstance(self, TCheckFilter) and isinstance(e, TFilter):  # Alert if someone has put a
+                            raise TypeError(  # TFilter into a TCheckFilter, as that makes no sense.
+                                "All subfilters of TCheckFilter must be either TCheckFilter or TValueFilter."
+                            )
+                        elif not isinstance(self, e.__class__):  # Move
                             if not isinstance(arg, MutableSequence):
-                                self[i] = list(arg)
-                            self[i][j] = re.compile(e)
-                        elif isinstance(e, TFilter):
-                            if self.ttype == TType.CHECK and e.ttype != TType.VALUE:  # make sure that all children
-                                e.ttype = TType.CHECK  # of CHECK-filters are either CHECK-filters or VALUE-filters
-                            elif e.ttype != TType.DEFAULT:  # move CHECK and VALUE-filters from args to extra_filters
-                                if not isinstance(arg, MutableSequence):
-                                    self[i] = list(arg)  # make self[i] a mutable list if necessary
-                                self.__set_extra_filter(i, self[i].pop(j))  # to be able to pop out the filter-arg
-                                if not self[i]:  # if there only were CHECK- and VALUE-filters in the list and it is now
-                                    self[i] = ...  # empty, put ... to give these filters something to match on
-                elif isinstance(arg, TFilter):
-                    if self.ttype == TType.DEFAULT and arg != TType.DEFAULT:
-                        self.__set_extra_filter(i, arg)  # pop out extra-filter and replace it with ... so that
-                        self[i] = ...  # it can match anything
-                    else:
-                        raise ValueError(
-                            "You can put a VALUE- or CHECK-filter as a standalone arg (in no list) into a "
-                            "DEFAULT-filter It will then be treated as: <<Check this filter, and pass the whole node if"
-                            "the filter matches>>. In all other circumstances it makes no sense to have a filter as a "
-                            "standalone argument in another."
-                        )
+                                self[i] = list(arg)  # make self[i] a mutable list if necessary
+                            self._set_extra_filter(i, self[i].pop(j))  # to be able to pop out the filter-arg
+                            if not self[i]:  # if there only were TCheck- and TValue-filters in the list and it is now
+                                self[i] = ...  # empty, put ... to give these filters something to match on
+            elif isinstance(arg, TFilterBase):
+                if isinstance(self, TFilter) and isinstance(arg, (TCheckFilter, TValueFilter)):
+                    self._set_extra_filter(i, arg)  # pop out extra-filter and replace it with ... so that
+                    self[i] = ...  # it can match anything
+                else:
+                    raise ValueError(
+                        "You can put a TCheckFilter or TValueFilter as a standalone arg (in no list) into a TFilter. "
+                        "It will then be treated as: <<Check this filter, and pass the whole node if the filter matches"
+                        ">>. In any other case it makes no sense to have a filter as a standalone argument in another."
+                    )
 
-    def __set_extra_filter(self, index: int, filter_: "TFilter"):
+    def _set_extra_filter(self, index: int, filter_: Union["TCheckFilter", "TValueFilter"]):
+        """Removes TValueFilter / TCheckFilter from args and puts it"""
         if not hasattr(self, "extra_filters"):
             self.extra_filters = {}
         if index not in self.extra_filters:
@@ -131,12 +180,13 @@ class TFilter:
         """Set filter-argument at index. Throws IndexError if that index isn't defined"""
         self.args[key] = value
 
-    def match(self, value, index: int) -> Tuple[bool, Optional["TFilter"], int]:
+    def match(self, value, index: int, _=None) -> Tuple[bool, Optional["TKeyFilter"], int]:
         """match filter at index (matches recursively into subfilters if necessary)
 
         Args:
             value: the value to be matched against the filter
             index: index of filter-argument to check
+            _: this argument is ignored
 
         Returns:
             whether the value matched the filter, the filter that matched (as it can be a subfilter), and the next index
@@ -145,16 +195,18 @@ class TFilter:
         filter_arg, included = self[index], self.included(index)
         if filter_arg is _None:  # this happens when the filter actually has no argument defined at this index
             return True, None, index + 1  # return True, and None as next filter to prevent unnecessary filtering
-        for e in filter_arg if TreeO.__is__(filter_arg, Collection) else (filter_arg,):
+        for e in filter_arg if TreeO.__is__(filter_arg, Collection, is_not=Set) else (filter_arg,):
             if e is ...:
                 return True, self, index + 1
-            elif isinstance(e, TFilter):
+            elif isinstance(e, TKeyFilter):
                 match, filter_, index_ = e.match(value, 0)  # recursion to correctly handle nested filters
             else:
                 if callable(e):
                     match = e(value)
                 elif isinstance(e, re.Pattern):
                     match = bool(e.fullmatch(value))
+                elif isinstance(e, Set):
+                    match = value in e
                 else:
                     match = e == value
                 filter_, index_ = self, index + 1
@@ -162,7 +214,7 @@ class TFilter:
                 return True, filter_, index_
         return False, self, index + 1
 
-    def match_list(self, value: int, index: int, node_length: int) -> Tuple[bool, Optional["TFilter"], int]:
+    def match_list(self, value: int, index: int, node_length: int) -> Tuple[bool, Optional["TKeyFilter"], int]:
         """match_list: same as match, but optimized to match list-indices (e. g. no regex-matching here)
 
         Args:
@@ -179,14 +231,16 @@ class TFilter:
         filter_arg, included = self[index], self.included(index)
         if filter_arg is _None:
             return True, None, index + 1
-        for e in filter_arg if TreeO.__is__(filter_arg, Collection) else (filter_arg,):
+        for e in filter_arg if TreeO.__is__(filter_arg, Collection, is_not=Set) else (filter_arg,):
             if e is ...:
                 return True, self, index + 1
-            elif isinstance(e, TFilter):
+            elif isinstance(e, TKeyFilter):
                 match, filter_, index_ = e.match_list(value, 0, node_length)
             else:
                 if callable(e):
                     match = e(value)
+                elif isinstance(e, Set):
+                    match = value in e
                 else:
                     match = e == value
                 filter_, index_ = self, index + 1
@@ -195,7 +249,7 @@ class TFilter:
         return False, self, index + 1
 
     def match_extra_filters(self, node: Collection, index: int = 0) -> bool:
-        """Match extra filters on node (CHECK and VALUE). Called to additionally verify a node if it passed the filter
+        """Match extra filters on node (TCheckFilter and TValueFilter).
 
         Args:
             node: node to be verified
@@ -206,35 +260,44 @@ class TFilter:
         """
         if hasattr(self, "extra_filters") and index in self.extra_filters:
             for filter_ in self.extra_filters[index]:
-                if filter_.ttype == TType.CHECK:
-                    if not filter_.__match_check_filter_r(node):
-                        return False
-                else:  # value filter
-                    for i, arg in enumerate(filter_.args):
-                        if filter_.included(i) != (arg(node) if callable(arg) else node == arg):
-                            return False
+                if filter_.invert == filter_.match_node(node):
+                    return False
         return True
 
-    def __match_check_filter_r(self, node: Collection, index: int = 0) -> bool:
-        """Recursive function to completely verify a node and its subnodes in a CHECK-filter
+
+class TFilter(TKeyFilter):
+    """Default TKeyFilter. What matches this filter will actually be visible in the result."""
+
+    pass
+
+
+class TCheckFilter(TKeyFilter):
+    """TKeyFilter that can be used to select nodes based on values which you don't want to appear in the result."""
+
+    def __init__(self, *filter_args, inexclude: str = "", string_as_re: bool = False, invert: bool = False):
+        self.invert = invert
+        super().__init__(*filter_args, inexclude=inexclude, string_as_re=string_as_re)
+
+    def match_node(self, node: Collection, index: int = 0) -> bool:
+        """Recursive function to completely verify a node and its subnodes in TCheckFilter
 
         Args:
             node: node to check
             index: index in filter to check (filter is self)
 
         Returns:
-            bool whether the CHECK-filter matched
+            bool whether the filter matched
         """
+        match_key = None
+        if isinstance(node, Mapping):
+            match_key = self.match
+        elif isinstance(node, Sequence):
+            match_key = self.match_list
         for k, v in node.items() if isinstance(node, Mapping) else enumerate(node):
-            if isinstance(node, Mapping):
-                match_k = self.match(k, index)
-            elif TreeO.__is__(node, Sequence):
-                match_k = self.match_list(k, index, len(node))
-            else:
-                match_k = True, self, index
+            match_k = match_key(k, index, len(node)) if match_key else (True, self, index)
             if match_k[0]:
                 if TreeO.__is__(v, Collection):
-                    match_v = match_k[1].__match_check_filter_r(v, match_k[2])
+                    match_v = match_k[1].match_node(v, match_k[2])
                     if match_v:
                         match_v = match_k[1].match_extra_filters(v, match_k[2] - 1)
                 else:
@@ -242,18 +305,6 @@ class TFilter:
                 if match_v:
                     return True
         return False
-
-    def included(self, index) -> bool:
-        """This function returns if the filter should be an include-filter (+) or an exclude-filter (-) at a given index
-
-        Args:
-            index: index in filter-arguments that shall be interpreted as include- or exclude-filter
-
-        Returns:
-            bool that is True if it is an include-filter, and False if it is an Exclude-Filter, defaults to True if
-                undefined at index
-        """
-        return self.inexclude[index : index + 1] != "-"
 
 
 class TFunc:
@@ -271,7 +322,10 @@ class TFunc:
             **kwargs: keyword-arguments to pass to function. Old value can be added to kwargs (see old_value_position)
         """
         self.function_pointer = function_pointer
-        self.old_value_pos = old_value_position
+        self.old_pos = old_value_position
+        self.middle_index = old_value_position in (-1, 0)
+        if not self.middle_index:
+            self.old_pos += 1 if old_value_position < 0 else -1
         self.args = args
         self.kwargs = kwargs
 
@@ -284,31 +338,17 @@ class TFunc:
         Returns:
             the modified value
         """
-        if isinstance(self.old_value_pos, str):
-            return self.function_pointer(*self.args, **self.kwargs, **{self.old_value_pos: old_value})
-        args = list(self.args)
-        if self.old_value_pos != 0:
-            args.insert(self.old_value_pos if self.old_value_pos < 0 else self.old_value_pos - 1, old_value)
-        return self.function_pointer(*args, **self.kwargs)
+        if self.middle_index:
+            if self.old_pos == 0:
+                return self.function_pointer(*self.args, **self.kwargs)
+            return self.function_pointer(*self.args, old_value, **self.kwargs)
+        elif isinstance(self.old_pos, str):
+            return self.function_pointer(*self.args, **{**self.kwargs, self.old_pos: old_value})
+        return self.function_pointer(*self.args[: self.old_pos], old_value, *self.args[self.old_pos :], **self.kwargs)
 
 
 class TreeOMeta(ABCMeta):
     """Meta-class for TreeO-objects to facilitate settings at class-level"""
-
-    @staticmethod
-    def __is__(value, *args):
-        """Override of isinstance, making sure that Sequence, Iterable or Collection doesn't match on str or bytearray
-
-        Args:
-            value: Value whose instance shall be checked
-            *args: types to compare against
-
-        Returns:
-            whether the value is instance of one of the types in args (but not str, bytes or bytearray)
-        """
-        if not all([isinstance(arg, type) for arg in args]):
-            raise TypeError("All args must be of the type type.")
-        return not isinstance(value, (str, bytes, bytearray)) and isinstance(value, args)
 
     @staticmethod
     def __verify_option__(option_name: str, option):
@@ -342,6 +382,8 @@ class TreeOMeta(ABCMeta):
             'Default_node_type must be either "d" for dict ' 'or "l" for list.',
         ),
         default_value=(None,),
+        iter_fill=(...,),
+        is_not=((str, bytes, bytearray), tuple, lambda x: all(isinstance(e, type) for e in x)),
         list_insert=(
             0,
             int,
@@ -350,12 +392,7 @@ class TreeOMeta(ABCMeta):
             "all existing list-indices will be traversed. If list-insert > 0, a "
             "new node will be inserted in the n'th list that is traversed.",
         ),
-        node_types=(
-            "",
-            str,
-            lambda x: bool(re.fullmatch("[dl]*", x)),
-            "The only allowed characters in node_types are d (for dict) and l (for list).",
-        ),
+        no_node=((str, bytes, bytearray), tuple, lambda x: all(isinstance(e, type) for e in x)),
         mod_functions=(
             {
                 datetime: lambda x: x.isoformat(" ", "seconds"),
@@ -366,16 +403,21 @@ class TreeOMeta(ABCMeta):
             MutableMapping,
             lambda x: all(
                 k in ("default", "tuple_keys")
-                or all(isinstance(y, type) for y in (k if TreeO.__is__(k, Iterable) else (k,)))
+                or all(isinstance(e, type) for e in (k if TreeO.__is__(k, Iterable) else (k,)))
                 and callable(v)
                 for k, v in x.items()
             ),
             "mod_functions must be a dict with types (or tuples of types) as keys and function pointers "
             "(either lambda or wrapped in TFunc-objects) as values.",
         ),
-        iter_fill=(...,),
-        value_split=(" ", str, lambda x: bool(x), 'value_split can\'t be "", as a string can\'t be split by "".'),
+        node_types=(
+            "",
+            str,
+            lambda x: bool(re.fullmatch("[dl]*", x)),
+            "The only allowed characters in node_types are d (for dict) and l (for list).",
+        ),
         return_node=(False, bool),
+        value_split=(" ", str, lambda x: bool(x), 'value_split can\'t be "", as a string can\'t be split by "".'),
     )
     """Default values for all options used in TreeO"""
 
@@ -481,11 +523,11 @@ class TreeO(Mapping, Sequence, metaclass=TreeOMeta):
                 except (IndexError, ValueError, KeyError):
                     node = TreeO._opt(self, "default_value", default_value)
                     break
-        if copy != TCopy.NO_COPY and TreeO.__is__(node, Mapping, Sequence):
+        if copy != TCopy.NO_COPY and TreeO.__is__(node, Collection):
             node = TreeO.__copy__(node) if copy == TCopy.SHALLOW else deepcopy(node)
         return (
             TreeO._child(self, node)
-            if TreeO.__is__(node, Mapping, Sequence) and TreeO._opt(self, "return_node", return_node)
+            if TreeO.__is__(node, Collection) and TreeO._opt(self, "return_node", return_node)
             else node
         )
 
@@ -510,7 +552,7 @@ class TreeO(Mapping, Sequence, metaclass=TreeOMeta):
             try:
                 if TreeO.__is__(node, Mapping, Sequence):
                     node = node[node_name if isinstance(node, Mapping) else int(node_name)]
-                    if TreeO.__is__(node, Sequence):
+                    if isinstance(node, Sequence):
                         if list_insert == 1:
                             return None
                         list_insert -= 1
@@ -564,10 +606,10 @@ class TreeO(Mapping, Sequence, metaclass=TreeOMeta):
                 "number of items in the tuples."
             )
         if isinstance(filter_, TFilter):
-            if filter_.ttype != TType.DEFAULT:
+            if type(filter_) != TFilter:
                 raise ValueError(
-                    "The filter-object passed to iter always has to be a DEFAULT-filter. That filter can "
-                    "contain CHECK- and VALUE-filters. See documentation of TFilter.Types for more information."
+                    "The filter-object passed to iter always has to be a TFilter. That filter can contain TCheckFilter "
+                    "and TValueFilter. See documentation of TFilter.Types for more information."
                 )
             if not filter_.match_extra_filters(node):
                 return []
@@ -614,6 +656,12 @@ class TreeO(Mapping, Sequence, metaclass=TreeOMeta):
             A list of elements that have been iterated over at this level (builds up in the recursion)
         """
         iter_list = []
+        match_key = None
+        if filter_ is not None:
+            if isinstance(node, Mapping):
+                match_key = filter_.match
+            elif isinstance(node, Sequence):
+                match_key = filter_.match_list
         for k, v in (
             node.items()
             if isinstance(node, Mapping)
@@ -621,14 +669,10 @@ class TreeO(Mapping, Sequence, metaclass=TreeOMeta):
             if isinstance(node, Sequence)
             else ((..., v) for v in node)
         ):
-            filter__, index_ = filter_, index + 1
-            if filter_ is not None:
-                if isinstance(node, Mapping):
-                    match_k, filter__, index_ = filter_.match(k, index)
-                elif isinstance(node, Sequence):
-                    match_k, filter__, index_ = filter_.match_list(k, index, len(node))
-                else:
-                    match_k = True  # for a set, all the keys always match
+            if filter_ is None:
+                filter__, index_ = filter_, index + 1
+            else:
+                match_k, filter__, index_ = match_key(k, index, len(node)) if match_key else (True, filter_, index + 1)
                 if not match_k:
                     continue
                 if filter__ is not None:
@@ -647,7 +691,7 @@ class TreeO(Mapping, Sequence, metaclass=TreeOMeta):
             iter_list.append(
                 (
                     k,
-                    TreeO._child(self, v) if return_node and TreeO.__is__(v, Mapping, Sequence) else v,
+                    TreeO._child(self, v) if return_node and TreeO.__is__(v, Collection) else v,
                     *(() if iter_fill is ... else (iter_fill,) * (max_items - 2)),
                 )
             )
@@ -679,18 +723,13 @@ class TreeO(Mapping, Sequence, metaclass=TreeOMeta):
     @staticmethod
     def _filter_r(node: Collection, filter_: Optional[TFilter], index: int = 0):
         if isinstance(node, Mapping):
-            new_node, action = {}, None
+            new_node, action, match_key = {}, None, filter_.match if filter_ else None
         elif isinstance(node, Sequence):
-            new_node, action = [], "append"
+            new_node, action, match_key = [], "append", filter_.match_list if filter_ else None
         else:
-            new_node, action = set(), "add"
+            new_node, action, match_key = set(), "add", None
         for k, v in node.items() if isinstance(node, Mapping) else enumerate(node):
-            if action == "add" or filter_ is None:
-                match_k = True, filter_, index + 1
-            elif isinstance(node, Mapping):
-                match_k = filter_.match(k, index)
-            else:
-                match_k = filter_.match_list(k, index, len(node))
+            match_k = match_key(k, index, len(node)) if callable(match_key) else (True, filter_, index + 1)
             if match_k[0]:
                 if match_k[1] is None:
                     match_v = True
@@ -915,9 +954,7 @@ class TreeO(Mapping, Sequence, metaclass=TreeOMeta):
                         if list_insert == 1:
                             node.insert(node_key, next_node())
                         else:
-                            if not TreeO.__is__(node[node_key], MutableMapping, MutableSequence) and TreeO.__is__(
-                                node[node_key], Iterable
-                            ):
+                            if TreeO.__is__(node[node_key], Iterable, is_not=(MutableMapping, MutableSequence)):
                                 node[node_key] = (
                                     dict(node[node_key].items())
                                     if isinstance(node[node_key], Mapping)
@@ -935,9 +972,7 @@ class TreeO(Mapping, Sequence, metaclass=TreeOMeta):
                     if i == len(t_path) - 1:
                         node[node_key] = TreeO._put_value(node.get(node_key, ...), value, action, index)
                     else:
-                        if not TreeO.__is__(node.get(node_key), MutableMapping, MutableSequence) and TreeO.__is__(
-                            node.get(node_key), Iterable
-                        ):
+                        if TreeO.__is__(node.get(node_key), Iterable, is_not=(MutableMapping, MutableSequence)):
                             node[node_key] = (
                                 dict(node[node_key].items())
                                 if isinstance(node[node_key], Mapping)
@@ -1169,6 +1204,24 @@ class TreeO(Mapping, Sequence, metaclass=TreeOMeta):
                 return mod_function(value)
         return mod_functions["default"](value)
 
+    @staticmethod
+    def __is__(value, *args, is_not: Union[tuple, type] = None):
+        """Override of isinstance, making sure that Sequence, Iterable or Collection doesn't match on str or bytearray
+
+        Args:
+            value: Value whose instance shall be checked
+            *args: types to compare against
+
+        Returns:
+            whether the value is instance of one of the types in args (but not str, bytes or bytearray)
+        """
+        if is_not is None:
+            return not isinstance(value, TreeO.no_node) and isinstance(value, args)
+        elif isinstance(is_not, type):
+            return not isinstance(value, TreeO.no_node + (is_not,)) and isinstance(value, args)
+        else:
+            return not isinstance(value, TreeO.no_node + is_not) and isinstance(value, args)
+
     def _opt(self: Collection, option_name: str, option=...):
         if option is not ...:
             return TreeO.__verify_option__(option_name, option)
@@ -1344,7 +1397,7 @@ class TreeO(Mapping, Sequence, metaclass=TreeOMeta):
                 for k, v in obj.items() if isinstance(obj, Mapping) else enumerate(obj):
                     if (collection := TreeO.__is__(v, Collection)) or hasattr(v, "copy"):
                         new_node[k] = TreeO.__copy__(v) if collection else v.copy()
-            else:  # must be a set or similar
+            elif isinstance(new_node, MutableSet):  # must be a set or similar
                 for v in obj:
                     if (collection := TreeO.__is__(v, Collection)) or hasattr(v, "copy"):
                         new_node.remove(v)
@@ -1443,7 +1496,7 @@ class TreeO(Mapping, Sequence, metaclass=TreeOMeta):
             if isinstance(value, MutableMapping):
                 self.obj.update(value)
             else:
-                raise TypeError(f"Unsopported operand types for +=: {type(self()).__name__} and {type(value).__name__}")
+                raise TypeError(f"Unsupported operand types for +=: {type(self()).__name__} and {type(value).__name__}")
         else:
             self.obj += value
         return self

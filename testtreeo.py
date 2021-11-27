@@ -3,7 +3,7 @@ import json
 import re
 import unittest
 from ipaddress import IPv6Address, IPv4Network, IPv6Network, ip_address
-from treeo import TreeO, TFunc, TFilter, TCopy, TType
+from treeo import TreeO, TFunc, TFilter, TCopy, TCheckFilter, TValueFilter
 from datetime import datetime, date, time
 
 
@@ -115,7 +115,7 @@ class TestTreeO(unittest.TestCase):
                 "data",
                 TFilter(
                     ...,
-                    (TFilter("source", "id", lambda x: x > 300, ttype=TType.CHECK), "state"),
+                    (TCheckFilter("source", "id", lambda x: x > 300), "state"),
                 ),
                 reduce=-1,
             ),
@@ -123,29 +123,29 @@ class TestTreeO(unittest.TestCase):
         )
         self.assertEqual(
             [],
-            a.iter(path="data", filter_=TFilter((TFilter(lambda x: len(x) < 1, ttype=TType.VALUE), ...))),
+            a.iter(path="data", filter_=TFilter((TValueFilter(lambda x: len(x) < 1), ...))),
             "Verifying that a value-filter actually returns an empty list if its condition isn't met",
         )
         self.assertEqual(
             160,
-            len(a.iter(path="data", filter_=TFilter((TFilter(lambda x: len(x) == 10, ttype=TType.VALUE), ...)))),
+            len(a.iter(path="data", filter_=TFilter((TValueFilter(lambda x: len(x) == 10), ...)))),
             "Verifying that a value-filter actually returns an empty list if its condition isn't met",
         )
         self.assertEqual(
             160,
-            len(a.iter(filter_=TFilter("data", TFilter(lambda x: len(x) > 1, ttype=TType.VALUE)))),
+            len(a.iter(filter_=TFilter("data", TValueFilter(lambda x: len(x) > 1)))),
             "Verifying that a value-filter also works if it comes as a standalone argument, then including all the "
             "subnodes the filter matches (in this case all).",
         )
         self.assertEqual(
             [],
-            a.iter(filter_=TFilter("data", (TFilter(lambda x: len(x) < 1, ttype=TType.VALUE),))),
+            a.iter(filter_=TFilter("data", (TValueFilter(lambda x: len(x) < 1),))),
             "A value-filter actually returns an empty list even at the bottom if its condition isn't met",
         )
         self.assertEqual(
             160,
-            len(a.iter(path="data", filter_=TFilter((TFilter(lambda x: len(x) > 1, ttype=TType.VALUE),)))),
-            "If the only member in a tuple is VALUE- and CHECK-filters and they're all removed, put ... at that"
+            len(a.iter(path="data", filter_=TFilter((TValueFilter(lambda x: len(x) > 1),)))),
+            "If the only member in a tuple is TValue- and TCheck-filters and they're all removed, put ... at that"
             "argument to make sure these check-filters can match anything",
         )
         self.assertEqual(
@@ -155,15 +155,14 @@ class TestTreeO(unittest.TestCase):
                 filter_=TFilter(
                     ...,
                     (
-                        TFilter(
+                        TCheckFilter(
                             (
-                                TFilter(lambda x: len(x) == 3, lambda x: bool(x), ttype=TType.VALUE),
-                                TFilter("alias", "file-analyzer-domain"),
+                                TValueFilter(lambda x: len(x) == 3, lambda x: bool(x)),
+                                TCheckFilter("alias", "file-analyzer-domain"),
                                 "source",
                             ),
                             "id",
                             889,
-                            ttype=TType.CHECK,
                         ),
                         TFilter("state", 1, inexclude="+-"),
                         "role",
@@ -207,6 +206,11 @@ class TestTreeO(unittest.TestCase):
         }
         f = {("a", "q"), frozenset(((5, HashableDict({"h": "M"})), ("l", "q"))), frozenset((frozenset((5, 6)), (8, 7)))}
         self.assertEqual(b, set(TreeO.iter(f)), "Iterating through sets, some sets stacked in sets")
+        self.assertEqual(
+            [('responseCode', 200), ('limit', 10000), ('offset', 0), ('data', 4, {'state': 3, 'comment': None})],
+            a.iter(3, filter_=TFilter(({"responseCode", "limit", "offset"}, TFilter("data", 4, {"comment", "state"})))),
+            "Using sets to accelerate filtering, both as a standalone argument and with other args in a tuple"
+        )
 
     def test_filter(self):
         with open("test-data.json") as fp:
