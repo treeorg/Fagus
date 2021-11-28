@@ -239,19 +239,19 @@ class TestTreeO(unittest.TestCase):
         # verify that base object is writable for set
         self.assertRaisesRegex(
             TypeError,
-            "Can't modify base object self having the immutable type ",
+            "Can't modify base-object self having the immutable type",
             TreeO.set,
             (((1, 0), 2), 3),
             7,
             "0 0 0",
         )
         # new nodes can only either be lists or dicts, expressed by l's and
-        self.assertRaisesRegex(ValueError, "The only allowed characters in .*", TreeO.set, a["1"], "f", "0", "pld")
+        self.assertRaisesRegex(ValueError, "The only allowed characters in ", TreeO.set, a["1"], "f", "0", "pld")
         # Due to limitations on how references work in Python, the base-object can't be changed. So if the base-object
         # is a list, it can't be converted into a dict. These kind of changes are possible at the lower levels.
         self.assertRaisesRegex(TypeError, "Your base object is a (.*|see comment)", TreeO.set, a, "f", "0", "lld")
         # if the user defines that he wants a list, but it's not possible to parse numeric index from t_path raise error
-        self.assertRaisesRegex(ValueError, "Can't parse numeric list-index from.*", TreeO.set, a, "f", "1 f", "dl")
+        self.assertRaisesRegex(ValueError, "Can't parse numeric list-index from", TreeO.set, a, "f", "1 f", "dl")
         a[("1", 1)] = "hei"
         b["1"][1] = "hei"
         self.assertEqual(b, a(), "Using __set_item__ to set a value")
@@ -273,6 +273,15 @@ class TestTreeO(unittest.TestCase):
         a.set("hans", "1 0 100")
         a.set("wurst", "1 -40 5")
         self.assertEqual(a(), b, "Add to list at beginning / end by using indexes higher than len / lower than - len")
+        a = TreeO((((1, 0), 2), (3, 4, (5, (6, 7)), 8)))
+        self.assertRaisesRegex(TypeError, "Can't modify base-object self having the immutable typ", a.set, 5, "1 2 1 1")
+        a = TreeO(list(a))
+        self.assertEqual([((1, 0), 2), [3, 4, [5, [6, 5]], 8]], a.set(5, "1 2 1 1"), "Converting right tuples to lists")
+        a = TreeO((((1, 0), 2), [3, 4, (5, (6, 7)), 8]))
+        a.set(5, "1 2 1 1")
+        self.assertEqual((((1, 0), 2), [3, 4, [5, [6, 5]], 8]), a(), "Keeping tuples below if possible")
+        self.assertRaisesRegex(TypeError, "TreeO can't set in a set.", TreeO({frozenset()}).set, 5, "1 3")
+        self.assertRaisesRegex(TypeError, "TreeO can't set in a set.", TreeO(({"0": {5, 6}}, [4, 3])).set, 5, "0 0 0")
 
     def test_append(self):
         a = copy.deepcopy(self.a)
@@ -311,6 +320,7 @@ class TestTreeO(unittest.TestCase):
         self.assertEqual(TreeO.extend(a, [5, 6], "1 0 0"), b, "Creating list from singleton value and appending to it")
         b["q"] = [6, 7]
         self.assertEqual(TreeO.extend(a, [6, 7], "q"), b, "Create new list for value at a path not existing before")
+        self.assertRaisesRegex(TypeError, "Can't extend value in base-dict", TreeO().extend, [3, 4])
 
     def test_insert(self):
         a = copy.deepcopy(self.a)
@@ -344,6 +354,7 @@ class TestTreeO(unittest.TestCase):
         b["a"][1]["c"] = {5}
         a.add(5, "a 1 c")
         self.assertEqual(a(), b, "Creating new empty set at position where no value has been before")
+        self.assertEqual({5, 6}, TreeO({5}).add(6), "Adding to set that is the base-object")
 
     def test_update(self):
         # update set
@@ -369,7 +380,7 @@ class TestTreeO(unittest.TestCase):
         b["k"] = {"a": 1}
         a.update({"a": 1}, "k")
         self.assertEqual(a(), b, "Updating dict at node that is not existing yet")
-        self.assertRaisesRegex(ValueError, "Can't update dict with value of type .*", a.update, {"hans", "wu"}, "a 1")
+        self.assertRaisesRegex(ValueError, "Can't update dict with value of type ", a.update, {"hans", "wu"}, "a 1")
 
     def test_setdefault(self):
         a = TreeO(self.a, copy=TCopy.SHALLOW)
@@ -406,7 +417,7 @@ class TestTreeO(unittest.TestCase):
         b["1"][0][0] += 1 + 2 + 3 + 4 + 5
         a.mod(TFunc(fancy_mod2, 1, 1, 2, 3, kwarg1=4, kwarg2=5), "1 0 0")
         self.assertEqual(b, a(), "Complex function taking keyword-arguments and ordinary arguments")
-        self.assertRaisesRegex(TypeError, "Valid types for mod_function: lambda.*", a.mod, (fancy_mod2, "hei"), "1 0 0")
+        self.assertRaisesRegex(TypeError, "Valid types for mod_function: lambda", a.mod, (fancy_mod2, "hei"), "1 0 0")
 
     def test_pop(self):
         a = TreeO(self.a, copy=TCopy.SHALLOW)
@@ -419,7 +430,7 @@ class TestTreeO(unittest.TestCase):
         self.assertEqual(b.pop("a"), a.pop("a"), "Correctly popping from dict at base-level")
         self.assertEqual(a(), b, "Pop has correctly modified the object")
         a = TreeO((((1, 0), 2), (3, 4, (5, (6, 7)), 8)))
-        self.assertRaisesRegex(TypeError, "Can't modify base-object self having the immutable type.*", a.pop, "1 2 1 1")
+        self.assertRaisesRegex(TypeError, "Can't modify base-object self having the immutable type", a.pop, "1 2 1 1")
         a = TreeO(list(a))
         self.assertEqual(7, a.pop("1 2 1 1"), "Correctly popping when all tuples on the way must be converted to lists")
         self.assertEqual([((1, 0), 2), [3, 4, [5, [6]], 8]], a(), "The tuples were correctly converted to lists")
@@ -433,11 +444,11 @@ class TestTreeO(unittest.TestCase):
         a = TreeO(test_obj, copy=TCopy.SHALLOW)
         self.assertRaisesRegex(
             TypeError,
-            "Can't modify base-object self having the immutable type.*",
+            "Can't modify base-object self having the immutable type",
             TreeO((1, 2, 3, [4, 5, 6], {6, 5})).serialize,
         )
         self.assertRaisesRegex(
-            ValueError, "Dicts with composite keys \\(tuples\\) are not supported in.*", a.serialize, copy=TCopy.SHALLOW
+            ValueError, "Dicts with composite keys \\(tuples\\) are not supported in", a.serialize, copy=TCopy.SHALLOW
         )
         b = {"2021-03-06": ["06:45:22", "2021-06-23 05:45:22"], "hei du": [3, 4, 5]}
         self.assertEqual(a.serialize({"tuple_keys": lambda x: " ".join(x)}), b, "Serialized datetime and tuple-key")
