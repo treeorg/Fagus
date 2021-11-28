@@ -1122,16 +1122,46 @@ class TreeO(Mapping, Sequence, metaclass=TreeOMeta):
         TreeO.set(obj, default_value, path, node_types, list_insert, value_split, False, default_node_type)
         return default_value
 
-    def pop(self: Union[MutableMapping, MutableSequence], path, value_split: str = ...):
+    def pop(
+        self: Collection,
+        path: Iterable = "",
+        default_value=...,
+        return_node: bool = ...,
+        value_split: str = ...,
+    ):
         """Deletes the value at path and returns it"""
-        t_path = path.split(TreeO._opt(self, "value_split", value_split)) if isinstance(path, str) else tuple(path)
-        node = self.obj if isinstance(self, TreeO) else self
-        for node_name in t_path[:-1]:
-            try:
-                node = node[node_name if isinstance(node, dict) else int(node_name)]
-            except (IndexError, ValueError, KeyError):
-                return
-        return node.pop(int(t_path[-1]) if TreeO.__is__(node, Sequence) else t_path[-1])
+        l_path = list(path.split(TreeO._opt(self, "value_split", value_split)) if isinstance(path, str) else path)
+        nodes = [node := self.obj if isinstance(self, TreeO) else self]
+        try:
+            for i in range(len(l_path) - 1):
+                if not isinstance(node, Mapping):
+                    l_path[i] = int(l_path[i])
+                nodes.append(node := node[l_path[i]])
+            for i in range(i := -1, -len(nodes) - 1, -1):
+                if TreeO.__is__(node := nodes[i], MutableMapping, MutableSequence, MutableSet):
+                    break
+                elif i == -len(nodes):
+                    raise TypeError(f"Can't modify base-object self having the immutable type {type(self).__name__}.")
+            for i in range(i, -1):
+                if i == -2 and TreeO.__is__(nodes[i + 1], Set, is_not=MutableSet):
+                    node[l_path[i]] = set(nodes[i + 1])
+                else:
+                    node[l_path[i]] = (dict if isinstance(nodes[i + 1], Mapping) else list)(nodes[i + 1])
+                node = node[l_path[i]]
+            if isinstance(node, MutableMapping):
+                node = node.pop(l_path[-1])
+            elif TreeO.__is__(node, MutableSequence):
+                node = node.pop(int(l_path[-1]))
+            else:
+                node.remove(l_path[-1])
+                node = l_path[-1]
+        except (IndexError, ValueError, KeyError):
+            node = TreeO._opt(self, "default_value", default_value)
+        return (
+            TreeO._child(self, node)
+            if TreeO.__is__(node, Collection) and TreeO._opt(self, "return_node", return_node)
+            else node
+        )
 
     def serialize(
         self: Union[dict, list],

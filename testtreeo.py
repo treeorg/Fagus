@@ -207,9 +207,9 @@ class TestTreeO(unittest.TestCase):
         f = {("a", "q"), frozenset(((5, HashableDict({"h": "M"})), ("l", "q"))), frozenset((frozenset((5, 6)), (8, 7)))}
         self.assertEqual(b, set(TreeO.iter(f)), "Iterating through sets, some sets stacked in sets")
         self.assertEqual(
-            [('responseCode', 200), ('limit', 10000), ('offset', 0), ('data', 4, {'state': 3, 'comment': None})],
+            [("responseCode", 200), ("limit", 10000), ("offset", 0), ("data", 4, {"state": 3, "comment": None})],
             a.iter(3, filter_=TFilter(({"responseCode", "limit", "offset"}, TFilter("data", 4, {"comment", "state"})))),
-            "Using sets to accelerate filtering, both as a standalone argument and with other args in a tuple"
+            "Using sets to accelerate filtering, both as a standalone argument and with other args in a tuple",
         )
 
     def test_filter(self):
@@ -411,10 +411,22 @@ class TestTreeO(unittest.TestCase):
     def test_pop(self):
         a = TreeO(self.a, copy=TCopy.SHALLOW)
         b = copy.deepcopy(self.a)
-        self.assertEqual(a.pop("1 0 3"), b["1"][0].pop(3), "Pop correctly drops the value at the position")
-        self.assertEqual(a(), b, "Pop has correctly modified the object")
+        self.assertEqual(a.pop("1 0 2"), b["1"][0].pop(2), "Pop correctly drops the value at the position")
         a.pop("8 9 10")
         self.assertEqual(a(), b, "Pop did not modify the object as path doesn't exist")
+        b["1"][0][2][1].remove("a")
+        self.assertEqual("a", a.pop("1 0 2 1 a"), "Correctly popping from set (internally calling remove)")
+        self.assertEqual(b.pop("a"), a.pop("a"), "Correctly popping from dict at base-level")
+        self.assertEqual(a(), b, "Pop has correctly modified the object")
+        a = TreeO((((1, 0), 2), (3, 4, (5, (6, 7)), 8)))
+        self.assertRaisesRegex(TypeError, "Can't modify base-object self having the immutable type.*", a.pop, "1 2 1 1")
+        a = TreeO(list(a))
+        self.assertEqual(7, a.pop("1 2 1 1"), "Correctly popping when all tuples on the way must be converted to lists")
+        self.assertEqual([((1, 0), 2), [3, 4, [5, [6]], 8]], a(), "The tuples were correctly converted to lists")
+        self.assertEqual(TreeO((1, 0)), a.pop("0 0", return_node=True), "Returning TreeO-object if return_value is set")
+        a = TreeO((((1, 0), 2), [3, 4, (5, (6, 7)), 8]))
+        a.pop("1 2 1 1")
+        self.assertEqual((((1, 0), 2), [3, 4, [5, [6]], 8]), a(), "Keeping tuples below if possible")
 
     def test_serialize(self):
         test_obj = {date(2021, 3, 6): [time(6, 45, 22), datetime(2021, 6, 23, 5, 45, 22)], ("hei", "du"): {3, 4, 5}}
