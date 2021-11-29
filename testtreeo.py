@@ -215,16 +215,22 @@ class TestTreeO(unittest.TestCase):
     def test_filter(self):
         with open("test-data.json") as fp:
             a = TreeO(json.load(fp))
-        # print(set(a.iter(-1, "data", TFilter(sample, "state"), reduce=2)), sorted(a.iter(-1, "data", TFilter(sample, "sourceId"), reduce=2)))
-        # print(set(a.iter(-1, "data", TFilter(sample, "state"), reduce=2)), set(a.iter(-1, "data", TFilter(sample, "sourceId"), reduce=2)))
+        self.assertEqual(
+            {'responseCode': 200, 'limit': 10000, 'size': 10000},
+            a.filter(TFilter({"responseCode", "limit", "size"}), copy=TCopy.SHALLOW),
+            "Simplest ever filtering at base-level"
+        )
+        self.assertEqual(
+            {'responseCode': 200, 'limit': 10000, 'offset': 0, 'count': 0, 'size': 10000},
+            a.filter(TFilter("data", inexclude="-"), copy=TCopy.SHALLOW),
+            "Using inexclude to turn around the filter and give everything except data at base-level"
+        )
 
-        # sample = [9824, 3573, 1547, 8059, 101, 6018, 7725, 646, 6711, 1794]
 
-        # sample = [5863, 3392, 4204, 3549, 6396, 6634, 4255, 8184, 3950, 5470, 1291, 5862, 9004, 7760, 4470, 3592, 9973, 433, 2861, 292, 2042, 458, 5730, 553, 3896, 4502, 4500, 5291, 2283, 1352, 7466, 4321, 5241, 7069, 7974, 6300, 3066, 6492, 415, 5585, 7539, 83, 9618, 6324, 9307, 776, 7786, 2821, 7730, 523, 2201, 5355, 4574, 2129, 853, 5975, 9636, 1933, 6711, 3807, 5904, 2946, 5908, 6246, 6847, 7678, 1710, 2553, 1015, 5490, 6192, 4088, 2048, 6709, 6744, 5692, 4881, 5311, 9121, 2616, 7338, 4676, 8741, 5378, 21, 4796, 7306, 2903, 7644, 3338, 761, 4223, 4647, 3921, 8701, 3070, 3245, 1780, 1909, 1047]
-        # b = a.filter(TFilter((TFilter("data", sample), True)), copy=TCopy.SHALLOW)
-        # print(json.dumps(b, indent=2))
-        # f = TFilter((TFilter("data", 0, "state", 2, check_only=True),))
-        # res = f.match_check_filter(a, 0)
+        # må få testa spesialtilfellene, men hva er det
+        # inne i en sti
+        # med og uten kopiering
+        # invert filter både for value og checkfilter
         pass
 
     def test_set(self):

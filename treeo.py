@@ -505,7 +505,7 @@ class TreeO(Mapping, Sequence, metaclass=TreeOMeta):
                 is that if a node (dict, list) is returned and you make changes to that node, these changes will also
                 be applied in the base-object from which get() was called. If you want the returned value to be
                 independent, use either TCopy.SHALLOW or TCopy.DEEP (see docstring of TCopy for more information)
-            value_split: * used to split path into a tuple if path is a string, default " "
+            value_split: * used to split path into a list if path is a string, default " "
 
         Returns:
             the value if the path exists, or default_value if it doesn't exist
@@ -535,8 +535,6 @@ class TreeO(Mapping, Sequence, metaclass=TreeOMeta):
         self: Union[Mapping, Sequence], t_path: tuple, list_insert: int = ...
     ) -> Optional[Union[Mapping, Sequence]]:
         """Internal function retrieving the parent_node
-
-        \\* means that the parameter is a TreeO-Setting, see TreeO-class-docstring for more information about settings
 
         Args:
             t_path: must already be a tuple, so a string from a calling path-function must already be split
@@ -575,6 +573,8 @@ class TreeO(Mapping, Sequence, metaclass=TreeOMeta):
     ) -> list:
         """Recursively iterate through TreeO-object, starting at path
 
+        \\* means that the parameter is a TreeO-Setting, see TreeO-class-docstring for more information about settings
+
         Args:
             max_items: Defines the max amount of keys to have in a tuple. E. g. if max_items is four, it means that the
                 keys of the three topmost nodes will be put in the tuple. The last element in the tuple contains the
@@ -590,7 +590,7 @@ class TreeO(Mapping, Sequence, metaclass=TreeOMeta):
                 length of the tuples can vary. See README.md for a more thorough example.
             reduce: Extract only some specified values from the tuples. E. g. if ~ is -1, only the leaf-values are
                 returned. ~ can also be a list of indices. Default None (don't reduce the tuples)
-            value_split: * used to split path into a tuple if path is a string, default " "
+            value_split: * used to split path into a list if path is a string, default " "
             copy: Iterate on a copy to make sure that the base-object is not modified if one of the nodes iter() returns
                 are modified. Often not necessary as an internal shallow copy is created for all the keys anyway. Only
                 the leaves are returned as references if max_items isn't -1. Copy can make sure that these references
@@ -696,9 +696,24 @@ class TreeO(Mapping, Sequence, metaclass=TreeOMeta):
         filter_: TFilter,
         path: Iterable = "",
         return_node: bool = ...,
-        value_split: str = ...,
         copy: TCopy = TCopy.NO_COPY,
+        value_split: str = ...,
     ):
+        """Filters the self, only keeping the nodes that pass the filter
+
+        \\* means that the parameter is a TreeO-Setting, see TreeO-class-docstring for more information about settings
+
+        Args:
+            filter_: TFilter-object in which the filtering-critera are specified
+            path: at this point in self, the filtering will start (apply filter_ relatively from this point).
+                Default "", meaning that the whole object is filtered, see get() and README for examples
+            return_node: * return the filtered self as TreeO-object (default is just to return the filtered node)
+            copy: Create a copy and filter on that copy. Default is to modify the object directly
+            value_split: * used to split path into a list if path is a string, default " "
+
+        Returns:
+            the filtered object, starting at path
+        """
         obj = self.obj if isinstance(self, TreeO) else self
         if path:
             filtered = TreeO._filter_r(TreeO.get(obj, path, [], False, copy, value_split), filter_)
@@ -716,6 +731,15 @@ class TreeO(Mapping, Sequence, metaclass=TreeOMeta):
 
     @staticmethod
     def _filter_r(node: Collection, filter_: Optional[TFilter], index: int = 0):
+        """Internal recursive method that facilitates filtering
+
+        Args:
+            filter_: TFilter-object in which the filtering-critera are specified
+            index: index in the current filter-object
+
+        Returns:
+            the filtered object, starting at path
+        """
         if isinstance(node, Mapping):
             new_node, action, match_key = {}, None, filter_.match if filter_ else None
         elif isinstance(node, Sequence):
@@ -727,13 +751,8 @@ class TreeO(Mapping, Sequence, metaclass=TreeOMeta):
             if match_k[0]:
                 if match_k[1] is None:
                     match_v = True
-                elif TreeO.__is__(v, Collection):
-                    new_v = TreeO._filter_r(v, *match_k[1:])
-                    if bool(new_v):
-                        match_v = match_k[1].match_extra_filters(v, match_k[2])
-                    else:
-                        match_v = bool(v) == bool(new_v)
-                    v = new_v
+                elif TreeO.__is__(v, Collection) and match_k[1].match_extra_filters(v, match_k[2]):
+                    match_v = bool(v := TreeO._filter_r(v, *match_k[1:]))
                 else:
                     match_v, *_ = match_k[1].match(v, match_k[2])
                 if match_v:
@@ -1003,7 +1022,7 @@ class TreeO(Mapping, Sequence, metaclass=TreeOMeta):
 
     @staticmethod
     def _mutable_node(
-            node: Collection, nodes: List[Collection], path: Sequence
+        node: Collection, nodes: List[Collection], path: Sequence
     ) -> Union[MutableMapping, MutableSequence, MutableSet]:
         for i in range(i := -1, -len(nodes) - 1, -1):
             if TreeO.__is__(node := nodes[i], MutableMapping, MutableSequence, MutableSet):
@@ -1142,14 +1161,20 @@ class TreeO(Mapping, Sequence, metaclass=TreeOMeta):
         TreeO.set(obj, default_value, path, node_types, list_insert, value_split, False, default_node_type)
         return default_value
 
-    def pop(
-        self: Collection,
-        path: Iterable = "",
-        default_value=...,
-        return_node: bool = ...,
-        value_split: str = ...,
-    ):
-        """Deletes the value at path and returns it"""
+    def pop(self: Collection, path: Iterable = "", default_value=..., return_node: bool = ..., value_split: str = ...):
+        """Deletes the value at path and returns it
+
+        \\* means that the parameter is a TreeO-Setting, see TreeO-class-docstring for more information about settings
+
+        Args:
+            path: pop value at this position in self, or don't do anything if path doesn't exist in self
+            default_value: * returned if path doesn't exist in self
+            return_node: * return the result as TreeO-object if possible (default is just to return the result)
+            value_split: * used to split path into a list if path is a string, default " "
+
+        Returns:
+            value at path if it exists, or default_value if it doesn't
+        """
         l_path = list(path.split(TreeO._opt(self, "value_split", value_split)) if isinstance(path, str) else path)
         nodes = [node := self.obj if isinstance(self, TreeO) else self]
         try:
@@ -1291,7 +1316,7 @@ class TreeO(Mapping, Sequence, metaclass=TreeOMeta):
 
         Args:
             path: fetch values for this path, Default "" (gets values from the base node)
-            value_split: * used to split path into a tuple if path is a string, default " "
+            value_split: * used to split path into a list if path is a string, default " "
             return_node: * converts sub-nodes into TreeO-objects in the returned list of values. Default false
             copy: Option to return a copy of the returned value. The default behaviour (TCopy.NO_COPY) is that if a node
                 (dict, list) is returned and you make changes to that node, these changes will also be applied in the
