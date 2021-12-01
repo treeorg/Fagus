@@ -215,17 +215,18 @@ class TestTreeO(unittest.TestCase):
     def test_filter(self):
         with open("test-data.json") as fp:
             a = TreeO(json.load(fp))
+        h = "hei"
         self.assertEqual(
-            {'responseCode': 200, 'limit': 10000, 'size': 10000},
+            {"responseCode": 200, "limit": 10000, "size": 10000},
             a.filter(TFilter({"responseCode", "limit", "size"}), copy=TCopy.SHALLOW),
-            "Simplest ever filtering at base-level"
+            "Simplest ever filtering at base-level",
         )
         self.assertEqual(
-            {'responseCode': 200, 'limit': 10000, 'offset': 0, 'count': 0, 'size': 10000},
+            {"responseCode": 200, "limit": 10000, "offset": 0, "count": 0, "size": 10000},
             a.filter(TFilter("data", inexclude="-"), copy=TCopy.SHALLOW),
-            "Using inexclude to turn around the filter and give everything except data at base-level"
+            "Using inexclude to turn around the filter and give everything except data at base-level",
         )
-
+        b = a.filter(TFilter(..., TCheckFilter("state", 3)), "data", copy=TCopy.SHALLOW)
 
         # må få testa spesialtilfellene, men hva er det
         # inne i en sti
