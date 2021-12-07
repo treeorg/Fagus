@@ -394,7 +394,7 @@ class TestTreeO(unittest.TestCase):
         b = copy.deepcopy(self.a)
         self.assertEqual(a.setdefault("a 0 0", 5), 3, "Setdefault returns existing value")
         self.assertEqual(a(), b, "SetDefault doesn't change if the value is already there")
-        self.assertEqual(a.setdefault("a 7 7", 5, "dll"), 5, "SetDefault returns default value")
+        self.assertEqual(a.setdefault("a 7 7", 5, node_types="dll"), 5, "SetDefault returns default value")
         b["a"].append([5])
         self.assertEqual(a(), b, "SetDefault has added the value to the list")
 
