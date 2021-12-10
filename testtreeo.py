@@ -101,6 +101,15 @@ class TestTreeO(unittest.TestCase):
             a.iter(2, ("1", 0), TFilter(3, 1, ..., "q", inexclude="++-")),
             "Correctly putting a filtered last node in the end when combining filter_ and max_items",
         )
+        self.assertEqual(
+            [
+                (TreeO([[3, 4], {"b": 1}]), 0, TreeO([3, 4]), 0, 3),
+                (TreeO([[3, 4], {"b": 1}]), 0, TreeO([3, 4]), 1, 4),
+                (TreeO([[3, 4], {"b": 1}]), 1, TreeO({"b": 1}), "b", 1),
+            ],
+            a.iter(path="a", return_node=True, iter_nodes=True),
+            "Using iter_nodes to get references to all the nodes that have been traversed on the way",
+        )
         with open("test-data.json") as fp:
             a = TreeO(json.load(fp))
         self.assertEqual(
@@ -432,6 +441,7 @@ class TestTreeO(unittest.TestCase):
         self.assertEqual(a.pop("1 0 2"), b["1"][0].pop(2), "Pop correctly drops the value at the position")
         a.pop("8 9 10")
         self.assertEqual(a(), b, "Pop did not modify the object as path doesn't exist")
+        self.assertIsNone(a.pop("8"), "When pop fails because the Key didn't exist in the node, default is returned")
         b["1"][0][2][1].remove("a")
         self.assertEqual("a", a.pop("1 0 2 1 a"), "Correctly popping from set (internally calling remove)")
         self.assertEqual(b.pop("a"), a.pop("a"), "Correctly popping from dict at base-level")

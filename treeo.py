@@ -396,6 +396,7 @@ class TreeOMeta(ABCMeta):
         ),
         default_value=(None,),
         iter_fill=(...,),
+        iter_nodes=(False, bool),
         is_not=((str, bytes, bytearray), tuple, lambda x: all(isinstance(e, type) for e in x)),
         list_insert=(
             0,
@@ -580,6 +581,7 @@ class TreeO(Mapping, Sequence, metaclass=TreeOMeta):
         iter_fill=...,
         reduce: Union[int, Iterable] = None,
         copy: TCopy = TCopy.NO_COPY,
+        iter_nodes: bool = ...,
         value_split: str = ...,
     ) -> list:
         """Recursively iterate through TreeO-object, starting at path
@@ -601,11 +603,13 @@ class TreeO(Mapping, Sequence, metaclass=TreeOMeta):
                 length of the tuples can vary. See README.md for a more thorough example.
             reduce: Extract only some specified values from the tuples. E. g. if ~ is -1, only the leaf-values are
                 returned. ~ can also be a list of indices. Default None (don't reduce the tuples)
-            value_split: * used to split path into a list if path is a string, default " "
             copy: Iterate on a copy to make sure that the base-object is not modified if one of the nodes iter() returns
                 are modified. Often not necessary as an internal shallow copy is created for all the keys anyway. Only
                 the leaves are returned as references if max_items isn't -1. Copy can make sure that these references
                 in the leaves are pointing on a shallow- or deep copy of the base-object.
+            value_split: * used to split path into a list if path is a string, default " "
+            iter_nodes: * includes the traversed nodes into the resulting tuples, order is then:
+                node1, key1, node2, key2, ..., leaf_value
 
         Returns:
             list with one tuple for each leaf-node, containing the keys of the parent-nodes until the leaf
@@ -624,6 +628,7 @@ class TreeO(Mapping, Sequence, metaclass=TreeOMeta):
             max_items,
             TreeO._opt(self, "return_node", return_node),
             TreeO._opt(self, "iter_fill", iter_fill),
+            TreeO._opt(self, "iter_nodes", iter_nodes),
             filter_,
         )
         if reduce is not None:
@@ -640,10 +645,11 @@ class TreeO(Mapping, Sequence, metaclass=TreeOMeta):
 
     def _iter_r(
         self: Collection,
-        node,
+        node: Collection,
         max_items,
         return_node: bool,
         iter_fill,
+        iter_nodes,
         filter_: TFilter = None,
         index: int = 0,
     ):
@@ -654,12 +660,18 @@ class TreeO(Mapping, Sequence, metaclass=TreeOMeta):
             max_items: This value is decreased for each iteration to know how deep the recursion already is
             return_node: * this parameter is passed-through until it gets necessary
             iter_fill: * this parameter is passed-through until it gets necessary
+            iter_nodes: * includes the traversed nodes into the resulting tuples
             filter_: The filter to apply to the keys and values in this node
             index: index pointing on the argument in filter_ to use
 
         Returns:
             A list of elements that have been iterated over at this level (builds up in the recursion)
         """
+        if iter_nodes:
+            max_items -= 1
+            n = (TreeO._child(self, node) if return_node else node,)
+        else:
+            n = ()
         iter_list = []
         match_key = None
         if filter_ is not None:
@@ -690,11 +702,13 @@ class TreeO(Mapping, Sequence, metaclass=TreeOMeta):
                         continue
             if max_items != 2 and TreeO.__is__(v, Collection):  # continue recursion while max_items != 2
                 iter_list.extend(
-                    (k, *e) for e in TreeO._iter_r(self, v, max_items - 1, return_node, iter_fill, filter__, index_)
+                    (*n, k, *e)
+                    for e in TreeO._iter_r(self, v, max_items - 1, return_node, iter_fill, iter_nodes, filter__, index_)
                 )
                 continue
             iter_list.append(
                 (
+                    *n,
                     k,
                     TreeO._child(self, v) if return_node and TreeO.__is__(v, Collection) else v,
                     *(() if iter_fill is ... else (iter_fill,) * (max_items - 2)),
@@ -1471,7 +1485,7 @@ class TreeO(Mapping, Sequence, metaclass=TreeOMeta):
             if kw not in ("copy", "self", "obj") and value is not ...:
                 setattr(self, kw, value)
 
-    def _child(self: Collection, obj: Union[Mapping, Sequence] = None, **kwargs) -> "TreeO":
+    def _child(self: Collection, obj: Collection = None, **kwargs) -> "TreeO":
         new_obj = TreeO(obj, **kwargs)
         if isinstance(self, TreeO):
             new_obj._options = None if self._options is None else self._options.copy()
