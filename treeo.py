@@ -120,7 +120,7 @@ class TValueFilter(TFilterBase):
 class TKeyFilter(TFilterBase):
     """Base class for filters in TreeO that inspect key-values to determine whether the filter matched"""
 
-    def __init__(self, *filter_args, inexclude: str = "", string_as_re: bool = False):
+    def __init__(self, *filter_args, inexclude: str = "", str_as_re: bool = False):
         """Initializes TKeyFilter and verifies the arguments passed to it
 
         Args:
@@ -130,7 +130,7 @@ class TKeyFilter(TFilterBase):
             inexclude: In some cases it's easier to specify that a filter shall match everything except b, rather than
                 match a. ~ can be used to specify for each argument if the filter shall include it (+) or exclude it
                 (-). Valid example: "++-+". If this parameter isn't specified, all args will be treated as (+).
-            string_as_re: If this is set to True, it will be evaluated for all str's if they'd match differently as a
+            str_as_re: If this is set to True, it will be evaluated for all str's if they'd match differently as a
                 regex, and in the latter case match these strings as regex patterns. E.g. re.match("a.*", b) will match
                 differently than "a.*" == b. In this case, "a.*" will be used as a regex-pattern. However
                 re.match("abc", b) will give the same result as "abc" == b, so here "abc" == b will be used.
@@ -138,11 +138,11 @@ class TKeyFilter(TFilterBase):
         super().__init__(*filter_args, inexclude=inexclude)
         self.args = list(self.args)
         for i, arg in enumerate(self.args):
-            if string_as_re and isinstance(arg, str) and arg != re.escape(arg):
+            if str_as_re and isinstance(arg, str) and arg != re.escape(arg):
                 self[i] = re.compile(arg)
             elif TreeO.__is__(arg, Collection, is_not=Mapping):
                 for j, e in enumerate(arg):
-                    if string_as_re and isinstance(e, str) and e != re.escape(e):
+                    if str_as_re and isinstance(e, str) and e != re.escape(e):
                         if not isinstance(arg, MutableSequence):
                             self[i] = list(arg)
                         self[i][j] = re.compile(e)
@@ -287,9 +287,9 @@ class TFilter(TKeyFilter):
 class TCheckFilter(TKeyFilter):
     """TKeyFilter that can be used to select nodes based on values which you don't want to appear in the result."""
 
-    def __init__(self, *filter_args, inexclude: str = "", string_as_re: bool = False, invert: bool = False):
+    def __init__(self, *filter_args, inexclude: str = "", str_as_re: bool = False, invert: bool = False):
         self.invert = invert
-        super().__init__(*filter_args, inexclude=inexclude, string_as_re=string_as_re)
+        super().__init__(*filter_args, inexclude=inexclude, str_as_re=str_as_re)
 
     def match_node(self, node: Collection, index: int = 0) -> bool:
         """Recursive function to completely verify a node and its subnodes in TCheckFilter
@@ -1484,7 +1484,7 @@ class TreeO(Mapping, Sequence, metaclass=TreeOMeta):
             obj = TreeO.__copy__(obj) if copy == TCopy.SHALLOW else deepcopy(obj)
         if isinstance(obj, TreeO):
             self.obj = obj()
-            self._options = None if self._options is None else self._options.copy()
+            self._options = None if obj._options is None else obj._options.copy()
         else:
             self.obj = obj
             self._options = None
@@ -1523,7 +1523,7 @@ class TreeO(Mapping, Sequence, metaclass=TreeOMeta):
             new_node = frozenset(TreeO.__copy__(set(obj), True))
         else:
             new_node = deepcopy(self)
-        return TreeO.child(new_node) if isinstance(self, TreeO) else new_node
+        return TreeO.child(self, new_node) if isinstance(self, TreeO) else new_node
 
     def __call__(self):
         return self.obj
