@@ -3,7 +3,7 @@ import json
 import re
 import unittest
 from ipaddress import IPv6Address, IPv4Network, IPv6Network, ip_address
-from treeo import TreeO, TFunc, TFilter, TCopy, TCheckFilter, TValueFilter
+from treeo import TreeO, TFunc, TFilter, TCheckFilter, TValueFilter
 from datetime import datetime, date, time
 
 
@@ -31,7 +31,7 @@ class TestTreeO(unittest.TestCase):
         del TreeO.default_value
 
     def test_iter(self):
-        a = TreeO(self.a, copy=TCopy.SHALLOW)
+        a = TreeO(self.a, copy=True)
         aq = tuple(a["1 0 3 1"])  # have to create this tuple of the set because it's unpredictable what order
         # a and q will have in the set. Using this tuple, I make sure the test still works (the order will be sth same)
         b = [
@@ -222,24 +222,24 @@ class TestTreeO(unittest.TestCase):
     def test_filter(self):
         self.assertEqual(
             {'1': [{'a': False, '1': (1,)}], 'a': [{'b': 1}]},
-            TreeO.filter(self.a, filter_=TFilter(..., lambda x: x % 2), copy=TCopy.SHALLOW),
+            TreeO.filter(self.a, filter_=TFilter(..., lambda x: x % 2), copy=True),
             "Filtering using a lambda on the default test-datastructure"
         )
         self.assertEqual(
             {'1': [[1, True, 'a', ('f', {'q', 'a'})]], 'a': [[3, 4]]},
-            TreeO.filter(self.a, filter_=TFilter(..., lambda x: x % 2, inexclude="--"), copy=TCopy.SHALLOW),
+            TreeO.filter(self.a, filter_=TFilter(..., lambda x: x % 2, inexclude="--"), copy=True),
             "Filtering using a lambda on the default test-datastructure"
         )
         with open("test-data.json") as fp:
             a = TreeO(json.load(fp))
         self.assertEqual(
             {"responseCode": 200, "limit": 10000, "size": 10000},
-            a.filter(TFilter({"responseCode", "limit", "size"}), copy=TCopy.SHALLOW),
+            a.filter(TFilter({"responseCode", "limit", "size"}), copy=True),
             "Simplest ever filtering at base-level",
         )
         self.assertEqual(
             {"responseCode": 200, "limit": 10000, "offset": 0, "count": 0, "size": 10000},
-            a.filter(TFilter("data", inexclude="-"), copy=TCopy.SHALLOW),
+            a.filter(TFilter("data", inexclude="-"), copy=True),
             "Using inexclude to turn around the filter and give everything except data at base-level",
         )
         self.assertEqual(
@@ -250,11 +250,11 @@ class TestTreeO(unittest.TestCase):
             a.filter(
                 TFilter(..., (TCheckFilter("state", 3, invert=True), ".*(Seen|Id)"), str_as_re=True),
                 "data",
-                copy=TCopy.SHALLOW,
+                copy=True,
             ),
             "Testing invert on a TCheckFilter, getting all the nodes that have a state unlike 3",
         )
-        b = TreeO(a, copy=TCopy.SHALLOW)
+        b = TreeO(a, copy=True)
         b.filter(
             path="data",
             filter_=TFilter(
@@ -294,29 +294,29 @@ class TestTreeO(unittest.TestCase):
         )
         self.assertEqual(
             [],
-            a.filter(path="data", filter_=TFilter((TValueFilter(lambda x: len(x) < 1), ...)), copy=TCopy.SHALLOW),
+            a.filter(path="data", filter_=TFilter((TValueFilter(lambda x: len(x) < 1), ...)), copy=True),
             "Verifying that a value-filter actually returns an empty list if its condition isn't met",
         )
         self.assertEqual(
             a["data"],
-            a.filter(path="data", filter_=TFilter((TValueFilter(lambda x: len(x) == 10), ...)), copy=TCopy.SHALLOW),
+            a.filter(path="data", filter_=TFilter((TValueFilter(lambda x: len(x) == 10), ...)), copy=True),
             "Verifying that a value-filter actually returns the whole node if its condition is met",
         )
         self.assertEqual(
             {"data": a["data"]},
-            a.filter(filter_=TFilter("data", TValueFilter(lambda x: len(x) > 1)), copy=TCopy.SHALLOW),
+            a.filter(filter_=TFilter("data", TValueFilter(lambda x: len(x) > 1)), copy=True),
             "Verifying that a value-filter also works if it comes as a standalone argument, then including all the "
             "subnodes the filter matches (in this case all).",
         )
         self.assertEqual(
             {"data": a["data"]},
-            a.filter(filter_=TFilter("data", TValueFilter(lambda x: len(x) < 10, invert=True)), copy=TCopy.SHALLOW),
+            a.filter(filter_=TFilter("data", TValueFilter(lambda x: len(x) < 10, invert=True)), copy=True),
             "Verifying that a value-filter also works if it comes as a standalone argument, then including all the "
             "subnodes the filter matches (in this case all).",
         )
 
     def test_set(self):
-        a = TreeO(self.a, copy=TCopy.SHALLOW)
+        a = TreeO(self.a, copy=True)
         b = copy.deepcopy(self.a)
         b["1"][0][1] = False
         self.assertEqual(
@@ -350,7 +350,7 @@ class TestTreeO(unittest.TestCase):
         b["1"] = {"0": {"0": {"g": [9, 5]}}}
         self.assertEqual(b, a.set({"g": [9, 5]}, "1øæ0øæ0", "ddd", value_split="øæ"), "Replace list with dict")
         self.assertEqual([[["a"]]], TreeO.set([], "a", "1 1 1", default_node_type="l"), "Only create lists")
-        a = TreeO(self.a, copy=TCopy.SHALLOW)
+        a = TreeO(self.a, copy=True)
         b = copy.deepcopy(a())
         b["1"][0].insert(2, [["q"]])
         a.set("q", ("1", 0, 2, 0, 0), list_insert=2, default_node_type="l")
@@ -430,7 +430,7 @@ class TestTreeO(unittest.TestCase):
         self.assertEqual(TreeO.insert(a, -9, 5, "q"), b, "Create new list for value at a path that didn't exist before")
 
     def test_add(self):
-        a = TreeO(self.a, copy=TCopy.SHALLOW)
+        a = TreeO(self.a, copy=True)
         b = copy.deepcopy(self.a)
         b["1"][0][3] = list(b["1"][0][3])
         b["1"][0][3][0] = {"f", "q"}
@@ -446,7 +446,7 @@ class TestTreeO(unittest.TestCase):
 
     def test_update(self):
         # update set
-        a = TreeO(self.a, copy=TCopy.SHALLOW)
+        a = TreeO(self.a, copy=True)
         b = copy.deepcopy(self.a)
         b["1"][0][3] = list(b["1"][0][3])
         b["1"][0][3][0] = {"f", "q", "t", "p"}
@@ -471,7 +471,7 @@ class TestTreeO(unittest.TestCase):
         self.assertRaisesRegex(ValueError, "Can't update dict with value of type ", a.update, {"hans", "wu"}, "a 1")
 
     def test_setdefault(self):
-        a = TreeO(self.a, copy=TCopy.SHALLOW)
+        a = TreeO(self.a, copy=True)
         b = copy.deepcopy(self.a)
         self.assertEqual(a.setdefault("a 0 0", 5), 3, "Setdefault returns existing value")
         self.assertEqual(a(), b, "SetDefault doesn't change if the value is already there")
@@ -480,7 +480,7 @@ class TestTreeO(unittest.TestCase):
         self.assertEqual(a(), b, "SetDefault has added the value to the list")
 
     def test_mod_function(self):
-        a = TreeO(self.a, copy=TCopy.SHALLOW)
+        a = TreeO(self.a, copy=True)
         b = copy.deepcopy(self.a)
         b["1"][0][0] += 4
         a.mod(lambda x: x + 4, "1 0 0", 6)
@@ -508,7 +508,7 @@ class TestTreeO(unittest.TestCase):
         self.assertRaisesRegex(TypeError, "Valid types for mod_function: lambda", a.mod, (fancy_mod2, "hei"), "1 0 0")
 
     def test_pop(self):
-        a = TreeO(self.a, copy=TCopy.SHALLOW)
+        a = TreeO(self.a, copy=True)
         b = copy.deepcopy(self.a)
         self.assertEqual(a.pop("1 0 2"), b["1"][0].pop(2), "Pop correctly drops the value at the position")
         a.pop("8 9 10")
@@ -530,22 +530,22 @@ class TestTreeO(unittest.TestCase):
 
     def test_serialize(self):
         test_obj = {date(2021, 3, 6): [time(6, 45, 22), datetime(2021, 6, 23, 5, 45, 22)], ("hei", "du"): {3, 4, 5}}
-        a = TreeO(test_obj, copy=TCopy.SHALLOW)
+        a = TreeO(test_obj, copy=True)
         self.assertRaisesRegex(
             TypeError,
             "Can't modify base-object self having the immutable type",
             TreeO((1, 2, 3, [4, 5, 6], {6, 5})).serialize,
         )
         self.assertRaisesRegex(
-            ValueError, "Dicts with composite keys \\(tuples\\) are not supported in", a.serialize, copy=TCopy.SHALLOW
+            ValueError, "Dicts with composite keys \\(tuples\\) are not supported in", a.serialize, copy=True
         )
         b = {"2021-03-06": ["06:45:22", "2021-06-23 05:45:22"], "hei du": [3, 4, 5]}
         self.assertEqual(a.serialize({"tuple_keys": lambda x: " ".join(x)}), b, "Serialized datetime and tuple-key")
         self.assertEqual(a.serialize(), b, "Nothing changes if there is nothing to change")
-        a = TreeO(test_obj, copy=TCopy.SHALLOW)
+        a = TreeO(test_obj, copy=True)
         a[("hei du",)] = a.pop((("hei", "du"),))
         self.assertEqual(a.serialize(), b, "Also works when no mod-functions are defined in the parameter")
-        a = TreeO(TreeO(self.a, copy=TCopy.SHALLOW).serialize())
+        a = TreeO(TreeO(self.a, copy=True).serialize())
         a["1 0 3 1"].sort()
         self.assertEqual(
             {"1": [[1, True, "a", ["f", ["a", "q"]]], {"a": False, "1": [1]}], "a": [[3, 4], {"b": 1}]},
@@ -565,7 +565,7 @@ class TestTreeO(unittest.TestCase):
                     "IPv6Network('2001:db8:85a3::/80')",
                 ]
             },
-            a.serialize(copy=TCopy.SHALLOW),
+            a.serialize(copy=True),
             "Only using default function with str on IP-objects",
         )
 
@@ -598,7 +598,7 @@ class TestTreeO(unittest.TestCase):
                         broadcast=" and the broadcast-address ",
                     ),
                 },
-                copy=TCopy.SHALLOW,
+                copy=True,
             ),
             "Complex mod-functions with function pointer, args, kwargs, lambdas and tuple-types, overriding default",
         )
@@ -644,17 +644,17 @@ class TestTreeO(unittest.TestCase):
 
     def test_copy(self):
         a = copy.deepcopy(self.a)
-        b = TreeO(a, copy=TCopy.SHALLOW)
+        b = TreeO(a, copy=True)
         self.assertEqual(a, b(), "Shallow-copy is actually equal to the original object if it isn't changed")
         b.pop("a")
         self.assertNotEqual(a, b(), "Can pop at base-level without affecting the original object")
-        b = TreeO(a, copy=TCopy.SHALLOW)
+        b = TreeO(a, copy=True)
         b["f"] = 2
         self.assertNotEqual(a, b(), "Can add at base-level without affecting the original object")
         b = TreeO(a).copy()
         b["1 0 0"] = 100
         self.assertNotEqual(a, b(), "Can change node deeply in the original object without affecting original object")
-        b = TreeO(a, copy=TCopy.SHALLOW)
+        b = TreeO(a, copy=True)
         b.pop("1 0 3")
         self.assertNotEqual(a, b(), "Can pop deeply in the object without affecting the original object")
 

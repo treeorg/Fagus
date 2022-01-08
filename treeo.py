@@ -10,7 +10,6 @@
 # INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN
 # AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
 # PERFORMANCE OF THIS SOFTWARE.
-
 from copy import deepcopy
 import re
 from abc import ABCMeta
@@ -26,7 +25,6 @@ from collections.abc import (
     MutableSet,
 )
 from datetime import date, datetime, time
-from enum import Enum, auto
 from typing import Union, Tuple, Any, Optional, List
 
 
@@ -453,28 +451,6 @@ class TreeOMeta(ABCMeta):
         )
 
 
-class TCopy(Enum):
-    """Enum-class representing the three different values the copy-parameter in TreeO can have
-
-    NO_COPY:
-        Directly modify the object, don't copy (default)
-
-    SHALLOW:
-        Create a shallow copy of the TreeO-object, modify that shallow copy and return it (leaves the calling TreeO
-        object untouched). A shallow-copy creates references to the calling object as much as possible, and thus takes
-        a lot less space in memory than a deep-copy. Therefore, a shallow-copy is normally preferred over a deep-copy.
-
-    DEEP:
-        Create a deep copy of the calling TreeO-object, modify that deep copy and return it (leaves the calling
-        TreeO object untouched). A deep-copy is completely independent of the copied object, thus two deep-copied
-        objects use twice as much memory as a single object.
-    """
-
-    NO_COPY = auto()
-    SHALLOW = auto()
-    DEEP = auto()
-
-
 class TreeO(Mapping, Sequence, metaclass=TreeOMeta):
     """TreeO (TreeObject) is a wrapper-class for complex, nested objects of dicts and lists in Python.
 
@@ -499,7 +475,7 @@ class TreeO(Mapping, Sequence, metaclass=TreeOMeta):
         path: Iterable = "",
         default_value=...,
         return_node: bool = ...,
-        copy: TCopy = TCopy.NO_COPY,
+        copy: bool = False,
         value_split: str = ...,
     ) -> Any:
         """Retrieves value at path. If the value doesn't exist, default_value is returned.
@@ -540,8 +516,8 @@ class TreeO(Mapping, Sequence, metaclass=TreeOMeta):
                 except (IndexError, ValueError, KeyError):
                     node = TreeO._opt(self, "default_value", default_value)
                     break
-        if copy != TCopy.NO_COPY and TreeO.__is__(node, Collection):
-            node = TreeO.__copy__(node) if copy == TCopy.SHALLOW else deepcopy(node)
+        if copy:
+            node = TreeO.__copy__(node)
         return (
             TreeO.child(self, node)
             if TreeO.__is__(node, Collection) and TreeO._opt(self, "return_node", return_node)
@@ -585,7 +561,7 @@ class TreeO(Mapping, Sequence, metaclass=TreeOMeta):
         return_node: bool = ...,
         iter_fill=...,
         reduce: Union[int, Iterable] = None,
-        copy: TCopy = TCopy.NO_COPY,
+        copy: bool = False,
         iter_nodes: bool = ...,
         value_split: str = ...,
     ) -> list:
@@ -611,7 +587,7 @@ class TreeO(Mapping, Sequence, metaclass=TreeOMeta):
             copy: Iterate on a copy to make sure that the base-object is not modified if one of the nodes iter() returns
                 are modified. Often not necessary as an internal shallow copy is created for all the keys anyway. Only
                 the leaves are returned as references if max_items isn't -1. Copy can make sure that these references
-                in the leaves are pointing on a shallow- or deep copy of the base-object.
+                in the leaves are pointing on a shallow-copy of the base-object.
             value_split: * used to split path into a list if path is a string, default " "
             iter_nodes: * includes the traversed nodes into the resulting tuples, order is then:
                 node1, key1, node2, key2, ..., leaf_value
@@ -726,7 +702,7 @@ class TreeO(Mapping, Sequence, metaclass=TreeOMeta):
         filter_: TFilter,
         path: Iterable = "",
         return_node: bool = ...,
-        copy: TCopy = TCopy.NO_COPY,
+        copy: bool = False,
         default_value=...,
         value_split: str = ...,
     ):
@@ -747,10 +723,10 @@ class TreeO(Mapping, Sequence, metaclass=TreeOMeta):
             the filtered object, starting at path
         """
         l_path = list(path.split(TreeO._opt(self, "value_split", value_split)) if isinstance(path, str) else path)
-        if copy == TCopy.NO_COPY:
-            parent_node = TreeO._mutable_parent(self, l_path, default_value=_None)
-        else:
+        if copy:
             parent_node = TreeO.get(self, l_path[:-1], _None, False, copy, value_split)
+        else:
+            parent_node = TreeO._mutable_parent(self, l_path, default_value=_None)
         node = _None if parent_node is _None else TreeO.get(parent_node, l_path[-1], _None, False)
         if node is _None or not TreeO.__is__(node, Collection):
             filtered = TreeO._opt(self, "default_value", default_value)
@@ -758,7 +734,7 @@ class TreeO(Mapping, Sequence, metaclass=TreeOMeta):
             filtered = TreeO._filter_r(node, filter_)
             if not filter_.match_extra_filters(node):
                 filtered.clear()
-            if copy == TCopy.NO_COPY:
+            if not copy:
                 if path:
                     parent_node[int(l_path[-1]) if isinstance(parent_node, Sequence) else l_path[-1]] = filtered
                 else:
@@ -812,7 +788,7 @@ class TreeO(Mapping, Sequence, metaclass=TreeOMeta):
         value_split: str = ...,
         return_node: bool = ...,
         default_node_type: str = ...,
-        copy: TCopy = TCopy.NO_COPY,
+        copy: bool = False,
     ):
         """Create (if they don't already exist) all sub-nodes in path, and finally set value at leaf-node
 
@@ -831,7 +807,7 @@ class TreeO(Mapping, Sequence, metaclass=TreeOMeta):
         value_split: str = ...,
         return_node: bool = ...,
         default_node_type: str = ...,
-        copy: TCopy = TCopy.NO_COPY,
+        copy: bool = False,
     ):
         """Create (if they don't already exist) all sub-nodes in path, and finally append value to list at leaf-node
 
@@ -852,7 +828,7 @@ class TreeO(Mapping, Sequence, metaclass=TreeOMeta):
         value_split: str = ...,
         return_node: bool = ...,
         default_node_type: str = ...,
-        copy: TCopy = TCopy.NO_COPY,
+        copy: bool = False,
     ):
         """Create (if they don't already exist) all sub-nodes in path. Then extend list at leaf-node with the new values
 
@@ -874,7 +850,7 @@ class TreeO(Mapping, Sequence, metaclass=TreeOMeta):
         value_split: str = ...,
         return_node: bool = ...,
         default_node_type: str = ...,
-        copy: TCopy = TCopy.NO_COPY,
+        copy: bool = False,
     ):
         """Create (if they don't already exist) all sub-nodes in path. Insert new value at index in list at leaf-node
 
@@ -905,7 +881,7 @@ class TreeO(Mapping, Sequence, metaclass=TreeOMeta):
         value_split: str = ...,
         return_node: bool = ...,
         default_node_type: str = ...,
-        copy: TCopy = TCopy.NO_COPY,
+        copy: bool = False,
     ):
         """Create (if they don't already exist) all sub-nodes in path, and finally add new value to set at leaf-node
 
@@ -926,7 +902,7 @@ class TreeO(Mapping, Sequence, metaclass=TreeOMeta):
         value_split: str = ...,
         return_node: bool = ...,
         default_node_type: str = ...,
-        copy: TCopy = TCopy.NO_COPY,
+        copy: bool = False,
     ):
         """Create (if they don't already exist) all sub-nodes in path, then update set at leaf-node with new values
 
@@ -949,13 +925,13 @@ class TreeO(Mapping, Sequence, metaclass=TreeOMeta):
         value_split: str = ...,
         return_node: bool = ...,
         default_node_type: str = ...,
-        copy: TCopy = TCopy.NO_COPY,
+        copy: bool = False,
         index: int = ...,
     ):
         node_types = TreeO._opt(self, "node_types", node_types)
         obj = self.obj if isinstance(self, TreeO) else self
-        if copy != TCopy.NO_COPY:
-            obj = TreeO.__copy__(obj) if copy == TCopy.SHALLOW else deepcopy(obj)
+        if copy:
+            obj = TreeO.__copy__(obj)
         if path:
             l_path = list(path.split(TreeO._opt(self, "value_split", value_split)) if isinstance(path, str) else path)
             next_index = TreeO._index(l_path[0], ...)
@@ -1247,7 +1223,7 @@ class TreeO(Mapping, Sequence, metaclass=TreeOMeta):
         mod_functions: MutableMapping = ...,
         path: Iterable = "",
         value_split: str = ...,
-        copy: TCopy = TCopy.NO_COPY,
+        copy: bool = False,
     ):
         """Makes sure the object can be serialized so that it can be converted to JSON, YAML etc.
 
@@ -1266,8 +1242,8 @@ class TreeO(Mapping, Sequence, metaclass=TreeOMeta):
         if not isinstance(self.obj if isinstance(self, TreeO) else self, (dict, list)):
             raise TypeError(f"Can't modify base-object self having the immutable type {type(self).__name__}.")
         node = TreeO.get(self, path, return_node=False, value_split=value_split)
-        if copy != TCopy.NO_COPY:
-            node = TreeO.__copy__(node) if copy == TCopy.SHALLOW else deepcopy(node)
+        if copy:
+            node = TreeO.__copy__(node)
         return TreeO._serialize_r(
             node,
             {
@@ -1355,7 +1331,7 @@ class TreeO(Mapping, Sequence, metaclass=TreeOMeta):
         path: Iterable = "",
         value_split: str = ...,
         return_node: bool = ...,
-        copy: TCopy = TCopy.NO_COPY,
+        copy: bool = False,
     ) -> Collection:
         """Returns values for node at path
 
@@ -1393,7 +1369,7 @@ class TreeO(Mapping, Sequence, metaclass=TreeOMeta):
         iter_fill=...,
         value_split: str = ...,
         return_node: bool = ...,
-        copy: TCopy = TCopy.NO_COPY,
+        copy: bool = False,
     ):
         """Returns a list with one tuple for each leaf - the first value is the key, the second is the child-dict."""
         return TreeO.iter(
@@ -1404,7 +1380,7 @@ class TreeO(Mapping, Sequence, metaclass=TreeOMeta):
         self: Collection,
         path: Iterable = "",
         value_split: str = ...,
-        copy: TCopy = TCopy.NO_COPY,
+        copy: bool = False,
         return_node: bool = ...,
     ):
         """Removes all elements from node at path."""
@@ -1431,7 +1407,7 @@ class TreeO(Mapping, Sequence, metaclass=TreeOMeta):
         path: Iterable = "",
         return_node: bool = ...,
         value_split: str = ...,
-        copy: TCopy = TCopy.SHALLOW,
+        copy: bool = False,
     ):
         """Get reversed child-node at path if that node is a list.
 
@@ -1461,12 +1437,12 @@ class TreeO(Mapping, Sequence, metaclass=TreeOMeta):
         path: Iterable = "",
         return_node: bool = ...,
         value_split: str = ...,
-        copy: TCopy = TCopy.NO_COPY,
+        copy: bool = False,
     ):
         """Reverse child-node at path if that node is a list"""
         obj = self.obj if isinstance(self, TreeO) else self
-        if copy != TCopy.NO_COPY:
-            obj = TreeO.__copy__(obj) if copy == TCopy.SHALLOW else deepcopy(obj)
+        if copy:
+            obj = TreeO.__copy__(obj)
         node = TreeO.get(self, path, return_node=False, value_split=value_split)
         if TreeO.__is__(node, MutableSequence):
             node.reverse()
@@ -1489,12 +1465,12 @@ class TreeO(Mapping, Sequence, metaclass=TreeOMeta):
         mod_functions: Mapping = ...,
         iter_fill=...,
         return_node: bool = ...,
-        copy: TCopy = TCopy.NO_COPY,
+        copy: bool = False,
     ):
         if obj is None:
             obj = [] if TreeO.default_node_type == "l" else {}
-        if copy != TCopy.NO_COPY:
-            obj = TreeO.__copy__(obj) if copy == TCopy.SHALLOW else deepcopy(obj)
+        if copy:
+            obj = TreeO.__copy__(obj)
         if isinstance(obj, TreeO):
             self.obj = obj()
             self._options = None if obj._options is None else obj._options.copy()
@@ -1508,12 +1484,11 @@ class TreeO(Mapping, Sequence, metaclass=TreeOMeta):
     def child(self: Collection, obj: Collection = None, **kwargs) -> "TreeO":
         return TreeO(obj, **({**self._options, **kwargs} if isinstance(self, TreeO) and self._options else kwargs))
 
-    def copy(self: Collection, copy: TCopy = TCopy.SHALLOW):
-        if copy == TCopy.SHALLOW:
+    def copy(self: Collection, deep: bool = False):
+        if deep:
+            return deepcopy(self)
+        else:
             return TreeO.__copy__(self)
-        elif copy == TCopy.NO_COPY:
-            return self
-        return deepcopy(self)
 
     def __copy__(self: Collection, recursive=False):
         obj = self.obj if isinstance(self, TreeO) else self
