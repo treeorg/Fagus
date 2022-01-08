@@ -141,9 +141,10 @@ class TKeyFilter(TFilterBase):
             if str_as_re and isinstance(arg, str) and arg != re.escape(arg):
                 self[i] = re.compile(arg)
             elif TreeO.__is__(arg, Collection, is_not=Mapping):
-                for j, e in enumerate(arg):
+                j = 0
+                for e in arg:
                     if str_as_re and isinstance(e, str) and e != re.escape(e):
-                        if not isinstance(arg, MutableSequence):
+                        if not isinstance(self[i], MutableSequence):
                             self[i] = list(arg)
                         self[i][j] = re.compile(e)
                     elif isinstance(e, TFilterBase):
@@ -154,11 +155,13 @@ class TKeyFilter(TFilterBase):
                                 "All subfilters of TCheckFilter must be either TCheckFilter or TValueFilter."
                             )
                         elif not isinstance(self, e.__class__):  # Move
-                            if not isinstance(arg, MutableSequence):
+                            if not isinstance(self[i], MutableSequence):
                                 self[i] = list(arg)  # make self[i] a mutable list if necessary
                             self._set_extra_filter(i, self[i].pop(j))  # to be able to pop out the filter-arg
+                            j -= 1
                             if not self[i]:  # if there only were TCheck- and TValue-filters in the list and it is now
                                 self[i] = ...  # empty, put ... to give these filters something to match on
+                    j += 1
             elif isinstance(arg, TFilterBase):
                 if isinstance(self, TFilter) and isinstance(arg, (TCheckFilter, TValueFilter)):
                     self._set_extra_filter(i, arg)  # pop out extra-filter and replace it with ... so that
@@ -216,7 +219,7 @@ class TKeyFilter(TFilterBase):
             else:
                 if callable(e):
                     match = e(value)
-                elif isinstance(e, re.Pattern):
+                elif isinstance(e, re.Pattern) or str(type(e)) == "<type 'SRE_Pattern'>":
                     match = bool(e.fullmatch(value))
                 elif isinstance(e, Set):
                     match = value in e
@@ -445,7 +448,7 @@ class TreeOMeta(ABCMeta):
         super(TreeOMeta, cls).__setattr__(
             attr,
             value
-            if hasattr(TreeOMeta, attr) or attr in ("__abstractmethods__", "_abc_impl")
+            if hasattr(TreeOMeta, attr) or attr == "__abstractmethods__" or attr.startswith("_abc_")
             else TreeOMeta.__verify_option__(attr, value),
         )
 
@@ -559,7 +562,8 @@ class TreeO(Mapping, Sequence, metaclass=TreeOMeta):
         Returns:
             the parent node if it exists, otherwise None
         """
-        nodes = [node := self.obj if isinstance(self, TreeO) else self]
+        node = self.obj if isinstance(self, TreeO) else self
+        nodes = [node]
         try:
             for i in range(len(l_path) - 1):
                 if isinstance(node, Sequence):
@@ -567,7 +571,8 @@ class TreeO(Mapping, Sequence, metaclass=TreeOMeta):
                     list_insert -= 1
                     if list_insert == 1:
                         return default_value
-                nodes.append(node := node[l_path[i]])
+                node = node[l_path[i]]
+                nodes.append(node)
             return TreeO._ensure_mutable_node(node, nodes, l_path)
         except (IndexError, ValueError, KeyError):
             return default_value
@@ -784,9 +789,11 @@ class TreeO(Mapping, Sequence, metaclass=TreeOMeta):
                 if match_k[1] is None:
                     match_v = True
                 elif TreeO.__is__(v, Collection):
-                    match_v = match_k[1].match_extra_filters(v, match_k[2]) and bool(
-                        v := TreeO._filter_r(v, *match_k[1:])
-                    )
+                    if match_k[1].match_extra_filters(v, match_k[2]):
+                        v = TreeO._filter_r(v, *match_k[1:])
+                        match_v = bool(v)
+                    else:
+                        match_v = False
                 else:
                     match_v, *_ = match_k[1].match(v, match_k[2])
                 if match_v:
@@ -953,7 +960,8 @@ class TreeO(Mapping, Sequence, metaclass=TreeOMeta):
             l_path = list(path.split(TreeO._opt(self, "value_split", value_split)) if isinstance(path, str) else path)
             next_index = TreeO._index(l_path[0], ...)
             list_insert = TreeO._opt(self, "list_insert", list_insert)
-            nodes = [node := obj]
+            node = obj
+            nodes = [node]
             if (
                 isinstance(obj, MutableMapping)
                 and node_types[0:1] == "l"
@@ -971,7 +979,8 @@ class TreeO(Mapping, Sequence, metaclass=TreeOMeta):
                     )
                 )
             for i in range(len(l_path)):
-                l_path[i] = (node_key := next_index if TreeO.__is__(node, Sequence) else l_path[i])
+                node_key = next_index if TreeO.__is__(node, Sequence) else l_path[i]
+                l_path[i] = node_key
                 next_index = TreeO._index(l_path[i + 1], ...) if i < len(l_path) - 1 else ...
                 next_node = (
                     list
@@ -1058,8 +1067,10 @@ class TreeO(Mapping, Sequence, metaclass=TreeOMeta):
     def _ensure_mutable_node(
         node: Collection, nodes: List[Collection], path: Sequence
     ) -> Union[MutableMapping, MutableSequence, MutableSet]:
-        for i in range(i := -1, -len(nodes) - 1, -1):
-            if TreeO.__is__(node := nodes[i], MutableMapping, MutableSequence, MutableSet):
+        i = -1
+        for i in range(i, -len(nodes) - 1, -1):
+            node = nodes[i]
+            if TreeO.__is__(node, MutableMapping, MutableSequence, MutableSet):
                 break
             elif i == -len(nodes):
                 raise TypeError(f"Can't modify base-object self having the immutable type {type(node).__name__}.")
@@ -1397,7 +1408,8 @@ class TreeO(Mapping, Sequence, metaclass=TreeOMeta):
         return_node: bool = ...,
     ):
         """Removes all elements from node at path."""
-        node = TreeO.get(obj := TreeO.copy(self, copy), path, _None, value_split=value_split)
+        obj = TreeO.copy(self, copy)
+        node = TreeO.get(obj, path, _None, value_split=value_split)
         if TreeO.__is__(node, Collection):
             node.clear()
         if isinstance(obj, TreeO):
@@ -1439,7 +1451,8 @@ class TreeO(Mapping, Sequence, metaclass=TreeOMeta):
         Returns:
             the reversed node
         """
-        if not TreeO.__is__(node := TreeO.values(self, path, value_split, return_node, copy), Reversible):
+        node = TreeO.values(self, path, value_split, return_node, copy)
+        if not TreeO.__is__(node, Reversible):
             node = tuple(node)
         return reversed(node)
 
@@ -1508,11 +1521,13 @@ class TreeO(Mapping, Sequence, metaclass=TreeOMeta):
             new_node = obj if recursive else obj.copy()
             if isinstance(obj, (Mapping, Sequence)):
                 for k, v in obj.items() if isinstance(obj, Mapping) else enumerate(obj):
-                    if (collection := TreeO.__is__(v, Collection)) or hasattr(v, "copy"):
+                    collection = TreeO.__is__(v, Collection)
+                    if collection or hasattr(v, "copy"):
                         new_node[k] = TreeO.__copy__(v) if collection else v.copy()
             elif isinstance(new_node, MutableSet):  # must be a set or similar
                 for v in obj:
-                    if (collection := TreeO.__is__(v, Collection)) or hasattr(v, "copy"):
+                    collection = TreeO.__is__(v, Collection)
+                    if collection or hasattr(v, "copy"):
                         new_node.remove(v)
                         new_node.add(TreeO.__copy__(v) if collection else v.copy())
         elif not any(TreeO.__is__(v, Collection) or hasattr(v, "copy") for v in obj):
