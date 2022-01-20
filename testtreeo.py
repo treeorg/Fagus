@@ -47,12 +47,14 @@ class TestTreeO(unittest.TestCase):
             ("a", 0, 1, 4),
             ("a", 1, "b", 1),
         ]
-        self.assertEqual([x for x in a.iter()], b, "Correctly iterating over dicts and lists")
-        self.assertEqual([(0, 0, 3), (0, 1, 4), (1, "b", 1)], a.iter(-1, "a"), "Correct iterator when path is given")
+        self.assertEqual(b, [x for x in a.iter()], "Correctly iterating over dicts and lists")
+        self.assertEqual(
+            [(0, 0, 3), (0, 1, 4), (1, "b", 1)], list(a.iter(-1, "a")), "Correct iterator when path is given"
+        )
         for i, l in enumerate(b):
             b[i] = (*l, *((None,) * (7 - len(l))))
         self.assertEqual(
-            b, a.iter(7, iter_fill=None), "Correctly filling up when intended count in tuples is constant, here 7"
+            b, list(a.iter(7, iter_fill=None)), "Correctly filling up when intended count in tuples is constant, here 7"
         )
         b = [
             ("1", 0, [1, True, "a", ("f", {"q", "a"})]),
@@ -60,7 +62,7 @@ class TestTreeO(unittest.TestCase):
             ("a", 0, [3, 4]),
             ("a", 1, {"b": 1}),
         ]
-        self.assertEqual(b, a.iter(3), "Iterating correctly when max_items is limited to three")
+        self.assertEqual(b, list(a.iter(3)), "Iterating correctly when max_items is limited to three")
         b = [
             ("1", 0, 0, 1),
             ("1", 0, 1, True),
@@ -73,32 +75,36 @@ class TestTreeO(unittest.TestCase):
             ("a", 0, 1, 4),
             ("a", 1, "b", 1),
         ]
-        self.assertEqual(b, a.iter(5), "Iterating correctly when max_items is limited to five. Some tuples are < 5")
-        self.assertEqual([(0, [3, 4]), (1, {"b": 1})], a.items("a"), "Items gives keys and values")
+        self.assertEqual(
+            b, list(a.iter(5)), "Iterating correctly when max_items is limited to five. Some tuples are < 5"
+        )
+        self.assertEqual([(0, [3, 4]), (1, {"b": 1})], list(a.items("a")), "Items gives keys and values")
         b = [
             ("1", 0, TreeO([1, True, "a", ("f", {"q", "a"})])),
             ("1", 1, TreeO({"a": False, "1": (1,)})),
             ("a", 0, TreeO([3, 4])),
             ("a", 1, TreeO({"b": 1})),
         ]
-        self.assertEqual(b, a.iter(3, return_node=True), "Returning nodes as TreeO-objects when return_value=True")
+        self.assertEqual(
+            b, list(a.iter(3, return_node=True)), "Returning nodes as TreeO-objects when return_value=True"
+        )
         self.assertTrue(
             all(isinstance(e, TreeO) for e in a.iter(3, return_node=True, reduce=-1)),
             "return_node actually returns back nodes if the nodes at the end are suitable to be converted",
         )
         self.assertEqual(
-            a.iter(4, "", filter_=TFilter("a", 1, lambda x: x % 2 != 0, inexclude="---")),
-            a.iter(4, "", filter_=TFilter("1", 0, lambda x: x % 2 == 0)),
+            tuple(a.iter(4, "", filter_=TFilter("a", 1, lambda x: x % 2 != 0, inexclude="---"))),
+            tuple(a.iter(4, "", filter_=TFilter("1", 0, lambda x: x % 2 == 0))),
             "Two opposite filters giving the same results on the data",
         )
         self.assertEqual(
             ["a"],
-            a.iter(path=("1", 0, 3), filter_=TFilter(1, ..., "q", inexclude="++-"), reduce=-1),
+            list(a.iter(path=("1", 0, 3), filter_=TFilter(1, ..., "q", inexclude="++-"), reduce=-1)),
             "Correctly filtering a set in the end",
         )
         self.assertEqual(
             [(3, [{"q"}])],
-            a.iter(2, ("1", 0), TFilter(3, 1, ..., "q", inexclude="++-")),
+            list(a.iter(2, ("1", 0), TFilter(3, 1, ..., "q", inexclude="++-"))),
             "Correctly putting a filtered last node in the end when combining filter_ and max_items",
         )
         self.assertEqual(
@@ -107,78 +113,82 @@ class TestTreeO(unittest.TestCase):
                 (TreeO([[3, 4], {"b": 1}]), 0, TreeO([3, 4]), 1, 4),
                 (TreeO([[3, 4], {"b": 1}]), 1, TreeO({"b": 1}), "b", 1),
             ],
-            a.iter(path="a", return_node=True, iter_nodes=True),
+            list(a.iter(path="a", return_node=True, iter_nodes=True)),
             "Using iter_nodes to get references to all the nodes that have been traversed on the way",
         )
         with open("test-data.json") as fp:
             a = TreeO(json.load(fp))
         self.assertEqual(
             [(0, "source", "id", 889), (1, "source", "id", 5662), (4, "source", "id", 301)],
-            a.iter(-1, "data", TFilter(..., "source", "id", lambda x: x > 300)),
+            list(a.iter(-1, "data", TFilter(..., "source", "id", lambda x: x > 300))),
             "Iterating over all source-ids that are > 300, testing lambda and true and default",
         )
         self.assertEqual(
-            [2, 1, 3],
-            a.iter(
-                -1,
-                "data",
-                TFilter(
-                    ...,
-                    (TCheckFilter("source", "id", lambda x: x > 300), "state"),
-                ),
-                reduce=-1,
+            (2, 1, 3),
+            tuple(
+                a.iter(
+                    -1,
+                    "data",
+                    TFilter(
+                        ...,
+                        (TCheckFilter("source", "id", lambda x: x > 300), "state"),
+                    ),
+                    reduce=-1,
+                )
             ),
             "Getting the states for all sources who's id is > 300 using reduce and a check-filter",
         )
         self.assertEqual(
             [],
-            a.iter(path="data", filter_=TFilter((TValueFilter(lambda x: len(x) < 1), ...))),
+            list(a.iter(path="data", filter_=TFilter((TValueFilter(lambda x: len(x) < 1), ...)))),
             "Verifying that a value-filter actually returns an empty list if its condition isn't met",
         )
         self.assertEqual(
             160,
-            len(a.iter(path="data", filter_=TFilter((TValueFilter(lambda x: len(x) == 10), ...)))),
+            len(list(a.iter(path="data", filter_=TFilter((TValueFilter(lambda x: len(x) == 10), ...))))),
             "Verifying that a value-filter actually returns the node if it's condition is met",
         )
         self.assertEqual(
             160,
-            len(a.iter(filter_=TFilter("data", TValueFilter(lambda x: len(x) > 1)))),
+            len(list(a.iter(filter_=TFilter("data", TValueFilter(lambda x: len(x) > 1))))),
             "Verifying that a value-filter also works if it comes as a standalone argument, then including all the "
             "subnodes the filter matches (in this case all).",
         )
         self.assertEqual(
             [],
-            a.iter(filter_=TFilter("data", (TValueFilter(lambda x: len(x) < 1),))),
+            list(a.iter(filter_=TFilter("data", (TValueFilter(lambda x: len(x) < 1),)))),
             "A value-filter actually returns an empty list even at the bottom if its condition isn't met",
         )
         self.assertEqual(
             160,
-            len(a.iter(path="data", filter_=TFilter((TValueFilter(lambda x: len(x) > 1),)))),
+            len(list(a.iter(path="data", filter_=TFilter((TValueFilter(lambda x: len(x) > 1),))))),
             "If the only member in a tuple is TValue- and TCheck-filters and they're all removed, put ... at that"
             "argument to make sure these check-filters can match anything",
         )
         self.assertEqual(
             [(0, "role", "id", 182), (0, "role", "name", "Intel from sandbox runs"), (0, "state", 2)],
-            a.iter(
-                path="data",
-                filter_=TFilter(
-                    ...,
-                    (
-                        TCheckFilter(
-                            (
-                                TValueFilter(lambda x: len(x) == 3, lambda x: bool(x)),
-                                TCheckFilter("alias", "file-analyzer-domain"),
-                                "source",
+            list(
+                a.iter(
+                    path="data",
+                    filter_=TFilter(
+                        ...,
+                        (
+                            TCheckFilter(
+                                (
+                                    TValueFilter(lambda x: len(x) == 3, lambda x: bool(x)),
+                                    TCheckFilter("alias", "file-analyzer-domain"),
+                                    "source",
+                                ),
+                                "id",
+                                889,
                             ),
-                            "id",
-                            889,
+                            TFilter("state", 1, inexclude="+-"),
+                            "role",
                         ),
-                        TFilter("state", 1, inexclude="+-"),
-                        "role",
+                        "alias",
+                        inexclude="++-",
                     ),
-                    "alias",
-                    inexclude="++-",
-                ),
+                )
             ),
             "Combining tons of filters to additionally verify and filter the result",
         )
@@ -190,7 +200,9 @@ class TestTreeO(unittest.TestCase):
             ("data", 1, "role", "alias", "malware-server"),
             ("data", 4, "roleId", 33),
         )
-        b = a.iter(filter_=TFilter("responseCode|limit|data", ..., ("role.*", re.compile("source.*")), str_as_re=True))
+        b = tuple(
+            a.iter(filter_=TFilter("responseCode|limit|data", ..., ("role.*", re.compile("source.*")), str_as_re=True))
+        )
         self.assertTrue(all(e in b for e in c), "Checking if it works to convert str to regex when requested")
         filter_args = ["a|c", ("abc", "a.*")]
         self.assertEqual(filter_args, TFilter(*filter_args).args, "No str args are changed if string_as_re=False")
@@ -215,20 +227,24 @@ class TestTreeO(unittest.TestCase):
         self.assertEqual(b, set(TreeO.iter(f)), "Iterating through sets, some sets stacked in sets")
         self.assertEqual(
             [("responseCode", 200), ("limit", 10000), ("offset", 0), ("data", 4, {"state": 3, "comment": None})],
-            a.iter(3, filter_=TFilter(({"responseCode", "limit", "offset"}, TFilter("data", 4, {"comment", "state"})))),
+            list(
+                a.iter(
+                    3, filter_=TFilter(({"responseCode", "limit", "offset"}, TFilter("data", 4, {"comment", "state"})))
+                )
+            ),
             "Using sets to accelerate filtering, both as a standalone argument and with other args in a tuple",
         )
 
     def test_filter(self):
         self.assertEqual(
-            {'1': [{'a': False, '1': (1,)}], 'a': [{'b': 1}]},
+            {"1": [{"a": False, "1": (1,)}], "a": [{"b": 1}]},
             TreeO.filter(self.a, filter_=TFilter(..., lambda x: x % 2), copy=True),
-            "Filtering using a lambda on the default test-datastructure"
+            "Filtering using a lambda on the default test-datastructure",
         )
         self.assertEqual(
-            {'1': [[1, True, 'a', ('f', {'q', 'a'})]], 'a': [[3, 4]]},
+            {"1": [[1, True, "a", ("f", {"q", "a"})]], "a": [[3, 4]]},
             TreeO.filter(self.a, filter_=TFilter(..., lambda x: x % 2, inexclude="--"), copy=True),
-            "Filtering using a lambda on the default test-datastructure"
+            "Filtering using a lambda on the default test-datastructure",
         )
         with open("test-data.json") as fp:
             a = TreeO(json.load(fp))
