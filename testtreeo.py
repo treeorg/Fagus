@@ -1,5 +1,6 @@
 import copy
 import json
+import math
 import re
 import unittest
 from ipaddress import IPv6Address, IPv4Network, IPv6Network, ip_address
@@ -115,6 +116,11 @@ class TestTreeO(unittest.TestCase):
             ],
             list(a.iter(path="a", return_node=True, iter_nodes=True)),
             "Using iter_nodes to get references to all the nodes that have been traversed on the way",
+        )
+        self.assertEqual(
+            {"1": [{"a": False, "1": (1,)}], "a": [{"b": 1}]},
+            a.iter(filter_=TFilter(..., 1)).skip(0),
+            "Using iterator.skip() actually filters the skipped node if necessary",
         )
         with open("test-data.json") as fp:
             a = TreeO(json.load(fp))
@@ -543,6 +549,92 @@ class TestTreeO(unittest.TestCase):
         a = TreeO((((1, 0), 2), [3, 4, (5, (6, 7)), 8]))
         a.pop("1 2 1 1")
         self.assertEqual((((1, 0), 2), [3, 4, [5, [6]], 8]), a(), "Keeping tuples below if possible")
+
+    def test_merge(self):
+        b = {"a": {"b": {"c": 5}}, "d": "e"}
+        c = {"a": {"b": {"k": 1, "l": 2, "m": 3}, "t": 5}, "u": {"v": {"w": "x"}}, "d": 4}
+        self.assertEqual(
+            {"a": {"b": {"c": 5, "k": 1, "l": 2, "m": 3}, "t": 5}, "d": 4, "u": {"v": {"w": "x"}}},
+            TreeO.merge(b, c, copy=True),
+            "Merging only dicts in default settings, where a value that exists in both places is replaced",
+        )
+        self.assertEqual(
+            {"a": {"b": {"c": 5, "k": 1, "l": 2, "m": 3}, "t": 5}, "d": "e", "u": {"v": {"w": "x"}}},
+            TreeO.merge(b, c, copy=True, new_value_action="i"),
+            "Merging only dicts in default settings, where a value that exists in both objs is kept as it was",
+        )
+        self.assertEqual(
+            {"a": {"b": {"c": [5, 5], "k": 1, "l": 2, "m": 3}, "t": 5}, "d": ["e", 4, "e"], "u": {"v": {"w": "x"}}},
+            TreeO.merge(b, c, b, copy=True, new_value_action="a"),
+            "Merging only dicts in default settings, where old and new value existing in both places are put in a list",
+        )
+        self.assertEqual(
+            {"a": {"b": {"k": 1, "l": 2, "m": 3}, "t": 5}, "d": 4, "u": {"v": {"w": "x"}}},
+            TreeO.merge(b, c, copy=True, update_from=1),
+            "Merging only dicts in default settings, with simple dict update isf full path traversal from level 1",
+        )
+        self.assertEqual(
+            {"1": [[1, True, "a", ["f", {"a", "q"}]], {"a": False, "1": [1]}], "a": [[3, 4], {"b": 1}]},
+            TreeO.merge(self.a, self.a, copy=True),
+            "Merging the test-object self.a with it self only makes every node in self.a editable",
+        )
+        self.assertEqual(
+            self.a,
+            TreeO.merge(self.a, self.a, copy=True, update_from=0),
+            "Merging the test-object self.a with itself only makes every node in self.a editable",
+        )
+        self.assertEqual(
+            {"1": [2 * TreeO.get(self.a, "1 0"), {"a": False, "1": [1]}], "a": [[3, 4], {"b": 1}]},
+            TreeO.merge(self.a, self.a, copy=True, extend_from=2),
+            "Merging self.a with itself, now with extend_from at level 2, so only that inner list is doubled",
+        )
+        self.assertEqual(
+            list(range(1, 7)), TreeO.merge([1, 2, 3], [4, 5, 6], copy=True, extend_from=0), "extend_from at level 0"
+        )
+        self.assertEqual({"a", "b", "c", "e"}, TreeO.merge({"a"}, ("b", "c", "e")), "Updating set with Sequence, lvl 0")
+        self.assertEqual({"a", "b", "c", "e"}, TreeO.merge({"a"}, {"b", "c", "e"}), "Updating set with set, lvl 0")
+        self.assertRaisesRegex(TypeError, "Unsupported operand types", TreeO.merge, set(), {})
+        self.assertRaisesRegex(TypeError, "Unsupported operand types", TreeO.merge, [1, 2, 3], {})
+        self.assertRaisesRegex(TypeError, "Unsupported operand types", TreeO.merge, {}, [1, 2, 3])
+        with open("test-data.json") as fp:
+            a = TreeO(json.load(fp))
+        self.assertEqual(
+            a["data"][5:],
+            TreeO.merge(a["data"][:5], a["data"][5:], copy=True),
+            "Overriding the first five records in the test-data with the last",
+        )
+        self.assertEqual(
+            a["data"][5:],
+            TreeO.merge([], a["data"][5:], copy=True),
+            "Overriding the first five records in the test-data with the last",
+        )
+        self.assertEqual(
+            {
+                "id": 9922401,
+                "lastModified": 1385016682000,
+                "sourceId": 301,
+                "source": {"id": 301, "alias": "joxeankoret-c4", "name": "Joxeankoret (diff)"},
+                "roleId": 33,
+                "role": {"id": 33, "alias": "malware-server", "name": "Malware server"},
+                "firstSeen": 1385016663000,
+                "lastSeen": 1385664000000,
+                "numObservations": 1,
+                "state": 3,
+                "comment": None,
+                "domainName": {"fqdn": "dlp.dlsofteclipse.com"},
+                "responseCode": 200,
+                "limit": 10000,
+                "offset": 0,
+                "count": 0,
+                "size": 10000,
+            },
+            TreeO.merge(
+                a["data 4"], TreeO.iter(a, filter_=TFilter(..., TValueFilter(lambda x: isinstance(x, int))), copy=True)
+            ),
+            "Merging with filtered iterator, without touching the original object",
+        )
+        self.assertEqual([1, 2, 3], TreeO([{"a": 1}]) + [1, 2, 3], "Testing the plus (+) operator")
+        self.assertEqual([{"a": 1}, 2, 3], [1, 2, 3] + TreeO([{"a": 1}]), "Testing the plus (+) operator from right")
 
     def test_serialize(self):
         test_obj = {date(2021, 3, 6): [time(6, 45, 22), datetime(2021, 6, 23, 5, 45, 22)], ("hei", "du"): {3, 4, 5}}
