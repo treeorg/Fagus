@@ -260,6 +260,103 @@ class TestTreeO(unittest.TestCase):
             "Simplest ever filtering at base-level",
         )
         self.assertEqual(
+            dict(responseCode=200, limit=10000, messages=[], metaData={}, offset=0, count=0, size=10000),
+            a.filter(TFilter("data", inexclude="-"), copy=True),
+            "Using inexclude to turn around the filter and give everything except data at base-level",
+        )
+        self.assertEqual(
+            [
+                {"sourceId": 889, "roleId": 182, "firstSeen": 1548169200000, "lastSeen": 1561951800000},
+                {"sourceId": 5662, "roleId": 33, "firstSeen": 1548169200000, "lastSeen": 1552989600000},
+            ],
+            a.filter(
+                TFilter(..., (TCheckFilter("state", 3, invert=True), ".*(Seen|Id)"), str_as_re=True),
+                "data",
+                copy=True,
+            ),
+            "Testing invert on a TCheckFilter, getting all the nodes that have a state unlike 3",
+        )
+        b = TreeO(a, copy=True)
+        b.filter(
+            path="data",
+            filter_=TFilter(
+                ...,
+                (
+                    TCheckFilter(
+                        (
+                            TValueFilter(lambda x: len(x) == 3, lambda x: bool(x)),
+                            TCheckFilter("alias", "file-analyzer-domain"),
+                            "source",
+                        ),
+                        "id",
+                        889,
+                    ),
+                    TFilter("state", 1, inexclude="+-"),
+                    "role",
+                ),
+                "alias",
+                inexclude="++-",
+            ),
+        ),
+        self.assertEqual(
+            TreeO(
+                {
+                    "responseCode": 200,
+                    "limit": 10000,
+                    "offset": 0,
+                    "count": 0,
+                    "metaData": {},
+                    "messages": [],
+                    "data": [{"role": {"id": 182, "name": "Intel from sandbox runs"}, "state": 2}],
+                    "size": 10000,
+                }
+            ),
+            b,
+            "A lot of check- and ordinary filters stacked into each other. Filtering at path, comparing the whole obj",
+        )
+        self.assertEqual(
+            [],
+            a.filter(path="data", filter_=TFilter((TValueFilter(lambda x: len(x) < 1), ...)), copy=True),
+            "Verifying that a value-filter actually returns an empty list if its condition isn't met",
+        )
+        self.assertEqual(
+            a["data"],
+            a.filter(path="data", filter_=TFilter((TValueFilter(lambda x: len(x) == 10), ...)), copy=True),
+            "Verifying that a value-filter actually returns the whole node if its condition is met",
+        )
+        self.assertEqual(
+            {"data": a["data"]},
+            a.filter(filter_=TFilter("data", TValueFilter(lambda x: len(x) > 1)), copy=True),
+            "Verifying that a value-filter also works if it comes as a standalone argument, then including all the "
+            "subnodes the filter matches (in this case all).",
+        )
+        self.assertEqual(
+            {"data": a["data"]},
+            a.filter(filter_=TFilter("data", TValueFilter(lambda x: len(x) < 10, invert=True)), copy=True),
+            "Verifying that a value-filter also works if it comes as a standalone argument, then including all the "
+            "subnodes the filter matches (in this case all).",
+        )
+
+    def test_split(self):
+        return
+        self.assertEqual(
+            {"1": [{"a": False, "1": (1,)}], "a": [{"b": 1}]},
+            TreeO.split(self.a, filter_=TFilter(..., lambda x: x % 2), copy=True),
+            "Filtering using a lambda on the default test-datastructure",
+        )
+        self.assertEqual(
+            {"1": [[1, True, "a", ("f", {"q", "a"})]], "a": [[3, 4]]},
+            TreeO.filter(self.a, filter_=TFilter(..., lambda x: x % 2, inexclude="--"), copy=True),
+            "Filtering using a lambda on the default test-datastructure",
+        )
+        with open("test-data.json") as fp:
+            a = TreeO(json.load(fp))
+        self.assertEqual(
+            {"responseCode": 200, "limit": 10000, "size": 10000},
+            a.filter(TFilter({"responseCode", "limit", "size"}), copy=True),
+            "Simplest ever filtering at base-level",
+        )
+        self.assertEqual(
             {"responseCode": 200, "limit": 10000, "offset": 0, "count": 0, "size": 10000},
             a.filter(TFilter("data", inexclude="-"), copy=True),
             "Using inexclude to turn around the filter and give everything except data at base-level",

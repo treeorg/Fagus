@@ -690,8 +690,9 @@ class TreeO(Mapping, Sequence, metaclass=TreeOMeta):
                     match_v = True
                 elif TreeO.__is__(v, Collection):
                     if match_k[1].match_extra_filters(v, match_k[2]):
+                        v_old = v
                         v = TreeO.filter_r(v, copy, *match_k[1:])
-                        match_v = bool(v)
+                        match_v = bool(v_old) == bool(v)
                     else:
                         match_v = False
                 else:
@@ -702,6 +703,114 @@ class TreeO(Mapping, Sequence, metaclass=TreeOMeta):
                     else:
                         new_node[k] = TreeO.copy_any(v) if copy else v
         return new_node
+
+    def split(
+        self: Collection,
+        filter_: TFilter,
+        path: Any = "",
+        return_node: bool = ...,
+        copy: bool = False,
+        default_value=...,
+        value_split: str = ...,
+    ):
+        """Filters self, only keeping the nodes that pass the filter
+
+        \\* means that the parameter is a TreeO-Setting, see TreeO-class-docstring for more information about settings
+
+        Args:
+            filter_: TFilter-object in which the filtering-critera are specified
+            path: at this point in self, the filtering will start (apply filter_ relatively from this point).
+                Default "", meaning that the whole object is filtered, see get() and README for examples
+            return_node: * return the filtered self as TreeO-object (default is just to return the filtered node)
+            copy: Create a copy and filter on that copy. Default is to modify the object directly
+            default_value: * returned if path doesn't exist in self, or the
+            value_split: * used to split path into a list if path is a string, default " "
+
+        Returns:
+            the filtered object, starting at path
+        """
+        if isinstance(path, str):
+            l_path = path.split(TreeO.opt(self, "value_split", value_split)) if path else []
+        else:
+            l_path = list(path) if TreeO.__is__(path, Collection) else [path]
+        if copy:
+            parent_node = TreeO.get(self, l_path[:-1], _None, False, copy, value_split)
+        else:
+            parent_node = TreeO._mutable_parent(self, l_path, default_value=_None)
+        node = _None if parent_node is _None else TreeO.get(parent_node, l_path[-1:], _None, False)
+        if node is _None or not TreeO.__is__(node, Collection):
+            filter_in = TreeO.opt(self, "default_value", default_value)
+            filter_out = filter_in.copy() if hasattr(filter_in, "copy") else filter_in
+            if not copy:
+                return TreeO.child(self, filter_out) if TreeO.opt(self, "return_node", return_node) else filter_out
+        else:
+            filter_in, filter_out = TreeO.split_r(node, copy, filter_)
+            if not filter_.match_extra_filters(node):
+                filter_in.clear()
+                filter_out = node
+            if not copy:
+                if path:
+                    parent_node[int(l_path[-1]) if isinstance(parent_node, Sequence) else l_path[-1]] = filter_in
+                else:
+                    parent_node.clear()
+                    getattr(parent_node, "extend" if isinstance(parent_node, MutableSequence) else "update")(filter_in)
+                return TreeO.child(self, filter_out) if TreeO.opt(self, "return_node", return_node) else filter_out
+        return (
+            (TreeO.child(self, filter_in), TreeO.child(self, filter_out))
+            if TreeO.opt(self, "return_node", return_node)
+            else (filter_in, filter_out),
+        )
+
+    @staticmethod
+    def split_r(node: Collection, copy: bool, filter_: Optional[TFilter], index: int = 0):
+        """Internal recursive method that facilitates filtering
+
+        Args:
+            node: the node to filter
+            copy: creates copies instead of directly referencing nodes included in the filter
+            filter_: TFilter-object in which the filtering-critera are specified
+            index: index in the current filter-object
+
+        Returns:
+            the filtered node
+        """
+
+        if isinstance(node, Mapping):
+            filter_in, filter_out, action, match_key = {}, {}, None, filter_.match if filter_ else None
+        elif isinstance(node, Sequence):
+            filter_in, filter_out, action, match_key = [], [], "append", filter_.match_list if filter_ else None
+        else:
+            filter_in, filter_out, action, match_key = set(), set(), "add", None
+        for k, v in node.items() if isinstance(node, Mapping) else enumerate(node):
+            v_in, v_out = _None, _None
+            match_k = match_key(k, index, len(node)) if callable(match_key) else (True, filter_, index + 1)
+            match_v = False
+            if match_k[0]:
+                if match_k[1] is None:
+                    match_v = True
+                elif TreeO.__is__(v, Collection):
+                    if match_k[1].match_extra_filters(v, match_k[2]):
+                        v_in, v_out = TreeO.split_r(v, copy, *match_k[1:])
+                        match_v = bool(v) == bool(v_in)
+                else:
+                    match_v, *_ = match_k[1].match(v, match_k[2])
+                if match_v or v_in is not _None:
+                    if v_in is _None:
+                        v_in = v
+                    if action:
+                        getattr(filter_in, action)(TreeO.copy_any(v_in) if copy else v_in)
+                    else:
+                        filter_in[k] = TreeO.copy_any(v_in) if copy else v_in
+            if not match_v or v_out is not _None:
+                if v_out is _None:
+                    v_out = v
+                elif bool(v) != bool(v_out):
+                    continue
+                if action:
+                    getattr(filter_out, action)(TreeO.copy_any(v_out) if copy else v_out)
+                else:
+                    filter_out[k] = TreeO.copy_any(v_out) if copy else v_out
+        return filter_in, filter_out
 
     def set(
         self: Union[Mapping, Sequence],
