@@ -235,7 +235,9 @@ class TestTreeO(unittest.TestCase):
             [("responseCode", 200), ("limit", 10000), ("offset", 0), ("data", 4, {"state": 3, "comment": None})],
             list(
                 a.iter(
-                    3, filter_=TFilter(({"responseCode", "limit", "offset"}, TFilter("data", 4, {"comment", "state"})))
+                    3,
+                    filter_=TFilter(({"responseCode", "limit", "offset"}, TFilter("data", 4, {"comment", "state"}))),
+                    filter_ends=True,
                 )
             ),
             "Using sets to accelerate filtering, both as a standalone argument and with other args in a tuple",
@@ -487,8 +489,6 @@ class TestTreeO(unittest.TestCase):
         a = TreeO((((1, 0), 2), [3, 4, (5, (6, 7)), 8]))
         a.set(5, "1 2 1 1")
         self.assertEqual((((1, 0), 2), [3, 4, [5, [6, 5]], 8]), a(), "Keeping tuples below if possible")
-        self.assertRaisesRegex(TypeError, "TreeO can't set in a set.", TreeO({frozenset()}).set, 5, "1 3")
-        self.assertRaisesRegex(TypeError, "TreeO can't set in a set.", TreeO(({"0": {5, 6}}, [4, 3])).set, 5, "0 0 0")
 
     def test_append(self):
         a = copy.deepcopy(self.a)
@@ -650,6 +650,8 @@ class TestTreeO(unittest.TestCase):
     def test_merge(self):
         b = {"a": {"b": {"c": 5}}, "d": "e"}
         c = {"a": {"b": {"k": 1, "l": 2, "m": 3}, "t": 5}, "u": {"v": {"w": "x"}}, "d": 4}
+        f = TreeO.merge(b, b, "c b a", copy=True)
+
         self.assertEqual(
             {"a": {"b": {"c": 5, "k": 1, "l": 2, "m": 3}, "t": 5}, "d": 4, "u": {"v": {"w": "x"}}},
             TreeO.merge(b, c, copy=True),
@@ -662,7 +664,7 @@ class TestTreeO(unittest.TestCase):
         )
         self.assertEqual(
             {"a": {"b": {"c": [5, 5], "k": 1, "l": 2, "m": 3}, "t": 5}, "d": ["e", 4, "e"], "u": {"v": {"w": "x"}}},
-            TreeO.merge(b, c, b, copy=True, new_value_action="a"),
+            TreeO.merge(TreeO.merge(b, c, copy=True, new_value_action="a"), b, copy=True, new_value_action="a"),
             "Merging only dicts in default settings, where old and new value existing in both places are put in a list",
         )
         self.assertEqual(
