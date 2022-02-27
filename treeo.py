@@ -10,9 +10,9 @@
 # INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN
 # AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
 # PERFORMANCE OF THIS SOFTWARE.
-import math
 import copy as cp
 import re
+import sys
 from abc import ABCMeta
 from collections.abc import (
     Collection,
@@ -27,6 +27,8 @@ from collections.abc import (
 )
 from datetime import date, datetime, time
 from typing import Union, Tuple, Any, Optional, List
+
+RE_PATTERN = getattr(re, "Pattern" if hasattr(re, "Pattern") else "_pattern_type")
 
 
 class _None:
@@ -218,7 +220,7 @@ class TKeyFilter(TFilterBase):
             else:
                 if callable(e):
                     match = e(value)
-                elif isinstance(e, re.Pattern) or str(type(e)) == "<type 'SRE_Pattern'>":
+                elif isinstance(e, RE_PATTERN):
                     match = bool(e.fullmatch(value))
                 elif isinstance(e, Set):
                     match = value in e
@@ -396,17 +398,15 @@ class TreeOMeta(ABCMeta):
             lambda x: x in ("d", "l"),
             'Default_node_type must be either "d" for dict ' 'or "l" for list.',
         ),
-        default_value=(None,),
+        default=(None,),
         iter_fill=(_None,),
         iter_nodes=(False, bool),
         is_not=((str, bytes, bytearray), tuple, lambda x: all(isinstance(e, type) for e in x)),
         list_insert=(
-            0,
+            sys.maxsize,
             int,
-            lambda x: x >= 0,
-            "List-insert must be a positive int. By default (list_insert == 0), "
-            "all existing list-indices will be traversed. If list-insert > 0, a "
-            "new node will be inserted in the n'th list that is traversed.",
+            "List-insert must be a positive int. By default (list_insert == sys.maxsize), all existing list-indices are"
+            " traversed. If list-insert < maxsize, earliest at level n a new node is inserted if that node is a list",
         ),
         no_node=((str, bytes, bytearray), tuple, lambda x: all(isinstance(e, type) for e in x)),
         mod_functions=(
@@ -474,12 +474,12 @@ class TreeO(Mapping, Sequence, metaclass=TreeOMeta):
     def get(
         self: Collection,
         path: Any = "",
-        default_value=...,
+        default=...,
         return_node: bool = ...,
         copy: bool = False,
         value_split: str = ...,
     ) -> Any:
-        """Retrieves value at path. If the value doesn't exist, default_value is returned.
+        """Retrieves value at path. If the value doesn't exist, default is returned.
 
         To get "hello" from x = TreeO({"a": ["b", {"c": "d"}], e: ["f", "g"]}), you can use x[("a", 1, "c")]. The tuple
         ("a", 1, "c") is the path-parameter that is used to traverse x. At first, the list at "a" is picked in the
@@ -493,7 +493,7 @@ class TreeO(Mapping, Sequence, metaclass=TreeOMeta):
         Args:
             path: List/Tuple of key-values to recursively traverse self. Can also be specified as string, that is split
                 into a tuple using value_split
-            default_value: * returned if path doesn't exist in self
+            default: * returned if path doesn't exist in self
             return_node: * returns a TreeO-object if the value at path is a list or dict
             copy: Option to return a copy of the returned value. The default behaviour is that if there are subnodes
                 (dicts, lists) in the returned values and you make changes to these nodes, these changes will also be
@@ -502,7 +502,7 @@ class TreeO(Mapping, Sequence, metaclass=TreeOMeta):
             value_split: * used to split path into a list if path is a string, default " "
 
         Returns:
-            the value if the path exists, or default_value if it doesn't exist
+            the value if the path exists, or default if it doesn't exist
         """
         node = self.obj if isinstance(self, TreeO) else self
         if isinstance(path, str):
@@ -515,10 +515,10 @@ class TreeO(Mapping, Sequence, metaclass=TreeOMeta):
                     if TreeO.__is__(node, Mapping, Sequence):
                         node = node[node_name if isinstance(node, Mapping) else int(node_name)]
                     else:
-                        node = TreeO.opt(self, "default_value", default_value)
+                        node = TreeO.opt(self, "default", default)
                         break
                 except (IndexError, ValueError, KeyError):
-                    node = TreeO.opt(self, "default_value", default_value)
+                    node = TreeO.opt(self, "default", default)
                     break
         if copy:
             node = TreeO.copy_any(node)
@@ -529,9 +529,17 @@ class TreeO(Mapping, Sequence, metaclass=TreeOMeta):
         )
 
     @staticmethod
-    def _ensure_mutable_node(
-        node: Collection, nodes: List[Collection], path: Sequence, empty_nodes: bool = True
-    ) -> Union[MutableMapping, MutableSequence, MutableSet]:
+    def _mutable_node(nodes: List[Collection], path: Sequence) -> Union[MutableMapping, MutableSequence, MutableSet]:
+        """Internal function that ensures that the current node (the last in nodes) is mutable
+
+        Args:
+            nodes: list of nodes that probably will be modified to make the last node mutable
+            path: list of keys used to traverse the nodes (and that link the nodes toghether)
+
+        Returns:
+            the node, but modifiable (a tuple will have turned into a list, a frozenset will have turned into a set)
+        """
+        node = None
         i = -1
         for i in range(i, -len(nodes) - 1, -1):
             node = nodes[i]
@@ -544,19 +552,18 @@ class TreeO(Mapping, Sequence, metaclass=TreeOMeta):
                 node[path[i]] = set(nodes[i + 1])
             else:
                 node[path[i]] = (dict if isinstance(nodes[i + 1], Mapping) else list)(nodes[i + 1])
+            nodes[i] = node
             node = node[path[i]]
-        if empty_nodes:
-            nodes.clear()
         return node
 
     def _mutable_parent(
-        self: Collection, l_path: list, list_insert=0, default_value=None
+        self: Collection, l_path: list, list_insert=sys.maxsize, default=None
     ) -> Optional[Union[MutableMapping, MutableSequence, MutableSet]]:
         """Internal function retrieving the parent_node, changing necessary nodes on the way to make it mutable
 
         Args:
             l_path: must already be a list, so a string from a calling path-function must already be split
-            default_value: returned if path doesn't exist in self
+            default: returned if path doesn't exist in self
             list_insert: defines at which list-level a new node shall be inserted instead of traversing the tree. See
                 docstring for set or README.md for more thorough documentation. Default 0 (parameter is ignored)
 
@@ -569,18 +576,20 @@ class TreeO(Mapping, Sequence, metaclass=TreeOMeta):
             for i in range(len(l_path) - 1):
                 if isinstance(node, Sequence):
                     l_path[i] = int(l_path[i])
-                    list_insert -= 1
-                    if list_insert == 1:
-                        return default_value
+                    if list_insert <= 0:
+                        return default
                 node = node[l_path[i]]
                 nodes.append(node)
-            return TreeO._ensure_mutable_node(node, nodes, l_path)
+                list_insert -= 1
+            if TreeO.__is__(node, Collection):
+                return TreeO._mutable_node(nodes, l_path)
         except (IndexError, ValueError, KeyError):
-            return default_value
+            pass
+        return default
 
     def iter(
         self: Collection,
-        max_items: int = -1,
+        max_depth: int = sys.maxsize,
         path: Any = "",
         filter_: TFilter = None,
         return_node: bool = ...,
@@ -596,19 +605,22 @@ class TreeO(Mapping, Sequence, metaclass=TreeOMeta):
         \\* means that the parameter is a TreeO-Setting, see TreeO-class-docstring for more information about settings
 
         Args:
-            max_items: Defines the max amount of keys to have in a tuple. E. g. if max_items is four, it means that the
-                keys of the three topmost nodes will be put in the tuple. The last element in the tuple contains the
-                remaining part of the tree at that path as a dict / list. Default -1 (iterate as deeply as possible)
+            max_depth: Can be used to limit how deep the iteration goes. Example: a = {"a": ["b", ["c", "d"]], "e": "f"}
+                If max_depth is sys.max_size, all the nodes are traversed: [("a", "b", "c"), ("a", "b", "d"]),
+                ("e", "f")]. If max_depth is 1, iter returns [("a", "b", ["c", "d"]), ("e", "f")], so ["c", "d"] is not
+                iterated through but returned as a node. If max_depth is 0, iter returns [("a", ["b", ["c", "d"]]),
+                ("e", "f")], effectively the same as dict.items(). Default sys.maxsize (iterate as deeply as possible)
+                A negative number (e.g. -1) is treated as sys.maxsize.
             path: Start iterating at path. Internally calls get(path), and iterates on the node get returns. See get()
             filter_: Only iterate over specific nodes defined using TFilter (see README.md and TFilter for more info)
             return_node: * If the leaf in the tuple is a dict or list, return it as a TreeO-object. This setting has no
-                effect if max_items is -1.
-            iter_fill: * Fill up tuples with iter_fill (can be any object, e. g. None) to ensure that all the tuples
+                effect if max_items is sys.maxsize.
+            iter_fill: * Fill up tuples with iter_fill (can be any object, e.g. None) to ensure that all the tuples
                 iter() returns are exactly max_items long. This can be useful if you want to unpack the keys / leaves
                 from the tuples in a loop, which fails if the count of items in the tuples varies. This setting has no
                 effect if max_items is -1. The default value is ..., meaning that the tuples are not filled, and the
                 length of the tuples can vary. See README.md for a more thorough example.
-            reduce: Extract only some specified values from the tuples. E. g. if ~ is -1, only the leaf-values are
+            reduce: Extract only some specified values from the tuples. E.g. if ~ is -1, only the leaf-values are
                 returned. ~ can also be a list of indices. Default None (don't reduce the tuples)
             copy: Iterate on a shallow-copy to make sure that you can edit base-object without disturbing the iteration
             iter_nodes: * includes the traversed nodes into the resulting tuples, order is then:
@@ -623,16 +635,11 @@ class TreeO(Mapping, Sequence, metaclass=TreeOMeta):
         """
         iter_fill = TreeO.opt(self, "iter_fill", iter_fill)
         node = TreeO.get(self, path, (), True, copy and iter_fill, value_split)
-        if isinstance(max_items, int) and 0 <= max_items <= 1 or max_items < -1:
-            raise ValueError(
-                "max_items must be either -1 to always iter to the leaf, or >= 2 to have up to that "
-                "number of items in the tuples."
-            )
         if not TreeO.__is__(node, Collection) or isinstance(filter_, TFilter) and not filter_.match_extra_filters(node):
             node = TreeO.child(node, ())
         return TreeOIterator(
             node,
-            max_items,
+            max_depth,
             filter_,
             TreeO.opt(self, "return_node", return_node),
             iter_fill,
@@ -648,7 +655,7 @@ class TreeO(Mapping, Sequence, metaclass=TreeOMeta):
         path: Any = "",
         return_node: bool = ...,
         copy: bool = False,
-        default_value=...,
+        default=...,
         value_split: str = ...,
     ):
         """Filters self, only keeping the nodes that pass the filter
@@ -661,7 +668,7 @@ class TreeO(Mapping, Sequence, metaclass=TreeOMeta):
                 Default "", meaning that the whole object is filtered, see get() and README for examples
             return_node: * return the filtered self as TreeO-object (default is just to return the filtered node)
             copy: Create a copy and filter on that copy. Default is to modify the object directly
-            default_value: * returned if path doesn't exist in self, or the value at path can't be filtered
+            default: * returned if path doesn't exist in self, or the value at path can't be filtered
             value_split: * used to split path into a list if path is a string, default " "
 
         Returns:
@@ -674,10 +681,10 @@ class TreeO(Mapping, Sequence, metaclass=TreeOMeta):
         if copy:
             parent_node = TreeO.get(self, l_path[:-1], _None, False, copy, value_split)
         else:
-            parent_node = TreeO._mutable_parent(self, l_path, default_value=_None)
+            parent_node = TreeO._mutable_parent(self, l_path, default=_None)
         node = _None if parent_node is _None else TreeO.get(parent_node, l_path[-1:], _None, False)
         if node is _None or not TreeO.__is__(node, Collection):
-            filtered = TreeO.opt(self, "default_value", default_value)
+            filtered = TreeO.opt(self, "default", default)
         else:
             filtered = TreeO.filter_r(node, copy, filter_)
             if not filter_.match_extra_filters(node):
@@ -736,7 +743,7 @@ class TreeO(Mapping, Sequence, metaclass=TreeOMeta):
         path: Any = "",
         return_node: bool = ...,
         copy: bool = False,
-        default_value=...,
+        default=...,
         value_split: str = ...,
     ):
         """Filters self, only keeping the nodes that pass the filter
@@ -749,7 +756,7 @@ class TreeO(Mapping, Sequence, metaclass=TreeOMeta):
                 Default "", meaning that the whole object is filtered, see get() and README for examples
             return_node: * return the filtered self as TreeO-object (default is just to return the filtered node)
             copy: Create a copy and filter on that copy. Default is to modify the object directly
-            default_value: * returned if path doesn't exist in self, or the
+            default: * returned if path doesn't exist in self, or the
             value_split: * used to split path into a list if path is a string, default " "
 
         Returns:
@@ -762,16 +769,15 @@ class TreeO(Mapping, Sequence, metaclass=TreeOMeta):
         if copy:
             parent_node = TreeO.get(self, l_path[:-1], _None, False, copy, value_split)
         else:
-            parent_node = TreeO._mutable_parent(self, l_path, default_value=_None)
+            parent_node = TreeO._mutable_parent(self, l_path, default=_None)
         node = _None if parent_node is _None else TreeO.get(parent_node, l_path[-1:], _None, False)
         if node is _None or not TreeO.__is__(node, Collection):
-            filter_out = TreeO.opt(self, "default_value", default_value)
+            filter_out = TreeO.opt(self, "default", default)
             TreeO.set(self, filter_out, path, value_split=value_split)
             if copy:
                 filter_in = filter_out.copy() if hasattr(filter_out, "copy") else filter_out
             else:
                 return TreeO.child(self, filter_out) if TreeO.opt(self, "return_node", return_node) else filter_out
-
         else:
             filter_in, filter_out = TreeO.split_r(node, copy, filter_)
             if not filter_.match_extra_filters(node):
@@ -1035,28 +1041,33 @@ class TreeO(Mapping, Sequence, metaclass=TreeOMeta):
                 if TreeO.__is__(node, Sequence):
                     if node_key is ...:
                         raise ValueError(f"Can't parse numeric list-index from {node_key}.")
-                    elif node_key >= len(node):
+                    elif node_key >= len(node) and list_insert:
                         if nodes:
-                            node = TreeO._ensure_mutable_node(node, nodes, l_path[: i + 1])
+                            node = TreeO._mutable_node(nodes, l_path[: i + 1])
+                            nodes.clear()
                         node.append([] if next_node is Sequence else {})
                         node_key = -1
                     elif node_key < -len(node):
                         if nodes:
-                            node = TreeO._ensure_mutable_node(node, nodes, l_path[: i + 1])
+                            node = TreeO._mutable_node(nodes, l_path[: i + 1])
+                            nodes.clear()
                         node.insert(0, [] if next_node is Sequence else {})
                         node_key = 0
                     if i == len(l_path) - 1:
                         if nodes:
-                            node = TreeO._ensure_mutable_node(node, nodes, l_path[: i + 1])
-                        if list_insert == 1:
+                            node = TreeO._mutable_node(nodes, l_path[: i + 1])
+                            nodes.clear()
+                        if list_insert == 0:
                             node.insert(node_key, TreeO._put_value(_None, value, action, index))
                         else:
                             node[node_key] = TreeO._put_value(node[node_key], value, action, index)
                     else:
-                        if list_insert == 1:
+                        if list_insert <= 0:
                             if nodes:
-                                node = TreeO._ensure_mutable_node(node, nodes, l_path[: i + 1])
+                                node = TreeO._mutable_node(nodes, l_path[: i + 1])
+                                nodes.clear()
                             node.insert(node_key, [] if next_node is Sequence else {})
+                            list_insert = sys.maxsize
                         else:
                             next_node_type = (
                                 Mapping
@@ -1064,18 +1075,19 @@ class TreeO(Mapping, Sequence, metaclass=TreeOMeta):
                                 else (Sequence if TreeO.__is__(node[node_key], Sequence) else _None)
                             )
                             if next_node_type is _None or (
-                                    next_node != next_node_type
-                                    if node_types[i + 1: i + 2]
-                                    else next_node_type is Sequence and next_index is ...
+                                next_node != next_node_type
+                                if node_types[i + 1 : i + 2]
+                                else next_node_type is Sequence and next_index is ...
                             ):
                                 if nodes:
-                                    node = TreeO._ensure_mutable_node(node, nodes, l_path[: i + 1])
+                                    node = TreeO._mutable_node(nodes, l_path[: i + 1])
+                                    nodes.clear()
                                 node[node_key] = [] if next_node is Sequence else {}
-                        list_insert -= 1
                 elif isinstance(node, Mapping):  # isinstance(node, dict)
                     if i == len(l_path) - 1:
                         if nodes:
-                            node = TreeO._ensure_mutable_node(node, nodes, l_path[: i + 1])
+                            node = TreeO._mutable_node(nodes, l_path[: i + 1])
+                            nodes.clear()
                         node[node_key] = TreeO._put_value(node.get(node_key, _None), value, action, index)
                     else:
                         next_value = node.get(node_key, _None)
@@ -1090,11 +1102,13 @@ class TreeO(Mapping, Sequence, metaclass=TreeOMeta):
                             else next_node_type is Sequence and next_index is ...
                         ):
                             if nodes:
-                                node = TreeO._ensure_mutable_node(node, nodes, l_path[: i + 1])
+                                node = TreeO._mutable_node(nodes, l_path[: i + 1])
+                                nodes.clear()
                             node[node_key] = [] if next_node is Sequence else {}
                 node = node[node_key]
                 if nodes:
                     nodes.append(node)
+                list_insert -= 1
         else:
             if not TreeO.__is__(obj, MutableMapping, MutableSequence, MutableSet):
                 raise TypeError(f"Can't modify base-object self having the immutable type {type(self).__name__}.")
@@ -1159,9 +1173,9 @@ class TreeO(Mapping, Sequence, metaclass=TreeOMeta):
     def setdefault(
         self: Collection,
         path: Any = "",
-        default_value=...,
+        default=...,
         return_node: bool = ...,
-        node_types: str=...,
+        node_types: str = ...,
         list_insert: int = ...,
         value_split: str = ...,
         default_node_type: str = ...,
@@ -1173,12 +1187,12 @@ class TreeO(Mapping, Sequence, metaclass=TreeOMeta):
             l_path = list(path) if TreeO.__is__(path, Collection) else [path]
         parent_node = TreeO._mutable_parent(self, l_path, TreeO.opt(self, "list_insert", list_insert), _None)
         if parent_node is _None:
-            value = TreeO.opt(self, "default_value", default_value)
+            value = TreeO.opt(self, "default", default)
             TreeO.set(self, value, path, node_types, list_insert, value_split, False, default_node_type)
         else:
             value = TreeO.get(parent_node, l_path[-1], _None, return_node=False)
             if value is _None:
-                value = TreeO.opt(self, "default_value", default_value)
+                value = TreeO.opt(self, "default", default)
                 TreeO.set(self, value, path, node_types, list_insert, value_split, False, default_node_type)
         return (
             TreeO.child(self, value)
@@ -1188,87 +1202,151 @@ class TreeO(Mapping, Sequence, metaclass=TreeOMeta):
 
     def mod(
         self: Collection,
-        mod_function: Union[TFunc, callable],
+        mod_function: callable,
         path,
         default=...,
-        node_types: str = ...,
         replace_value=True,
+        return_node: bool = ...,
+        node_types: str = ...,
         list_insert: int = ...,
         value_split: str = ...,
         default_node_type: str = ...,
     ):
         """Modifies the value at path using the function-pointer mod_function
 
-        mod can be used like this TreeO.mod(obj, "kitchen spoon", lambda x: x+1, 1) to count the number of spoons in
+        mod can be used like this TreeO.mod(obj, "kitchen spoon", lambda x: x + 1, 1) to count the number of spoons in
         the kitchen. If there is no value to modify, the default value (here 1) will be set at the node.
 
-        mod_function can be a lambda or a function-pointer pointing to a function that takes one argument
-            for usage with more complicated functions, pass a tuple formatted like this to mod_function:
-            (function_pointer, (arg1, arg2, ...), {keyword1: kwarg1, keyword2: kwarg2, keyword3: ...})
-            Explained in words: the first element in the tuple must be the function pointer. Depending on what arguments
-            you need, add a tuple with normal arguments, and a dict with keyword-arguments. The first argument that is
-            passed to the function is always the old value, followed by the args from the tuple and the kwargs from the
-            dict. It's not necessary to define an empty dict / empty list if you don't need args / kwargs.
+        \\* means that the parameter is a TreeO-Setting, see TreeO-class-docstring for more information about settings
 
-        replace_value replace the old value with what the lambda returns, or just use the lambda to modify the old
-            value without replacing it.
+        Args:
+            mod_function: A function pointer or lambda that modifies the existing value at path. TFunc can be used to
+                call more complex functions requiring several arguments.
+            path: position in self at which the value shall be modified
+            default: * this value is set in path if it doesn't exist
+            return_node: * Return new value as a TreeO-object if it is a node (tuple / list / dict)
+            replace_value: Replace the old value with what mod_function returns. Can be deactivated e.g. if mod_function
+                changes the object, but returns None (if ~ stays on, the object is replaced with None). Default True.
+                If no value exists at path, the default value is always set at path (independent of ~)
+            node_types: * Can be used to manually define if the nodes along path are supposed to be lists or dicts. If
+                left empty, default_node_type is used to create new nodes or just use the existing nodes if possible
+            list_insert: * Level at which a new node shall be inserted into the list instead of traversing the existing
+                node in the list at that index. See examples in set()
+            value_split: * used to split path into a list if path is a string, default " "
+            default_node_type: * determines if new nodes by default should be created as (d)ict or (l)ist. Must be
+                either "d" or "l", default "d"
 
-        node_types can be used to manually define if the nodes along path are supposed to be lists or dicts. If left
-            empty, TreeO will try to use TreeO.default_node_type to create new nodes or just use the existing nodes."""
+        Returns:
+            the new value that was returned by the mod_function, or default if there was no value at path
+        """
         obj = self.obj if isinstance(self, TreeO) else self
         if isinstance(path, str):
             l_path = path.split(TreeO.opt(self, "value_split", value_split)) if path else []
         else:
             l_path = list(path) if TreeO.__is__(path, Collection) else [path]
-        parent_node = TreeO._mutable_parent(self, l_path, list_insert=TreeO.opt(self, "list_insert", list_insert))
-        if isinstance(parent_node, (MutableMapping, MutableSequence)):
-            old_value = TreeO.get(parent_node, l_path[-1], _None, return_node=False)
-            if old_value is not _None:
-                if callable(mod_function):
-                    new_value = mod_function(old_value)
-                elif (
-                    TreeO.__is__(mod_function, Sequence)
-                    and len(mod_function) > 0
-                    and callable(mod_function[0])
-                    and all((TreeO.__is__(x, Mapping, Sequence) for x in mod_function[1:]))
-                ):
-                    new_value = mod_function[0](
-                        old_value,
-                        *(a for al in mod_function[1:] if TreeO.__is__(al, Sequence) for a in al),
-                        **{k: v for d in mod_function[1:] if isinstance(d, Mapping) for k, v in d.items()},
-                    )
+        parent = TreeO._mutable_parent(self, l_path, list_insert=TreeO.opt(self, "list_insert", list_insert))
+        if isinstance(parent, (MutableMapping, MutableSequence)) and list_insert != len(l_path):
+            old_value = TreeO.get(parent, l_path[-1], _None, return_node=False)
+            if replace_value:
+                if isinstance(parent, MutableSequence):
+                    if list_insert == len(l_path) - 1:
+                        new_value = TreeO.opt(self, "default", default)
+                        parent.insert(int(l_path[-1]), new_value)
+                    else:
+                        new_value = (
+                            TreeO.opt(self, "default", default) if old_value is _None else mod_function(old_value)
+                        )
+                        parent[int(l_path[-1])] = new_value
                 else:
-                    raise TypeError(
-                        "Valid types for mod_function: lambda, function_pointer_taking_one_arg or"
-                        "(function_pointer, (arg1, arg2, ...), {keyword1: kwarg1, keyword2: kwarg2, ...})"
-                    )
-                if replace_value:
-                    parent_node[int(l_path[-1]) if isinstance(parent_node, Sequence) else l_path[-1]] = new_value
-                return new_value
-        default_value = TreeO.opt(self, "default_value") if default is ... else default
-        TreeO.set(obj, default_value, path, node_types, list_insert, value_split, False, default_node_type)
-        return default_value
+                    new_value = TreeO.opt(self, "default", default) if old_value is _None else mod_function(old_value)
+                    parent[l_path[-1]] = new_value
+        else:
+            new_value = TreeO.opt(self, "default", default)
+            TreeO.set(obj, new_value, path, node_types, list_insert, value_split, False, default_node_type)
+        return (
+            TreeO.child(self, default)
+            if TreeO.__is__(default, Collection) and TreeO.opt(self, "return_node", return_node)
+            else default
+        )
 
-    def pop(self: Collection, path: Any = "", default_value=..., return_node: bool = ..., value_split: str = ...):
+    def mod_all(
+        self: Collection,
+        mod_function: callable,
+        filter_: TFilter = None,
+        path: Any = "",
+        replace_value=True,
+        default=...,
+        max_depth: int = sys.maxsize,
+        return_node: bool = ...,
+        copy=False,
+        value_split: str = ...,
+    ):
+        """Modify all the leaf-values that match a certain filter
+
+        \\* means that the parameter is a TreeO-Setting, see TreeO-class-docstring for more information about settings
+
+        Args:
+            mod_function: A function pointer or lambda that modifies the existing value at path. TFunc can be used to
+                call more complex functions requiring several arguments.
+            filter_: used to select which leaves shall be modified. Default None (all leaves are modified)
+            path: position in self at which the value shall be modified
+            default: * this value is returned if path doesn't exist, or if no leaves match the filter
+            return_node: * Return new value as a TreeO-object if it is a node (tuple / list / dict)
+            replace_value: Replace the old value with what mod_function returns. Can be deactivated e.g. if mod_function
+                changes the object, but returns None (if ~ stays on, the object is replaced with None). Default True.
+                If no value exists at path, the default value is always set at path (independent of ~)
+            max_depth: Defines the maximum depth for the iteration. See TreeO.iter max_depth for more information
+            copy: Can be ued to make sure that the node at path is not modified (instead a modified copy is returned)
+            value_split: * used to split path into a list if path is a string, default " "
+
+        Returns:
+            the node at path where all the leaves matching filter_ are modified, or default if it didn't exist
+        """
+        base = TreeO.get(self, path, _None, False, copy, value_split)
+        if base is _None or not TreeO.__is__(base, Collection) or not base:
+            return TreeO.opt(self, "default") if default is ... else default
+        f_iter = TreeO.iter(base, max_depth, filter_=filter_, return_node=False, iter_fill=_None, iter_nodes=True)
+        if replace_value:
+            parent, last_deepest = None, None
+            for deepest_change, parent_not_deepest, *base_keys, parent_, key, old_value in tuple(
+                (f_iter.deepest_change, f_iter.deepest_change < (len(p) - 3) / 2, *p[1::2], *p[-3:]) for p in f_iter
+            ):
+                if parent_not_deepest or last_deepest != deepest_change:
+                    if not TreeO.__is__(parent_, MutableMapping, MutableSequence, MutableSet):
+                        parent = TreeO._mutable_parent(base, base_keys)
+                    else:
+                        parent = parent_
+                    last_deepest = deepest_change
+                if isinstance(parent, MutableSet):
+                    parent.remove(old_value)
+                    parent.add(mod_function(old_value))
+                else:
+                    parent[key] = mod_function(old_value)
+        else:
+            for *_, old_value in f_iter:
+                mod_function(old_value)
+        return TreeO.child(self, base) if TreeO.opt(self, "return_node", return_node) else base
+
+    def pop(self: Collection, path: Any = "", default=..., return_node: bool = ..., value_split: str = ...):
         """Deletes the value at path and returns it
 
         \\* means that the parameter is a TreeO-Setting, see TreeO-class-docstring for more information about settings
 
         Args:
             path: pop value at this position in self, or don't do anything if path doesn't exist in self
-            default_value: * returned if path doesn't exist in self
+            default: * returned if path doesn't exist in self
             return_node: * return the result as TreeO-object if possible (default is just to return the result)
             value_split: * used to split path into a list if path is a string, default " "
 
         Returns:
-            value at path if it exists, or default_value if it doesn't
+            value at path if it exists, or default if it doesn't
         """
         if isinstance(path, str):
             l_path = path.split(TreeO.opt(self, "value_split", value_split)) if path else []
         else:
             l_path = list(path) if TreeO.__is__(path, Collection) else [path]
-        default_value = TreeO.opt(self, "default_value", default_value)
-        node = TreeO._mutable_parent(self, l_path, default_value=default_value)
+        default = TreeO.opt(self, "default", default)
+        node = TreeO._mutable_parent(self, l_path, default=default)
         try:
             if isinstance(node, MutableMapping):
                 node = node.pop(l_path[-1])
@@ -1278,7 +1356,7 @@ class TreeO(Mapping, Sequence, metaclass=TreeOMeta):
                 node.remove(l_path[-1])
                 node = l_path[-1]
         except (IndexError, ValueError, KeyError):
-            node = default_value
+            node = default
         return (
             TreeO.child(self, node)
             if TreeO.__is__(node, Collection) and TreeO.opt(self, "return_node", return_node)
@@ -1440,7 +1518,7 @@ class TreeO(Mapping, Sequence, metaclass=TreeOMeta):
     ):
         """Returns a list with one tuple for each leaf - the first value is the key, the second is the child-dict."""
         return TreeO.iter(
-            self, 2, path, iter_fill=iter_fill, value_split=value_split, return_node=return_node, copy=copy
+            self, 0, path, iter_fill=iter_fill, value_split=value_split, return_node=return_node, copy=copy
         )
 
     def clear(
@@ -1556,10 +1634,10 @@ class TreeO(Mapping, Sequence, metaclass=TreeOMeta):
         obj: Union["TreeOIterator", Collection],
         path: Any = "",
         copy: bool = False,
-        copy_objects: bool = False,
+        copy_obj: bool = False,
         new_value_action: str = "r",
-        extend_from: int = math.inf,
-        update_from: int = math.inf,
+        extend_from: int = sys.maxsize,
+        update_from: int = sys.maxsize,
         return_node: bool = ...,
         value_split: str = ...,
         node_types: str = ...,
@@ -1573,7 +1651,7 @@ class TreeO(Mapping, Sequence, metaclass=TreeOMeta):
                 values matching a filter defined in iter()
             path: position in base where the new objects shall be merged, default ""
             copy: Don't modify the base-object, modify and return a copy instead
-            copy_objects: The objects to be merged are not modified, but references to subnodes of the objects can be
+            copy_obj: The objects to be merged are not modified, but references to subnodes of the objects can be
                 put into the base-object. Set this to True to prevent that and keep base and objects independent
             new_value_action: This parameter defines what merge is supposed to do if a value at a path is present in the
                 base and in one of the objects to merge. The possible values are: (r)eplace - the value in the base is
@@ -1595,33 +1673,33 @@ class TreeO(Mapping, Sequence, metaclass=TreeOMeta):
             raise ValueError(
                 f"Invalid new_value_action: {new_value_action}. Valid inputs: (r)eplace, (i)gnore or (a)ppend."
             )
-        if isinstance(obj, TreeOIterator):
-            object_ = obj.obj()
-        elif TreeO.__is__(obj, Collection):
-            object_ = obj.obj if isinstance(obj, TreeO) else obj
-        else:
-            raise TypeError(f"Can merge with TreeOIterator or Collection, but not with {type(obj).__name__}")
-        if copy:
-            node = TreeO.get(self, path, _None, False, True, value_split)
-            if node is _None or not TreeO.__is__(node, Collection):
-                return TreeO.child(self, object_) if TreeO.opt(self, "return_node", return_node) else object_
-        else:
-            if isinstance(path, str):
-                t_path = path.split(TreeO.opt(self, "value_split", value_split)) if path else ()
+        node = TreeO.get(self, path, _None, False, copy, value_split)
+        if node is _None or not TreeO.__is__(node, Collection):
+            if isinstance(obj, TreeOIterator):
+                object_ = obj.obj()
+            elif TreeO.__is__(obj, Collection):
+                object_ = obj.obj if isinstance(obj, TreeO) else obj
             else:
-                t_path = tuple(path) if TreeO.__is__(path, Collection) else [path]
-            parent = TreeO._mutable_parent(self, t_path, list_insert=TreeO.opt(self, "list_insert", list_insert))
-            node = TreeO.get(parent, t_path[-1:], _None)
-            if node is _None or not TreeO.__is__(node, Collection):
-                if t_path:
-                    TreeO.set(parent, object_, t_path[-1])
-                    return TreeO.child(self, object_) if TreeO.opt(self, "return_node", return_node) else object_
+                raise TypeError(f"Can merge with TreeOIterator or Collection, but not with {type(obj).__name__}")
+            if copy_obj:
+                object_ = TreeO.__copy__(object_)
+            if not copy:
+                TreeO.set(self, object_, path, node_types, list_insert, value_split, False, default_node_type)
+            return TreeO.child(self, object_) if TreeO.opt(self, "return_node", return_node) else object_
         base_nodes = [node]
+        iter_settings = dict(
+            max_depth=extend_from + update_from,
+            return_node=False,
+            iter_fill=_None,
+            iter_nodes=True,
+            copy=copy_obj,
+            filter_ends=True,
+        )
         if isinstance(obj, TreeOIterator):
             obj_iter = obj
-            obj_iter.__dict__.update(dict(return_node=False, iter_fill=_None, iter_nodes=True))
+            obj_iter.__dict__.update(**iter_settings)
         elif TreeO.__is__(obj, Collection):
-            obj_iter = TreeOIterator(obj if isinstance(obj, TreeO) else TreeO.child(self, obj), iter_nodes=True)
+            obj_iter = TreeOIterator(obj if isinstance(obj, TreeO) else TreeO.child(self, obj), **iter_settings)
         else:
             raise TypeError(f"Can merge with TreeOIterator or Collection, but not with {type(obj).__name__}")
         node_type, mutable_node = TreeO.node_type(node, True)
@@ -1653,10 +1731,10 @@ class TreeO(Mapping, Sequence, metaclass=TreeOMeta):
                         obj_node_type = TreeO.node_type(path[2 * i])
                         extend_sequence = extend_from <= i and node_type == Sequence
                         if extend_sequence or update_from <= i or node_type == Set:
-                            if mutable_node:
-                                TreeO._ensure_mutable_node(node, base_nodes, path[1:-1:2], False)
+                            if not mutable_node:
+                                TreeO._mutable_node(base_nodes, path[1:-1:2])
                                 mutable_node = True
-                            getattr(node, "extend" if extend_sequence else "update")(obj_iter.skip(i, copy_objects))
+                            getattr(node, "extend" if extend_sequence else "update")(obj_iter.skip(i, copy_obj))
                             raise StopIteration
                         try:
                             if node_type == obj_node_type:
@@ -1667,21 +1745,21 @@ class TreeO(Mapping, Sequence, metaclass=TreeOMeta):
                                     base_nodes.append(node)
                         except (IndexError, KeyError):
                             if not mutable_node:
-                                node = TreeO._ensure_mutable_node(node, base_nodes, path[1:-1:2], False)
+                                node = TreeO._mutable_node(base_nodes, path[1:-1:2])
                                 mutable_node = True
                             if node_type == Mapping:
-                                node[k] = obj_iter.skip(i + 1, copy_objects)
+                                node[k] = obj_iter.skip(i + 1, copy_obj)
                             elif node_type == Sequence:
-                                node.insert(k, obj_iter.skip(i + 1, copy_objects))
+                                node.insert(k, obj_iter.skip(i + 1, copy_obj))
                             else:
-                                node.add(obj_iter.skip(i + 1, copy_objects))
+                                node.add(obj_iter.skip(i + 1, copy_obj))
                             raise StopIteration
                 except StopIteration:
                     continue
             old_value = TreeO.get(node, (path[2 * len(base_nodes) - 1],), _None)
             if old_value is _None:
                 if not mutable_node:
-                    node = TreeO._ensure_mutable_node(node, base_nodes, path[1 : 2 * len(base_nodes) : 2], False)
+                    node = TreeO._mutable_node(base_nodes, path[1 : 2 * len(base_nodes) : 2])
                     mutable_node = True
                 if node_type == Mapping:
                     node[path[2 * len(base_nodes) - 1]] = path[-1]
@@ -1698,13 +1776,13 @@ class TreeO(Mapping, Sequence, metaclass=TreeOMeta):
                 else:
                     new_value = path[2 * len(base_nodes)]
                 if not mutable_node:
-                    node = TreeO._ensure_mutable_node(node, base_nodes, path[1 : 2 * len(base_nodes) : 2], False)
+                    node = TreeO._mutable_node(base_nodes, path[1 : 2 * len(base_nodes) : 2])
                     mutable_node = True
                 if node_type == Set:
                     node.add(new_value)
                 elif new_value or not TreeO.__is__(new_value, Collection):
                     node[path[2 * len(base_nodes) - 1]] = new_value
-        return TreeO.child(self, node) if TreeO.opt(self, "return_node", return_node) else node
+        return TreeO.child(self, base_nodes[0]) if TreeO.opt(self, "return_node", return_node) else base_nodes[0]
 
     def __init__(
         self,
@@ -1713,7 +1791,7 @@ class TreeO(Mapping, Sequence, metaclass=TreeOMeta):
         list_insert: int = ...,
         value_split: str = ...,
         default_node_type: str = ...,
-        default_value=...,
+        default=...,
         mod_functions: Mapping = ...,
         iter_fill=...,
         return_node: bool = ...,
@@ -1952,7 +2030,7 @@ class TreeOIterator:
     def __init__(
         self,
         obj: TreeO,
-        max_items: int = -1,
+        max_depth: int = sys.maxsize,
         filter_: TFilter = None,
         return_node: bool = False,
         iter_fill=_None,
@@ -1963,10 +2041,9 @@ class TreeOIterator:
     ):
         """Internal function. Recursively iterates through TreeO-object
 
-        Initiate this iterator through TreeO.iter(), there the parameters are discussed as well. It should not be
-        initialized directly"""
+        Initiate this iterator through TreeO.iter(), there the parameters are discussed as well."""
         self.obj = obj
-        self.max_items = math.inf if max_items == -1 else max_items
+        self.max_depth = sys.maxsize if max_depth < 0 else max_depth
         self.return_node = return_node
         self.iter_fill = iter_fill
         self.filter_ends = filter_ends
@@ -1981,7 +2058,7 @@ class TreeOIterator:
         self.reduce = reduce
         self.iter_nodes = iter_nodes
         self.iter_keys = [obj if return_node else obj()]
-        self.iterators = [FilteredIterator.optimal_iterator(obj(), max_items == 2, filter_)]
+        self.iterators = [FilteredIterator.optimal_iterator(obj(), filter_ends and not max_depth, filter_)]
         self.deepest_change = 0
 
     def __iter__(self):
@@ -1995,11 +2072,11 @@ class TreeOIterator:
                     k, v, *filter_ = next(self.iterators[-1])
                 except IndexError:
                     raise StopIteration
-                if len(self.iterators) + 1 < self.max_items and v and TreeO.__is__(v, Collection):
+                if len(self.iterators) - 1 < self.max_depth and v and TreeO.__is__(v, Collection):
                     self.iter_keys.extend((k, self.obj.child(v) if self.return_node else v))
                     self.iterators.append(
                         FilteredIterator.optimal_iterator(
-                            v, self.filter_ends and len(self.iterators) < self.max_items, *filter_
+                            v, self.filter_ends and len(self.iterators) - 2 < self.max_depth, *filter_
                         )
                     )
                 else:
@@ -2010,8 +2087,8 @@ class TreeOIterator:
                         k,
                         TreeO.copy_any(v) if self.copy else v,
                         *(
-                            (self.iter_fill,) * (self.max_items - len(self.iterators) - 1)
-                            if self.iter_fill is not _None and self.max_items < math.inf
+                            (self.iter_fill,) * (self.max_depth - len(self.iterators) + 1)
+                            if self.iter_fill is not _None and self.max_depth < sys.maxsize
                             else ()
                         ),
                     )

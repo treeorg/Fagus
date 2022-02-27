@@ -20,16 +20,16 @@ class TestTreeO(unittest.TestCase):
 
     def test_get(self):
         a = TreeO(self.a)
-        TreeO.default_value = 7
+        TreeO.default = 7
         self.assertEqual(7, a["1 2 3"], "Returning default-value for class when unset for object")
-        a.default_value = 3
+        a.default = 3
         self.assertEqual(3, a["1 2 3"], "Returning default-value for object as it is now set")
         self.assertEqual(1, TreeO.get(self.a, ("1", 0, 0)), "Path existing, return value at path")
         self.assertEqual(1, a["1 0 0"], "Path existing, return value at path")
         self.assertIn("q", TreeO.get(self.a, ("1", 0, 3, 1)), "Path existing, return value at path")
         self.assertEqual(1, TreeO(self.a).get((1, 0, 0), 1), "Path not existing return default that comes from param")
         self.assertEqual(1, TreeO.get((((1, 0), 2), 3), "0 0 0"), "Successfully traversing tuples")
-        del TreeO.default_value
+        del TreeO.default
 
     def test_iter(self):
         a = TreeO(self.a, copy=True)
@@ -55,7 +55,7 @@ class TestTreeO(unittest.TestCase):
         for i, l in enumerate(b):
             b[i] = (*l, *((None,) * (7 - len(l))))
         self.assertEqual(
-            b, list(a.iter(7, iter_fill=None)), "Correctly filling up when intended count in tuples is constant, here 7"
+            b, list(a.iter(5, iter_fill=None)), "Correctly filling up when intended traversal depth is constant, here 5"
         )
         b = [
             ("1", 0, [1, True, "a", ("f", {"q", "a"})]),
@@ -63,7 +63,7 @@ class TestTreeO(unittest.TestCase):
             ("a", 0, [3, 4]),
             ("a", 1, {"b": 1}),
         ]
-        self.assertEqual(b, list(a.iter(3)), "Iterating correctly when max_items is limited to three")
+        self.assertEqual(b, list(a.iter(1)), "Iterating correctly when max_depth is limited to one")
         b = [
             ("1", 0, 0, 1),
             ("1", 0, 1, True),
@@ -77,7 +77,7 @@ class TestTreeO(unittest.TestCase):
             ("a", 1, "b", 1),
         ]
         self.assertEqual(
-            b, list(a.iter(5)), "Iterating correctly when max_items is limited to five. Some tuples are < 5"
+            b, list(a.iter(3)), "Iterating correctly when max_items is limited to five. Some tuples are < 5"
         )
         self.assertEqual([(0, [3, 4]), (1, {"b": 1})], list(a.items("a")), "Items gives keys and values")
         b = [
@@ -87,10 +87,10 @@ class TestTreeO(unittest.TestCase):
             ("a", 1, TreeO({"b": 1})),
         ]
         self.assertEqual(
-            b, list(a.iter(3, return_node=True)), "Returning nodes as TreeO-objects when return_value=True"
+            b, list(a.iter(1, return_node=True)), "Returning nodes as TreeO-objects when return_value=True"
         )
         self.assertTrue(
-            all(isinstance(e, TreeO) for e in a.iter(3, return_node=True, reduce=-1)),
+            all(isinstance(e, TreeO) for e in a.iter(1, return_node=True, reduce=-1)),
             "return_node actually returns back nodes if the nodes at the end are suitable to be converted",
         )
         self.assertEqual(
@@ -104,9 +104,9 @@ class TestTreeO(unittest.TestCase):
             "Correctly filtering a set in the end",
         )
         self.assertEqual(
-            [(3, [{"q"}])],
-            list(a.iter(2, ("1", 0), TFilter(3, 1, ..., "q", inexclude="++-"))),
-            "Correctly putting a filtered last node in the end when combining filter_ and max_items",
+            [(3, [{"a"}])],
+            list(a.iter(0, ("1", 0), TFilter(3, 1, ..., "q", inexclude="+++-"), filter_ends=True)),
+            "Correctly putting a filtered last node in the end when combining filter_ and max-depth",
         )
         self.assertEqual(
             [
@@ -235,7 +235,7 @@ class TestTreeO(unittest.TestCase):
             [("responseCode", 200), ("limit", 10000), ("offset", 0), ("data", 4, {"state": 3, "comment": None})],
             list(
                 a.iter(
-                    3,
+                    1,
                     filter_=TFilter(({"responseCode", "limit", "offset"}, TFilter("data", 4, {"comment", "state"}))),
                     filter_ends=True,
                 )
@@ -547,6 +547,11 @@ class TestTreeO(unittest.TestCase):
         self.assertEqual(TreeO.insert(a, -3, 5, "1 0 0"), b, "Creating list from singleton value and appending to it")
         b["q"] = [5]
         self.assertEqual(TreeO.insert(a, -9, 5, "q"), b, "Create new list for value at a path that didn't exist before")
+        TreeO.insert(a, 2, 4, "1"),
+        TreeO.set(b, 4, "1 2", list_insert=1),
+        self.assertEqual(
+            a, b, "Inserting into the list at level 1 does the same as setting with list_insert at the right level"
+        )
 
     def test_add(self):
         a = TreeO(self.a, copy=True)
@@ -598,15 +603,18 @@ class TestTreeO(unittest.TestCase):
         b["a"].append([5])
         self.assertEqual(a(), b, "SetDefault has added the value to the list")
 
-    def test_mod_function(self):
+    def test_mod(self):
         a = TreeO(self.a, copy=True)
         b = copy.deepcopy(self.a)
         b["1"][0][0] += 4
         a.mod(lambda x: x + 4, "1 0 0", 6)
-        self.assertEqual(a(), b, "Modifying existing number")
+        self.assertEqual(b, a(), "Modifying existing number")
         b["1"][0].insert(0, 2)
         a.mod(lambda x: x + 4, "1 0 0", 2, list_insert=2)
-        self.assertEqual(a(), b, "Setting default value")
+        self.assertEqual(b, a(), "Setting default value where it doesn't exist due to list_insert at the last list")
+        b["1"].insert(0, [2])
+        a.mod(lambda x: x + 4, "1 0 0", 2, list_insert=1, default_node_type="l")
+        self.assertEqual(b, a(), "Setting default value where it doesn't exist due to list_insert at an earlier list")
 
         def fancy_mod1(old_value):
             return old_value * 2
@@ -615,8 +623,8 @@ class TestTreeO(unittest.TestCase):
         a.mod(fancy_mod1, "1 0 0")
         self.assertEqual(b, a(), "Using function pointer that works like a lambda - one param, one arg")
         b["1"][0][0] = fancy_mod1(b["1"][0][0])
-        a.mod((fancy_mod1,), "1 0 0")
-        self.assertEqual(b, a(), "Function pointer in tuple with only default param")
+        a.mod(fancy_mod1, "1 0 0")
+        self.assertEqual(b, a(), "Mod can be a function pointer (and not a lambda) as well")
 
         def fancy_mod2(old_value, arg1, arg2, arg3, **kwargs):
             return sum([old_value, arg1, arg2, arg3, *kwargs.values()])
@@ -624,7 +632,26 @@ class TestTreeO(unittest.TestCase):
         b["1"][0][0] += 1 + 2 + 3 + 4 + 5
         a.mod(TFunc(fancy_mod2, 1, 1, 2, 3, kwarg1=4, kwarg2=5), "1 0 0")
         self.assertEqual(b, a(), "Complex function taking keyword-arguments and ordinary arguments")
-        self.assertRaisesRegex(TypeError, "Valid types for mod_function: lambda", a.mod, (fancy_mod2, "hei"), "1 0 0")
+
+    def test_mod_all(self):
+        with open("test-data.json") as fp:
+            a = TreeO(json.load(fp))
+        date_filter = TFilter(..., {"firstSeen", "lastSeen", "lastModified"})
+        b = TreeO.mod_all(a, lambda x: datetime.fromtimestamp(x / 1000), date_filter, "data", copy=True)
+        self.assertTrue(
+            all(isinstance(e[-1], datetime) for e in TreeO.iter(b, filter_=date_filter))
+            and TreeO.get(b, "0 lastSeen") == datetime(2019, 7, 1, 5, 30)
+            and isinstance(TreeO.get(a, "data 0 lastSeen"), int),
+            "Made all dates in test-data human readable (converted from timestamp) while not touching original",
+        )
+        TreeO.mod_all(a, lambda x: x.pop("lastModified"), path="data", replace_value=False, max_depth=0)
+        self.assertTrue(all("lastModified" not in e for e in a["data"]), "Modifying nodes without replacing them")
+        a = [([(0, 0), 0], ([0, (0, 0, frozenset((0,))), (((0,),),)],))]
+        self.assertEqual(
+            [([[1, 1], 1], ([1, [1, 1, {1}], [[[1]]]],))],
+            TreeO.mod_all(a, lambda x: x + 1, copy=True),
+            "Only necessary modifications when nodes are transformed from immodifyable to modifyable. Also testing set",
+        )
 
     def test_pop(self):
         a = TreeO(self.a, copy=True)
@@ -650,8 +677,21 @@ class TestTreeO(unittest.TestCase):
     def test_merge(self):
         b = {"a": {"b": {"c": 5}}, "d": "e"}
         c = {"a": {"b": {"k": 1, "l": 2, "m": 3}, "t": 5}, "u": {"v": {"w": "x"}}, "d": 4}
-        f = TreeO.merge(b, b, "c b a", copy=True)
-
+        bc = b.copy()
+        self.assertTrue(
+            b == TreeO.merge(bc, bc.copy(), "d q") and {"a": {"b": {"c": 5}}, "d": {"q": b}} == bc,
+            "The path exists that is supposed to be merged, but it is not a node. Returning obj, original obj modified",
+        )
+        bc = b.copy()
+        self.assertTrue(
+            b == TreeO.merge(bc, bc.copy(), "c d") and {"a": {"b": {"c": 5}}, "d": "e", "c": {"d": b}} == bc,
+            "The path that is supposed to be merged, does not exist. Create path and return obj, original obj modified",
+        )
+        bc = b.copy()
+        self.assertTrue(
+            b == TreeO.merge(bc, bc.copy(), "c d", copy=True) and b == bc,
+            "Using copy the original object is not modified, obj is just returned and that's it",
+        )
         self.assertEqual(
             {"a": {"b": {"c": 5, "k": 1, "l": 2, "m": 3}, "t": 5}, "d": 4, "u": {"v": {"w": "x"}}},
             TreeO.merge(b, c, copy=True),
