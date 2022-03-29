@@ -488,6 +488,43 @@ class TestTreeO(unittest.TestCase):
         a = TreeO((((1, 0), 2), [3, 4, (5, (6, 7)), 8]))
         a.set(5, "1 2 1 1")
         self.assertEqual((((1, 0), 2), [3, 4, [5, [6, 5]], 8]), a(), "Keeping tuples below if possible")
+        a = TreeO(self.a, copy=True)
+        self.assertNotEqual(a(), a.set(False, "1 1", copy=True), "The source object is not modified when copy is used")
+        self.assertEqual(
+            {'1': [{'b': [False]}, {'a': False, '1': (1,)}], 'a': [[3, 4], {'b': 1}]},
+            a.set(False, "1 0 b 1", node_types="   l", copy=True),
+            "space works to not enforce node_types in path - dicts and lists are traversed as long as the keys allow it"
+        )
+
+    def test_append(self):
+        a = copy.deepcopy(self.a)
+        b = copy.deepcopy(self.a)
+        b["a"][0].append(5)
+        self.assertEqual(TreeO.append(a, 5, "a 0"), b, "appending to existing list")
+        b["1"][0][3] = list(b["1"][0][3])
+        b["1"][0][3][1] = list(b["1"][0][3][1])
+        b["1"][0][3][1].append("f")
+        b["1"][0][3][1].sort()
+        TreeO.append(a, "f", "1 0 3 1")
+        TreeO.get(a, "1 0 3 1").sort()
+        self.assertEqual(
+            a, b, "appending to set (converting to list first, both sets must be sorted for the test not to fail)"
+        )
+        b["1"][0][0] = [1, 5]
+        self.assertEqual(TreeO.append(a, 5, "1 0 0"), b, "Creating list from singleton value and appending to it")
+        b["q"] = [6]
+        self.assertEqual(TreeO.append(a, 6, "q"), b, "Create new list for value at a path that didn't exist before")
+
+    def test_extend(self):
+        a = copy.deepcopy(self.a)
+        b = copy.deepcopy(self.a)
+        b["a"][0].extend((5, 6))
+        self.assertEqual(TreeO.extend(a, (5, 6), "a 0"), b, "appending to existing list")
+        b["1"][0][3] = list(b["1"][0][3])
+
+
+
+
 
     def test_append(self):
         a = copy.deepcopy(self.a)

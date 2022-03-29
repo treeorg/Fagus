@@ -429,7 +429,7 @@ class TreeOMeta(ABCMeta):
         node_types=(
             "",
             str,
-            lambda x: bool(re.fullmatch("[dl]*", x)),
+            lambda x: bool(re.fullmatch("[dl ]*", x)),
             "The only allowed characters in node_types are d (for dict) and l (for list).",
         ),
         return_node=(False, bool),
@@ -855,6 +855,25 @@ class TreeO(Mapping, Sequence, metaclass=TreeOMeta):
     ) -> Collection:
         """Create (if they don't already exist) all sub-nodes in path, and finally set value at leaf-node
 
+        Args:
+            value:
+            path:
+            node_types: * Can be used to manually define if the nodes along path are supposed to be (l)ists or (d)icts.
+                E.g. "dll" to create a dict at level 0, and lists at level 1 and 2. " " can also be used - space doesn't
+                enforce a node-type like d or l. For " ", existing nodes are traversed if possible, otherwise
+                default_node_type is used to create new nodes. Default for ~: "" interpreted as " " at each level.
+            list_insert: * Level at which a new node shall be inserted into the list instead of traversing the existing
+                node in the list at that index. See examples in set()
+            value_split: * used to split path into a list if path is a string, default " "
+            return_node: * return self as a TreeO-object if it is a node (tuple / list / dict)
+            default_node_type: * determines if new nodes by default should be created as (d)ict or (l)ist. Must be
+                either "d" or "l", default "d"
+            copy:
+
+        Returns:
+
+
+
         node_types can be used to manually define if the nodes along path are supposed to be lists or dicts. If left
         empty, TreeO will try to use TreeO.default_node_type to create new nodes or just use the existing nodes."""
         return TreeO._build_node(
@@ -994,9 +1013,9 @@ class TreeO(Mapping, Sequence, metaclass=TreeOMeta):
         """Internal function that is used to build all necessary subnodes in path"""
         node_types = TreeO._opt(self, "node_types", node_types)
         obj = self.obj if isinstance(self, TreeO) else self
-        node = obj
         if copy:
             obj = TreeO.__copy__(obj)
+        node = obj
         if isinstance(path, str):
             l_path = path.split(TreeO._opt(self, "value_split", value_split)) if path else []
         else:
@@ -1026,8 +1045,13 @@ class TreeO(Mapping, Sequence, metaclass=TreeOMeta):
                     )
                 )
             for i in range(len(l_path)):
-                node_key = next_index if TreeO.__is__(node, Sequence) else l_path[i]
-                l_path[i] = node_key
+                is_list = TreeO.__is__(node, Sequence)
+                if is_list:
+                    if next_index is ...:
+                        raise ValueError(f"Can't parse numeric list-index from {l_path[i]}.")
+                    node_key = next_index
+                else:
+                    node_key = l_path[i]
                 try:
                     next_index = int(l_path[i + 1]) if i < len(l_path) - 1 else ...
                 except (ValueError, TypeError):
@@ -1035,15 +1059,14 @@ class TreeO(Mapping, Sequence, metaclass=TreeOMeta):
                 next_node = (
                     Sequence
                     if node_types[i + 1 : i + 2] == "l"
-                    or not node_types[i + 1 : i + 2]
+                    or not node_types[i + 1 : i + 2].strip()
                     and default_node_type == "l"
                     and next_index is not ...
                     else Mapping
                 )
-                if TreeO.__is__(node, Sequence):
-                    if node_key is ...:
-                        raise ValueError(f"Can't parse numeric list-index from {node_key}.")
-                    elif node_key >= len(node) and list_insert:
+                if is_list:
+                    l_path[i] = node_key
+                    if node_key >= len(node) and list_insert:
                         if nodes:
                             node = TreeO._mutable_node(nodes, l_path[: i + 1])
                             nodes.clear()
@@ -1078,7 +1101,7 @@ class TreeO(Mapping, Sequence, metaclass=TreeOMeta):
                             )
                             if next_node_type is _None or (
                                 next_node != next_node_type
-                                if node_types[i + 1 : i + 2]
+                                if node_types[i + 1 : i + 2].strip()
                                 else next_node_type is Sequence and next_index is ...
                             ):
                                 if nodes:
@@ -1100,7 +1123,7 @@ class TreeO(Mapping, Sequence, metaclass=TreeOMeta):
                         )
                         if next_node_type is _None or (
                             next_node != next_node_type
-                            if node_types[i + 1 : i + 2]
+                            if node_types[i + 1 : i + 2].strip()
                             else next_node_type is Sequence and next_index is ...
                         ):
                             if nodes:
@@ -1233,14 +1256,17 @@ class TreeO(Mapping, Sequence, metaclass=TreeOMeta):
         Args:
             mod_function: A function pointer or lambda that modifies the existing value at path. TFunc can be used to
                 call more complex functions requiring several arguments.
-            path: position in self at which the value shall be modified
+            path: position in self at which the value shall be modified. Defined as a list/Tuple of key-values to
+                recursively traverse self. Can also be specified as string which is split into a tuple using value_split
             default: * this value is set in path if it doesn't exist
             return_node: * Return new value as a TreeO-object if it is a node (tuple / list / dict)
             replace_value: Replace the old value with what mod_function returns. Can be deactivated e.g. if mod_function
                 changes the object, but returns None (if ~ stays on, the object is replaced with None). Default True.
                 If no value exists at path, the default value is always set at path (independent of ~)
-            node_types: * Can be used to manually define if the nodes along path are supposed to be lists or dicts. If
-                left empty, default_node_type is used to create new nodes or just use the existing nodes if possible
+            node_types: * Can be used to manually define if the nodes along path are supposed to be (l)ists or (d)icts.
+                E.g. "dll" to create a dict at level 0, and lists at level 1 and 2. " " can also be used - space doesn't
+                enforce a node-type like d or l. For " ", existing nodes are traversed if possible, otherwise
+                default_node_type is used to create new nodes. Default for ~: "" interpreted as " " at each level.
             list_insert: * Level at which a new node shall be inserted into the list instead of traversing the existing
                 node in the list at that index. See examples in set()
             value_split: * used to split path into a list if path is a str, default " "
