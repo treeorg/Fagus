@@ -339,12 +339,12 @@ class TestTreeO(unittest.TestCase):
         )
 
     def test_split(self):
+        return
         self.assertEqual(
             {"1": [{"a": False, "1": (1,)}], "a": [{"b": 1}]},
             TreeO.split(self.a, filter_=TFil(..., lambda x: x % 2), copy=True),
             "Filtering using a lambda on the default test-datastructure",
         )
-        return
         self.assertEqual(
             {"1": [[1, True, "a", ("f", {"q", "a"})]], "a": [[3, 4]]},
             TreeO.filter(self.a, filter_=TFil(..., lambda x: x % 2, inexclude="--"), copy=True),

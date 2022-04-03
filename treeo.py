@@ -1,6 +1,6 @@
 # ICS (Internet Software Consortium) License
 #
-# Copyright 2021 Lukas Neuenschwander
+# Copyright © 2022 Lukas Neuenschwander
 #
 # Permission to use, copy, modify, and/or distribute this software for any purpose with or without fee is hereby
 # granted, provided that the above copyright notice and this permission notice appear in all copies.
@@ -79,7 +79,7 @@ class TFilBase:
 class TVFil(TFilBase):
     """TValueFilter - This special type of filter can be used to inspect the entire node
 
-    It can be used to e. g. select all the nodes that contain at least 10 elements. See README for an example"""
+    It can be used to e.g. select all the nodes that contain at least 10 elements. See README for an example"""
 
     def __init__(self, *filter_args, inexclude: str = "", invert: bool = False):
         """
@@ -160,7 +160,7 @@ class TKFil(TFilBase):
                                 self[i] = list(arg)  # make self[i] a mutable list if necessary
                             self._set_extra_filter(i, self[i].pop(j))  # to be able to pop out the filter-arg
                             j -= 1
-                            if not self[i]:  # if there only were TCheck- and TValue-filters in the list and it is now
+                            if not self[i]:  # if there only were TCheck- and TValue-filters in the list, and it is now
                                 self[i] = ...  # empty, put ... to give these filters something to match on
                     j += 1
             elif isinstance(arg, TFilBase):
@@ -333,7 +333,7 @@ class TFunc:
         Args:
             function_pointer: Points to the function that is supposed to be called by TFunc. Remember to put no ()
             old_value_position: Where to insert the old_value. If ~ is an int, the old value will be inserted as the
-                n'th (or n'th last if negative) argument. If ~ is 0, the old value won't be inserted at all. ~ can also
+                nth (or nth last if negative) argument. If ~ is 0, the old value won't be inserted at all. ~ can also
                 be a str, then the old value is inserted into kwargs with ~ as key. Default 1 (old value as first arg)
             *args: args to pass to function. Old value can be inserted into args (see old_value_position)
             **kwargs: keyword-arguments to pass to function. Old value can be added to kwargs (see old_value_position)
@@ -365,7 +365,7 @@ class TFunc:
 
 
 class TreeOMeta(ABCMeta):
-    """Meta-class for TreeO-objects to facilitate settings at class-level"""
+    """Metaclass for TreeO-objects to facilitate settings at class-level"""
 
     @staticmethod
     def __verify_option__(option_name: str, option):
@@ -534,7 +534,7 @@ class TreeO(Mapping, Sequence, metaclass=TreeOMeta):
 
         Args:
             nodes: list of nodes that probably will be modified to make the last node mutable
-            path: list of keys used to traverse the nodes (and that link the nodes toghether)
+            path: list of keys used to traverse the nodes (and that link the nodes together)
 
         Returns:
             the node, but modifiable (a tuple will have turned into a list, a frozenset will have turned into a set)
@@ -663,7 +663,7 @@ class TreeO(Mapping, Sequence, metaclass=TreeOMeta):
         \\* means that the parameter is a TreeO-Setting, see TreeO-class-docstring for more information about settings
 
         Args:
-            filter_: TFilter-object in which the filtering-critera are specified
+            filter_: TFilter-object in which the filtering-criteria are specified
             path: at this point in self, the filtering will start (apply filter_ relatively from this point).
                 Default "", meaning that the base object is filtered, see get() and README for examples
             return_node: * return the filtered self as TreeO-object (default is just to return the filtered node)
@@ -704,7 +704,7 @@ class TreeO(Mapping, Sequence, metaclass=TreeOMeta):
         Args:
             node: the node to filter
             copy: creates copies instead of directly referencing nodes included in the filter
-            filter_: TFilter-object in which the filtering-critera are specified
+            filter_: TFilter-object in which the filtering-criteria are specified
             index: index in the current filter-object
 
         Returns:
@@ -751,7 +751,7 @@ class TreeO(Mapping, Sequence, metaclass=TreeOMeta):
         \\* means that the parameter is a TreeO-Setting, see TreeO-class-docstring for more information about settings
 
         Args:
-            filter_: TFilter-object in which the filtering-critera are specified
+            filter_: TFilter-object in which the filtering-criteria are specified
             path: at this position in self, the splitting will start (apply filter_ relatively from this point).
                 Default "", meaning that the base object is split, see get() and README for examples
             return_node: * return the filtered self as TreeO-object (default is just to return the filtered node)
@@ -798,7 +798,7 @@ class TreeO(Mapping, Sequence, metaclass=TreeOMeta):
         Args:
             node: the node to filter
             copy: creates copies instead of directly referencing nodes included in the filter
-            filter_: TFilter-object in which the filtering-critera are specified
+            filter_: TFilter-object in which the filtering-criteria are specified
             index: index in the current filter-object
 
         Returns:
@@ -855,27 +855,27 @@ class TreeO(Mapping, Sequence, metaclass=TreeOMeta):
     ) -> Collection:
         """Create (if they don't already exist) all sub-nodes in path, and finally set value at leaf-node
 
+        \\* means that the parameter is a TreeO-Setting, see TreeO-class-docstring for more information about settings
+
         Args:
-            value:
-            path:
+            value: ~ is placed at path, after creating new nodes if necessary. An existing value at path is overwritten
+            path: List/Tuple of key-values that are traversed in self. If no nodes exist at the keys, new nodes are
+                created. Can also be specified as a string, that is split into a tuple using value_split. See get()
             node_types: * Can be used to manually define if the nodes along path are supposed to be (l)ists or (d)icts.
                 E.g. "dll" to create a dict at level 0, and lists at level 1 and 2. " " can also be used - space doesn't
                 enforce a node-type like d or l. For " ", existing nodes are traversed if possible, otherwise
-                default_node_type is used to create new nodes. Default for ~: "" interpreted as " " at each level.
+                default_node_type is used to create new nodes. Default "", interpreted as " " at each level.
             list_insert: * Level at which a new node shall be inserted into the list instead of traversing the existing
-                node in the list at that index. See examples in set()
+                node in the list at that index. See README
             value_split: * used to split path into a list if path is a string, default " "
-            return_node: * return self as a TreeO-object if it is a node (tuple / list / dict)
+            return_node: * return self as a TreeO-object if it is a node (tuple / list / dict), default False
             default_node_type: * determines if new nodes by default should be created as (d)ict or (l)ist. Must be
                 either "d" or "l", default "d"
-            copy:
+            copy: if this is set, a copy of self is modified and then returned (thus self is not modified)
 
         Returns:
-
-
-
-        node_types can be used to manually define if the nodes along path are supposed to be lists or dicts. If left
-        empty, TreeO will try to use TreeO.default_node_type to create new nodes or just use the existing nodes."""
+            self as a node if return_node is set, or a modified copy of self if copy is set
+        """
         return TreeO._build_node(
             self, value, path, "set", node_types, list_insert, value_split, return_node, default_node_type, copy
         )
@@ -891,12 +891,30 @@ class TreeO(Mapping, Sequence, metaclass=TreeOMeta):
         default_node_type: str = ...,
         copy: bool = False,
     ) -> Collection:
-        """Create (if they don't already exist) all sub-nodes in path, and finally append value to list at leaf-node
+        """Create (if they don't already exist) all sub-nodes in path, and finally append value to a list at leaf-node
 
         If the leaf-node is a set, tuple or other value it is converted to a list. Then the new value is appended.
 
-        node_types can be used to manually define if the nodes along path are supposed to be lists or dicts. If left
-        empty, TreeO will try to use TreeO.default_node_type to create new nodes or just use the existing nodes."""
+        \\* means that the parameter is a TreeO-Setting, see TreeO-class-docstring for more information about settings
+
+        Args:
+            value: ~ is appended to list at path, after creating new nodes along path as necessary
+            path: List/Tuple of key-values that are traversed in self. If no nodes exist at the keys, new nodes are
+                created. Can also be specified as a string, that is split into a tuple using value_split. See get()
+            node_types: * Can be used to manually define if the nodes along path are supposed to be (l)ists or (d)icts.
+                E.g. "dll" to create a dict at level 0, and lists at level 1 and 2. " " can also be used - space doesn't
+                enforce a node-type like d or l. For " ", existing nodes are traversed if possible, otherwise
+                default_node_type is used to create new nodes. Default "", interpreted as " " at each level.
+            list_insert: * Level at which a new node shall be inserted into the list instead of traversing the existing
+                node in the list at that index. See README
+            value_split: * used to split path into a list if path is a string, default " "
+            return_node: * return self as a TreeO-object if it is a node (tuple / list / dict), default False
+            default_node_type: * determines if new nodes by default should be created as (d)ict or (l)ist. Must be
+                either "d" or "l", default "d"
+            copy: if this is set, a copy of self is modified and then returned (thus self is not modified)
+
+        Returns:
+            self as a node if return_node is set, or a modified copy of self if copy is set"""
         return TreeO._build_node(
             self, value, path, "append", node_types, list_insert, value_split, return_node, default_node_type, copy
         )
@@ -914,10 +932,29 @@ class TreeO(Mapping, Sequence, metaclass=TreeOMeta):
     ) -> Collection:
         """Create (if they don't already exist) all sub-nodes in path. Then extend list at leaf-node with the new values
 
-        If the leaf-node is a set, tuple or other value it is converted to a list. Then the new values are appended.
+        If the leaf-node is a set, tuple or other value it is converted to a list, which is extended with the new values
 
-        node_types can be used to manually define if the nodes along path are supposed to be lists or dicts. If left
-        empty, TreeO will try to use TreeO.default_node_type to create new nodes or just use the existing nodes."""
+        \\* means that the parameter is a TreeO-Setting, see TreeO-class-docstring for more information about settings
+
+        Args:
+            values: the list at path is extended with ~, after creating new nodes along path as necessary
+            path: List/Tuple of key-values that are traversed in self. If no nodes exist at the keys, new nodes are
+                created. Can also be specified as a string, that is split into a tuple using value_split. See get()
+            node_types: * Can be used to manually define if the nodes along path are supposed to be (l)ists or (d)icts.
+                E.g. "dll" to create a dict at level 0, and lists at level 1 and 2. " " can also be used - space doesn't
+                enforce a node-type like d or l. For " ", existing nodes are traversed if possible, otherwise
+                default_node_type is used to create new nodes. Default "", interpreted as " " at each level.
+            list_insert: * Level at which a new node shall be inserted into the list instead of traversing the existing
+                node in the list at that index. See README
+            value_split: * used to split path into a list if path is a string, default " "
+            return_node: * return self as a TreeO-object if it is a node (tuple / list / dict), default False
+            default_node_type: * determines if new nodes by default should be created as (d)ict or (l)ist. Must be
+                either "d" or "l", default "d"
+            copy: if this is set, a copy of self is modified and then returned (thus self is not modified)
+
+        Returns:
+            self as a node if return_node is set, or a modified copy of self if copy is set"""
+
         return TreeO._build_node(
             self, values, path, "extend", node_types, list_insert, value_split, return_node, default_node_type, copy
         )
@@ -936,10 +973,31 @@ class TreeO(Mapping, Sequence, metaclass=TreeOMeta):
     ) -> Collection:
         """Create (if they don't already exist) all sub-nodes in path. Insert new value at index in list at leaf-node
 
-        If the leaf-node is a set, tuple or other value it is converted to a list. Then insert new value at index
+        If the leaf-node is a set, tuple or other value it is converted to a list, in which the new value is inserted at
+        index
 
-        node_types can be used to manually define if the nodes along path are supposed to be lists or dicts. If left
-        empty, TreeO will try to use TreeO.default_node_type to create new nodes or just use the existing nodes."""
+        \\* means that the parameter is a TreeO-Setting, see TreeO-class-docstring for more information about settings
+
+        Args:
+            index: ~ at which the value shall be inserted in the list at path
+            value: ~ is inserted at index into list at path, after creating new nodes along path as necessary
+            path: List/Tuple of key-values that are traversed in self. If no nodes exist at the keys, new nodes are
+                created. Can also be specified as a string, that is split into a tuple using value_split. See get()
+            node_types: * Can be used to manually define if the nodes along path are supposed to be (l)ists or (d)icts.
+                E.g. "dll" to create a dict at level 0, and lists at level 1 and 2. " " can also be used - space doesn't
+                enforce a node-type like d or l. For " ", existing nodes are traversed if possible, otherwise
+                default_node_type is used to create new nodes. Default "", interpreted as " " at each level.
+            list_insert: * Level at which a new node shall be inserted into the list instead of traversing the existing
+                node in the list at that index. See README
+            value_split: * used to split path into a list if path is a string, default " "
+            return_node: * return self as a TreeO-object if it is a node (tuple / list / dict), default False
+            default_node_type: * determines if new nodes by default should be created as (d)ict or (l)ist. Must be
+                either "d" or "l", default "d"
+            copy: if this is set, a copy of self is modified and then returned (thus self is not modified)
+
+        Returns:
+            self as a node if return_node is set, or a modified copy of self if copy is set"""
+
         return TreeO._build_node(
             self,
             value,
@@ -967,10 +1025,28 @@ class TreeO(Mapping, Sequence, metaclass=TreeOMeta):
     ) -> Collection:
         """Create (if they don't already exist) all sub-nodes in path, and finally add new value to set at leaf-node
 
-        If the leaf-node is a list, tuple or other value it is converted to a list. Then the new values are added.
+        If the leaf-node is a list, tuple or other value it is converted to a set, to which the new value is added
 
-        node_types can be used to manually define if the nodes along path are supposed to be lists or dicts. If left
-        empty, TreeO will try to use TreeO.default_node_type to create new nodes or just use the existing nodes."""
+        \\* means that the parameter is a TreeO-Setting, see TreeO-class-docstring for more information about settings
+
+        Args:
+            value: ~ is added to set at path, after creating new nodes along path as necessary
+            path: List/Tuple of key-values that are traversed in self. If no nodes exist at the keys, new nodes are
+                created. Can also be specified as a string, that is split into a tuple using value_split. See get()
+            node_types: * Can be used to manually define if the nodes along path are supposed to be (l)ists or (d)icts.
+                E.g. "dll" to create a dict at level 0, and lists at level 1 and 2. " " can also be used - space doesn't
+                enforce a node-type like d or l. For " ", existing nodes are traversed if possible, otherwise
+                default_node_type is used to create new nodes. Default "", interpreted as " " at each level.
+            list_insert: * Level at which a new node shall be inserted into the list instead of traversing the existing
+                node in the list at that index. See README
+            value_split: * used to split path into a list if path is a string, default " "
+            return_node: * return self as a TreeO-object if it is a node (tuple / list / dict), default False
+            default_node_type: * determines if new nodes by default should be created as (d)ict or (l)ist. Must be
+                either "d" or "l", default "d"
+            copy: if this is set, a copy of self is modified and then returned (thus self is not modified)
+
+        Returns:
+            self as a node if return_node is set, or a modified copy of self if copy is set"""
         return TreeO._build_node(
             self, value, path, "add", node_types, list_insert, value_split, return_node, default_node_type, copy
         )
@@ -991,8 +1067,26 @@ class TreeO(Mapping, Sequence, metaclass=TreeOMeta):
         If the leaf-node is a list, tuple or other value it is converted to a set. That set is then updated with the new
         values. If the node at path is a dict, and values also is a dict, the node-dict is updated with the new values.
 
-        node_types can be used to manually define if the nodes along path are supposed to be lists or dicts. If left
-        empty, TreeO will try to use TreeO.default_node_type to create new nodes or just use the existing nodes."""
+        \\* means that the parameter is a TreeO-Setting, see TreeO-class-docstring for more information about settings
+
+        Args:
+            values: the set/dict at path is updated with ~, after creating new nodes along path as necessary
+            path: List/Tuple of key-values that are traversed in self. If no nodes exist at the keys, new nodes are
+                created. Can also be specified as a string, that is split into a tuple using value_split. See get()
+            node_types: * Can be used to manually define if the nodes along path are supposed to be (l)ists or (d)icts.
+                E.g. "dll" to create a dict at level 0, and lists at level 1 and 2. " " can also be used - space doesn't
+                enforce a node-type like d or l. For " ", existing nodes are traversed if possible, otherwise
+                default_node_type is used to create new nodes. Default "", interpreted as " " at each level.
+            list_insert: * Level at which a new node shall be inserted into the list instead of traversing the existing
+                node in the list at that index. See README
+            value_split: * used to split path into a list if path is a string, default " "
+            return_node: * return self as a TreeO-object if it is a node (tuple / list / dict), default False
+            default_node_type: * determines if new nodes by default should be created as (d)ict or (l)ist. Must be
+                either "d" or "l", default "d"
+            copy: if this is set, a copy of self is modified and then returned (thus self is not modified)
+
+        Returns:
+            self as a node if return_node is set, or a modified copy of self if copy is set"""
         return TreeO._build_node(
             self, values, path, "update", node_types, list_insert, value_split, return_node, default_node_type, copy
         )
@@ -1204,11 +1298,16 @@ class TreeO(Mapping, Sequence, metaclass=TreeOMeta):
         Args:
             path: position in self where default shall be set / from where value shall be fetched. See get() and README
             default: * returned if path doesn't exist in self
-            return_node:
-            node_types:
-            list_insert:
+            return_node: * return self as a TreeO-object if it is a node (tuple / list / dict), default False
+            node_types: * Can be used to manually define if the nodes along path are supposed to be (l)ists or (d)icts.
+                E.g. "dll" to create a dict at level 0, and lists at level 1 and 2. " " can also be used - space doesn't
+                enforce a node-type like d or l. For " ", existing nodes are traversed if possible, otherwise
+                default_node_type is used to create new nodes. Default "", interpreted as " " at each level.
+            list_insert: * Level at which a new node shall be inserted into the list instead of traversing the existing
+                node in the list at that index. See README
             value_split: * used to split path into a list if path is a str, default " "
-            default_node_type:
+            default_node_type: * determines if new nodes by default should be created as (d)ict or (l)ist. Must be
+                either "d" or "l", default "d"
 
         \\* means that the parameter is a TreeO-Setting, see TreeO-class-docstring for more information about settings
 
@@ -1259,7 +1358,7 @@ class TreeO(Mapping, Sequence, metaclass=TreeOMeta):
             path: position in self at which the value shall be modified. Defined as a list/Tuple of key-values to
                 recursively traverse self. Can also be specified as string which is split into a tuple using value_split
             default: * this value is set in path if it doesn't exist
-            return_node: * Return new value as a TreeO-object if it is a node (tuple / list / dict)
+            return_node: * Return new value as a TreeO-object if it is a node (tuple / list / dict), default False
             replace_value: Replace the old value with what mod_function returns. Can be deactivated e.g. if mod_function
                 changes the object, but returns None (if ~ stays on, the object is replaced with None). Default True.
                 If no value exists at path, the default value is always set at path (independent of ~)
@@ -1268,7 +1367,7 @@ class TreeO(Mapping, Sequence, metaclass=TreeOMeta):
                 enforce a node-type like d or l. For " ", existing nodes are traversed if possible, otherwise
                 default_node_type is used to create new nodes. Default for ~: "" interpreted as " " at each level.
             list_insert: * Level at which a new node shall be inserted into the list instead of traversing the existing
-                node in the list at that index. See examples in set()
+                node in the list at that index. See README
             value_split: * used to split path into a list if path is a str, default " "
             default_node_type: * determines if new nodes by default should be created as (d)ict or (l)ist. Must be
                 either "d" or "l", default "d"
@@ -1328,7 +1427,7 @@ class TreeO(Mapping, Sequence, metaclass=TreeOMeta):
             filter_: used to select which leaves shall be modified. Default None (all leaves are modified)
             path: position in self at which the value shall be modified. See get() / README
             default: * this value is returned if path doesn't exist, or if no leaves match the filter
-            return_node: * Return new value as a TreeO-object if it is a node (tuple / list / dict)
+            return_node: * Return new value as a TreeO-object if it is a node (tuple / list / dict), default False
             replace_value: Replace the old value with what mod_function returns. Can be deactivated e.g. if mod_function
                 changes the object, but returns None (if ~ stays on, the object is replaced with None). Default True.
                 If no value exists at path, the default value is always set at path (independent of ~)
@@ -1411,7 +1510,7 @@ class TreeO(Mapping, Sequence, metaclass=TreeOMeta):
 
         The only allowed data-types for serialization are: dict, list, bool, float, int, str, None
 
-        Sets and tuples are converted to lists. Other objects whose types are not allowed in serialized objects are
+        Sets and tuples are converted into lists. Other objects whose types are not allowed in serialized objects are
         modified to a type that is allowed using the mod_functions-parameter. mod_functions is a dict, with the type
         of object like IPv4Address or a tuple of types like (IPv4Address, IPv6Address). The values are function pointers
         or lambdas, that are executed to convert e.g. an IPv4Address to one of the allowed data types mentioned above.
@@ -1607,11 +1706,11 @@ class TreeO(Mapping, Sequence, metaclass=TreeOMeta):
         Args:
             path: clear at this position in self, Default "" (gets values from the base node). See get()
             value_split: * used to split path into a list if path is a str, default " "
-            copy:
-            return_node:
+            copy: if ~ is set, a copy of self is modified and then returned (thus self is not modified), default False
+            return_node: * return self as a TreeO-object if it is a node (tuple / list / dict), default False
 
         Returns:
-
+            self as a node if return_node is set, or a modified copy of self if copy is set
         """
         obj = TreeO.__copy__(self) if copy else self
         node = TreeO.get(obj, path, _None, value_split=value_split)
@@ -1697,8 +1796,7 @@ class TreeO(Mapping, Sequence, metaclass=TreeOMeta):
                 make changes to the returned nodes, but you don't want to change self. Default False
 
         Returns:
-            a reversed iterator on the node at path
-        """
+            self as a node if return_node is set, or a modified copy of self if copy is set"""
         obj = self.obj if isinstance(self, TreeO) else self
         if copy:
             obj = TreeO.__copy__(obj)
@@ -1756,27 +1854,23 @@ class TreeO(Mapping, Sequence, metaclass=TreeOMeta):
         self: Collection,
         obj: Union["TreeOIterator", Collection],
         path: Any = "",
-        copy: bool = False,
-        copy_obj: bool = False,
         new_value_action: str = "r",
         extend_from: int = sys.maxsize,
         update_from: int = sys.maxsize,
         return_node: bool = ...,
+        copy: bool = False,
+        copy_obj: bool = False,
         value_split: str = ...,
         node_types: str = ...,
         list_insert: int = ...,
         default_node_type: str = ...,
     ) -> Collection:
-        # TODO endre rekkefølgen på parameterne for å flytte copy litt bakover
         """Merges two or more tree-objects to update and extend the base-object
 
         Args:
             obj: tree-object that shall be merged. Can also be a TreeOIterator returned from iter() to only merge
                 values matching a filter defined in iter()
             path: position in base where the new objects shall be merged, default ""
-            copy: Don't modify the base-object, modify and return a copy instead
-            copy_obj: The objects to be merged are not modified, but references to subnodes of the objects can be
-                put into the base-object. Set this to True to prevent that and keep base and objects independent
             new_value_action: This parameter defines what merge is supposed to do if a value at a path is present in the
                 base and in one of the objects to merge. The possible values are: (r)eplace - the value in the base is
                 replaced with the new value, this is the default behaviour; (i)gnore - the value in the base is not
@@ -1788,7 +1882,18 @@ class TreeO(Mapping, Sequence, metaclass=TreeOMeta):
             update_from: Like extend_from, but for dicts. Allows you to define at which level the contents of the base
                 should just be updated with the contents of the objects instead of traversing and comparing each value
             return_node: whether the returned tree-object should be returned as TreeO
+            copy: Don't modify the base-object, modify and return a copy instead
+            copy_obj: The objects to be merged are not modified, but references to subnodes of the objects can be
+                put into the base-object. Set this to True to prevent that and keep base and objects independent
             value_split: * used to split path into a list if path is a str, default " "
+            node_types: * Can be used to manually define if the nodes along path are supposed to be (l)ists or (d)icts.
+                E.g. "dll" to create a dict at level 0, and lists at level 1 and 2. " " can also be used - space doesn't
+                enforce a node-type like d or l. For " ", existing nodes are traversed if possible, otherwise
+                default_node_type is used to create new nodes. Default "", interpreted as " " at each level.
+            list_insert: * Level at which a new node shall be inserted into the list instead of traversing the existing
+                node in the list at that index. See README
+            default_node_type: * determines if new nodes by default should be created as (d)ict or (l)ist. Must be
+                either "d" or "l", default "d"
 
         Returns:
             a reference to the modified base object, or a modified copy of the base object (see copy-parameter)
@@ -1933,11 +2038,11 @@ class TreeO(Mapping, Sequence, metaclass=TreeOMeta):
         node_types: str = ...,
         list_insert: int = ...,
         value_split: str = ...,
+        return_node: bool = ...,
         default_node_type: str = ...,
         default=...,
         mod_functions: Mapping = ...,
         iter_fill=...,
-        return_node: bool = ...,
         copy: bool = False,
     ):
         """Constructor for TreeO (TreeObject), a wrapper-class for complex, nested objects of dicts and lists in Python
@@ -1947,15 +2052,24 @@ class TreeO(Mapping, Sequence, metaclass=TreeOMeta):
         Args:
             obj: object (like dict / list) to wrap TreeO around. If this is None, an empty node of the type
                 default_node_type will be used. Default None
-            node_types:
-            list_insert:
-            value_split:
-            default_node_type:
+            node_types: * Can be used to manually define if the nodes along path are supposed to be (l)ists or (d)icts.
+                E.g. "dll" to create a dict at level 0, and lists at level 1 and 2. " " can also be used - space doesn't
+                enforce a node-type like d or l. For " ", existing nodes are traversed if possible, otherwise
+                default_node_type is used to create new nodes. Default "", interpreted as " " at each level.
+            list_insert: * Level at which a new node shall be inserted into the list instead of traversing the existing
+                node in the list at that index. See README
+            value_split: * used to split path into a list if path is a string, default " "
+            return_node: * return self as a TreeO-object if it is a node (tuple / list / dict), default False
+            default_node_type: * determines if new nodes by default should be created as (d)ict or (l)ist. Must be
+                either "d" or "l", default "d"
             default: * ~ is used in get and other functions if a path doesn't exist
             mod_functions: * used in serialize() to convert non-serializable objects to serializable data types. See
                 serialize()
-            iter_fill:
-            return_node:
+            iter_fill: * Fill up tuples with iter_fill (can be any object, e.g. None) to ensure that all the tuples
+                iter() returns are exactly max_items long. See iter()
+            return_node: * this setting is used to determine whether nodes in the returned object should be returned as
+                TreeO-objects. This can be useful e.g. if you want to use TreeO in an iteration. Check the particular
+                function you want to use for a more thorough explanation of what this does in each case
             copy: ~ creates a copy of the obj before TreeO is initialized. Makes sure that changes on this TreeO won't
                 modify obj itself. Default False"""
         if obj is None:
@@ -2160,8 +2274,8 @@ class FilteredIterator:
             if filter_ is not None:
                 if not filter_.match_extra_filters(v, index):
                     continue
-            if TreeO.__is__(v, Collection):  # filter v if it is a leaf (either because it is a set or because
-                if self.filter_value if isinstance(v, (Mapping, Sequence)) else True:  # of the limiting max_items)
+            if TreeO.__is__(v, Collection):  # filter v if it is a leaf, either because it is a set or because
+                if self.filter_value if isinstance(v, (Mapping, Sequence)) else True:  # of the limiting max_items
                     v = TreeO.filter_r(v, False, filter_, index)
             elif filter_ and not filter_.match(v, index)[0]:
                 continue
