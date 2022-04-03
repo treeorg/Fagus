@@ -1,10 +1,9 @@
 import copy
 import json
-import math
 import re
 import unittest
 from ipaddress import IPv6Address, IPv4Network, IPv6Network, ip_address
-from treeo import TreeO, TFunc, TFilter, TCheckFilter, TValueFilter
+from treeo import TreeO, TFunc, TFil, TCFil, TVFil
 from datetime import datetime, date, time
 
 
@@ -94,18 +93,18 @@ class TestTreeO(unittest.TestCase):
             "return_node actually returns back nodes if the nodes at the end are suitable to be converted",
         )
         self.assertEqual(
-            tuple(a.iter(4, "", filter_=TFilter("a", 1, lambda x: x % 2 != 0, inexclude="---"))),
-            tuple(a.iter(4, "", filter_=TFilter("1", 0, lambda x: x % 2 == 0))),
+            tuple(a.iter(4, "", filter_=TFil("a", 1, lambda x: x % 2 != 0, inexclude="---"))),
+            tuple(a.iter(4, "", filter_=TFil("1", 0, lambda x: x % 2 == 0))),
             "Two opposite filters giving the same results on the data",
         )
         self.assertEqual(
             ["a"],
-            list(a.iter(path=("1", 0, 3), filter_=TFilter(1, ..., "q", inexclude="++-"), reduce=-1)),
+            list(a.iter(path=("1", 0, 3), filter_=TFil(1, ..., "q", inexclude="++-"), reduce=-1)),
             "Correctly filtering a set in the end",
         )
         self.assertEqual(
             [(3, [{"a"}])],
-            list(a.iter(0, ("1", 0), TFilter(3, 1, ..., "q", inexclude="+++-"), filter_ends=True)),
+            list(a.iter(0, ("1", 0), TFil(3, 1, ..., "q", inexclude="+++-"), filter_ends=True)),
             "Correctly putting a filtered last node in the end when combining filter_ and max-depth",
         )
         self.assertEqual(
@@ -119,14 +118,14 @@ class TestTreeO(unittest.TestCase):
         )
         self.assertEqual(
             {"1": [{"a": False, "1": (1,)}], "a": [{"b": 1}]},
-            a.iter(filter_=TFilter(..., 1)).skip(0),
+            a.iter(filter_=TFil(..., 1)).skip(0),
             "Using iterator.skip() actually filters the skipped node if necessary",
         )
         with open("test-data.json") as fp:
             a = TreeO(json.load(fp))
         self.assertEqual(
             [(0, "source", "id", 889), (1, "source", "id", 5662), (4, "source", "id", 301)],
-            list(a.iter(-1, "data", TFilter(..., "source", "id", lambda x: x > 300))),
+            list(a.iter(-1, "data", TFil(..., "source", "id", lambda x: x > 300))),
             "Iterating over all source-ids that are > 300, testing lambda and true and default",
         )
         self.assertEqual(
@@ -135,9 +134,9 @@ class TestTreeO(unittest.TestCase):
                 a.iter(
                     -1,
                     "data",
-                    TFilter(
+                    TFil(
                         ...,
-                        (TCheckFilter("source", "id", lambda x: x > 300), "state"),
+                        (TCFil("source", "id", lambda x: x > 300), "state"),
                     ),
                     reduce=-1,
                 )
@@ -146,28 +145,28 @@ class TestTreeO(unittest.TestCase):
         )
         self.assertEqual(
             [],
-            list(a.iter(path="data", filter_=TFilter((TValueFilter(lambda x: len(x) < 1), ...)))),
+            list(a.iter(path="data", filter_=TFil((TVFil(lambda x: len(x) < 1), ...)))),
             "Verifying that a value-filter actually returns an empty list if its condition isn't met",
         )
         self.assertEqual(
             160,
-            len(list(a.iter(path="data", filter_=TFilter((TValueFilter(lambda x: len(x) == 10), ...))))),
+            len(list(a.iter(path="data", filter_=TFil((TVFil(lambda x: len(x) == 10), ...))))),
             "Verifying that a value-filter actually returns the node if it's condition is met",
         )
         self.assertEqual(
             160,
-            len(list(a.iter(filter_=TFilter("data", TValueFilter(lambda x: len(x) > 1))))),
+            len(list(a.iter(filter_=TFil("data", TVFil(lambda x: len(x) > 1))))),
             "Verifying that a value-filter also works if it comes as a standalone argument, then including all the "
             "subnodes the filter matches (in this case all).",
         )
         self.assertEqual(
             [],
-            list(a.iter(filter_=TFilter("data", (TValueFilter(lambda x: len(x) < 1),)))),
+            list(a.iter(filter_=TFil("data", (TVFil(lambda x: len(x) < 1),)))),
             "A value-filter actually returns an empty list even at the bottom if its condition isn't met",
         )
         self.assertEqual(
             160,
-            len(list(a.iter(path="data", filter_=TFilter((TValueFilter(lambda x: len(x) > 1),))))),
+            len(list(a.iter(path="data", filter_=TFil((TVFil(lambda x: len(x) > 1),))))),
             "If the only member in a tuple is TValue- and TCheck-filters and they're all removed, put ... at that"
             "argument to make sure these check-filters can match anything",
         )
@@ -176,19 +175,19 @@ class TestTreeO(unittest.TestCase):
             list(
                 a.iter(
                     path="data",
-                    filter_=TFilter(
+                    filter_=TFil(
                         ...,
                         (
-                            TCheckFilter(
+                            TCFil(
                                 (
-                                    TValueFilter(lambda x: len(x) == 3, lambda x: bool(x)),
-                                    TCheckFilter("alias", "file-analyzer-domain"),
+                                    TVFil(lambda x: len(x) == 3, lambda x: bool(x)),
+                                    TCFil("alias", "file-analyzer-domain"),
                                     "source",
                                 ),
                                 "id",
                                 889,
                             ),
-                            TFilter("state", 1, inexclude="+-"),
+                            TFil("state", 1, inexclude="+-"),
                             "role",
                         ),
                         "alias",
@@ -207,14 +206,14 @@ class TestTreeO(unittest.TestCase):
             ("data", 4, "roleId", 33),
         )
         b = tuple(
-            a.iter(filter_=TFilter("responseCode|limit|data", ..., ("role.*", re.compile("source.*")), str_as_re=True))
+            a.iter(filter_=TFil("responseCode|limit|data", ..., ("role.*", re.compile("source.*")), str_as_re=True))
         )
         self.assertTrue(all(e in b for e in c), "Checking if it works to convert str to regex when requested")
         filter_args = ["a|c", ("abc", "a.*")]
-        self.assertEqual(filter_args, TFilter(*filter_args).args, "No str args are changed if string_as_re=False")
+        self.assertEqual(filter_args, TFil(*filter_args).args, "No str args are changed if string_as_re=False")
         self.assertEqual(
             [re.compile(filter_args[0]), [filter_args[1][0], re.compile(filter_args[1][1])]],
-            TFilter(*filter_args, str_as_re=True).args,
+            TFil(*filter_args, str_as_re=True).args,
             "The correct str's are replaced with re-patterns if string_as_re=False",
         )
         b = {
@@ -236,7 +235,7 @@ class TestTreeO(unittest.TestCase):
             list(
                 a.iter(
                     1,
-                    filter_=TFilter(({"responseCode", "limit", "offset"}, TFilter("data", 4, {"comment", "state"}))),
+                    filter_=TFil(({"responseCode", "limit", "offset"}, TFil("data", 4, {"comment", "state"}))),
                     filter_ends=True,
                 )
             ),
@@ -246,24 +245,24 @@ class TestTreeO(unittest.TestCase):
     def test_filter(self):
         self.assertEqual(
             {"1": [{"a": False, "1": (1,)}], "a": [{"b": 1}]},
-            TreeO.filter(self.a, filter_=TFilter(..., lambda x: x % 2), copy=True),
+            TreeO.filter(self.a, filter_=TFil(..., lambda x: x % 2), copy=True),
             "Filtering using a lambda on the default test-datastructure",
         )
         self.assertEqual(
             {"1": [[1, True, "a", ("f", {"q", "a"})]], "a": [[3, 4]]},
-            TreeO.filter(self.a, filter_=TFilter(..., lambda x: x % 2, inexclude="--"), copy=True),
+            TreeO.filter(self.a, filter_=TFil(..., lambda x: x % 2, inexclude="--"), copy=True),
             "Filtering using a lambda on the default test-datastructure",
         )
         with open("test-data.json") as fp:
             a = TreeO(json.load(fp))
         self.assertEqual(
             {"responseCode": 200, "limit": 10000, "size": 10000},
-            a.filter(TFilter({"responseCode", "limit", "size"}), copy=True),
+            a.filter(TFil({"responseCode", "limit", "size"}), copy=True),
             "Simplest ever filtering at base-level",
         )
         self.assertEqual(
             dict(responseCode=200, limit=10000, messages=[], metaData={}, offset=0, count=0, size=10000),
-            a.filter(TFilter("data", inexclude="-"), copy=True),
+            a.filter(TFil("data", inexclude="-"), copy=True),
             "Using inexclude to turn around the filter and give everything except data at base-level",
         )
         self.assertEqual(
@@ -272,7 +271,7 @@ class TestTreeO(unittest.TestCase):
                 {"sourceId": 5662, "roleId": 33, "firstSeen": 1548169200000, "lastSeen": 1552989600000},
             ],
             a.filter(
-                TFilter(..., (TCheckFilter("state", 3, invert=True), ".*(Seen|Id)"), str_as_re=True),
+                TFil(..., (TCFil("state", 3, invert=True), ".*(Seen|Id)"), str_as_re=True),
                 "data",
                 copy=True,
             ),
@@ -281,19 +280,19 @@ class TestTreeO(unittest.TestCase):
         b = TreeO(a, copy=True)
         b.filter(
             path="data",
-            filter_=TFilter(
+            filter_=TFil(
                 ...,
                 (
-                    TCheckFilter(
+                    TCFil(
                         (
-                            TValueFilter(lambda x: len(x) == 3, lambda x: bool(x)),
-                            TCheckFilter("alias", "file-analyzer-domain"),
+                            TVFil(lambda x: len(x) == 3, lambda x: bool(x)),
+                            TCFil("alias", "file-analyzer-domain"),
                             "source",
                         ),
                         "id",
                         889,
                     ),
-                    TFilter("state", 1, inexclude="+-"),
+                    TFil("state", 1, inexclude="+-"),
                     "role",
                 ),
                 "alias",
@@ -318,49 +317,49 @@ class TestTreeO(unittest.TestCase):
         )
         self.assertEqual(
             [],
-            a.filter(path="data", filter_=TFilter((TValueFilter(lambda x: len(x) < 1), ...)), copy=True),
+            a.filter(path="data", filter_=TFil((TVFil(lambda x: len(x) < 1), ...)), copy=True),
             "Verifying that a value-filter actually returns an empty list if its condition isn't met",
         )
         self.assertEqual(
             a["data"],
-            a.filter(path="data", filter_=TFilter((TValueFilter(lambda x: len(x) == 10), ...)), copy=True),
+            a.filter(path="data", filter_=TFil((TVFil(lambda x: len(x) == 10), ...)), copy=True),
             "Verifying that a value-filter actually returns the whole node if its condition is met",
         )
         self.assertEqual(
             {"data": a["data"]},
-            a.filter(filter_=TFilter("data", TValueFilter(lambda x: len(x) > 1)), copy=True),
+            a.filter(filter_=TFil("data", TVFil(lambda x: len(x) > 1)), copy=True),
             "Verifying that a value-filter also works if it comes as a standalone argument, then including all the "
             "subnodes the filter matches (in this case all).",
         )
         self.assertEqual(
             {"data": a["data"]},
-            a.filter(filter_=TFilter("data", TValueFilter(lambda x: len(x) < 10, invert=True)), copy=True),
+            a.filter(filter_=TFil("data", TVFil(lambda x: len(x) < 10, invert=True)), copy=True),
             "Verifying that a value-filter also works if it comes as a standalone argument, then including all the "
             "subnodes the filter matches (in this case all).",
         )
 
     def test_split(self):
-        return
         self.assertEqual(
             {"1": [{"a": False, "1": (1,)}], "a": [{"b": 1}]},
-            TreeO.split(self.a, filter_=TFilter(..., lambda x: x % 2), copy=True),
+            TreeO.split(self.a, filter_=TFil(..., lambda x: x % 2), copy=True),
             "Filtering using a lambda on the default test-datastructure",
         )
+        return
         self.assertEqual(
             {"1": [[1, True, "a", ("f", {"q", "a"})]], "a": [[3, 4]]},
-            TreeO.filter(self.a, filter_=TFilter(..., lambda x: x % 2, inexclude="--"), copy=True),
+            TreeO.filter(self.a, filter_=TFil(..., lambda x: x % 2, inexclude="--"), copy=True),
             "Filtering using a lambda on the default test-datastructure",
         )
         with open("test-data.json") as fp:
             a = TreeO(json.load(fp))
         self.assertEqual(
             {"responseCode": 200, "limit": 10000, "size": 10000},
-            a.filter(TFilter({"responseCode", "limit", "size"}), copy=True),
+            a.filter(TFil({"responseCode", "limit", "size"}), copy=True),
             "Simplest ever filtering at base-level",
         )
         self.assertEqual(
             {"responseCode": 200, "limit": 10000, "offset": 0, "count": 0, "size": 10000},
-            a.filter(TFilter("data", inexclude="-"), copy=True),
+            a.filter(TFil("data", inexclude="-"), copy=True),
             "Using inexclude to turn around the filter and give everything except data at base-level",
         )
         self.assertEqual(
@@ -369,7 +368,7 @@ class TestTreeO(unittest.TestCase):
                 {"sourceId": 5662, "roleId": 33, "firstSeen": 1548169200000, "lastSeen": 1552989600000},
             ],
             a.filter(
-                TFilter(..., (TCheckFilter("state", 3, invert=True), ".*(Seen|Id)"), str_as_re=True),
+                TFil(..., (TCFil("state", 3, invert=True), ".*(Seen|Id)"), str_as_re=True),
                 "data",
                 copy=True,
             ),
@@ -378,19 +377,19 @@ class TestTreeO(unittest.TestCase):
         b = TreeO(a, copy=True)
         b.filter(
             path="data",
-            filter_=TFilter(
+            filter_=TFil(
                 ...,
                 (
-                    TCheckFilter(
+                    TCFil(
                         (
-                            TValueFilter(lambda x: len(x) == 3, lambda x: bool(x)),
-                            TCheckFilter("alias", "file-analyzer-domain"),
+                            TVFil(lambda x: len(x) == 3, lambda x: bool(x)),
+                            TCFil("alias", "file-analyzer-domain"),
                             "source",
                         ),
                         "id",
                         889,
                     ),
-                    TFilter("state", 1, inexclude="+-"),
+                    TFil("state", 1, inexclude="+-"),
                     "role",
                 ),
                 "alias",
@@ -415,23 +414,23 @@ class TestTreeO(unittest.TestCase):
         )
         self.assertEqual(
             [],
-            a.filter(path="data", filter_=TFilter((TValueFilter(lambda x: len(x) < 1), ...)), copy=True),
+            a.filter(path="data", filter_=TFil((TVFil(lambda x: len(x) < 1), ...)), copy=True),
             "Verifying that a value-filter actually returns an empty list if its condition isn't met",
         )
         self.assertEqual(
             a["data"],
-            a.filter(path="data", filter_=TFilter((TValueFilter(lambda x: len(x) == 10), ...)), copy=True),
+            a.filter(path="data", filter_=TFil((TVFil(lambda x: len(x) == 10), ...)), copy=True),
             "Verifying that a value-filter actually returns the whole node if its condition is met",
         )
         self.assertEqual(
             {"data": a["data"]},
-            a.filter(filter_=TFilter("data", TValueFilter(lambda x: len(x) > 1)), copy=True),
+            a.filter(filter_=TFil("data", TVFil(lambda x: len(x) > 1)), copy=True),
             "Verifying that a value-filter also works if it comes as a standalone argument, then including all the "
             "subnodes the filter matches (in this case all).",
         )
         self.assertEqual(
             {"data": a["data"]},
-            a.filter(filter_=TFilter("data", TValueFilter(lambda x: len(x) < 10, invert=True)), copy=True),
+            a.filter(filter_=TFil("data", TVFil(lambda x: len(x) < 10, invert=True)), copy=True),
             "Verifying that a value-filter also works if it comes as a standalone argument, then including all the "
             "subnodes the filter matches (in this case all).",
         )
@@ -636,7 +635,7 @@ class TestTreeO(unittest.TestCase):
     def test_mod_all(self):
         with open("test-data.json") as fp:
             a = TreeO(json.load(fp))
-        date_filter = TFilter(..., {"firstSeen", "lastSeen", "lastModified"})
+        date_filter = TFil(..., {"firstSeen", "lastSeen", "lastModified"})
         b = TreeO.mod_all(a, lambda x: datetime.fromtimestamp(x / 1000), date_filter, "data", copy=True)
         self.assertTrue(
             all(isinstance(e[-1], datetime) for e in TreeO.iter(b, filter_=date_filter))
@@ -767,9 +766,7 @@ class TestTreeO(unittest.TestCase):
                 "count": 0,
                 "size": 10000,
             },
-            TreeO.merge(
-                a["data 4"], TreeO.iter(a, filter_=TFilter(..., TValueFilter(lambda x: isinstance(x, int))), copy=True)
-            ),
+            TreeO.merge(a["data 4"], TreeO.iter(a, filter_=TFil(..., TVFil(lambda x: isinstance(x, int))), copy=True)),
             "Merging with filtered iterator, without touching the original object",
         )
         self.assertEqual([1, 2, 3], TreeO([{"a": 1}]) + [1, 2, 3], "Testing the plus (+) operator")
