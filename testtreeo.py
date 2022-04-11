@@ -339,100 +339,54 @@ class TestTreeO(unittest.TestCase):
         )
 
     def test_split(self):
-        return
-        self.assertEqual(
+        split_res = (
             {"1": [{"a": False, "1": (1,)}], "a": [{"b": 1}]},
-            TreeO.split(self.a, filter_=TFil(..., lambda x: x % 2), copy=True),
-            "Filtering using a lambda on the default test-datastructure",
+            {"1": [[1, True, "a", ("f", {"a", "q"})]], "a": [[3, 4]]},
         )
         self.assertEqual(
-            {"1": [[1, True, "a", ("f", {"q", "a"})]], "a": [[3, 4]]},
-            TreeO.filter(self.a, filter_=TFil(..., lambda x: x % 2, inexclude="--"), copy=True),
-            "Filtering using a lambda on the default test-datastructure",
+            (
+                {"1": [{"a": False, "1": (1,)}], "a": [{"b": 1}]},
+                {"1": [[1, True, "a", ("f", {"a", "q"})]], "a": [[3, 4]]},
+            ),
+            TreeO.split(self.a, TFil(..., lambda x: x % 2), copy=True),
+            "Splitting using a lambda on the default test-datastructure",
+        )
+        self.assertEqual(
+            (
+                TreeO.filter(self.a, TFil(..., lambda x: x % 2), copy=True),
+                TreeO.filter(self.a, TFil(..., lambda x: not x % 2), copy=True),
+            ),
+            TreeO.split(self.a, TFil(..., lambda x: x % 2), copy=True),
+            "Splitting gives the same result as applying the filter two times, opposite ways on copies",
+        )
+        self.assertEqual(
+            split_res[::-1],
+            TreeO.split(self.a, TFil(..., lambda x: x % 2, inexclude="--"), copy=True),
+            "Splitting using a lambda on the default test-datastructure, and with inexclude",
+        )
+        q = {"a": "b", "f": {"g", "q", "d"}, "g": {1: 3, 2: 4}}
+        self.assertEqual(
+            q,
+            TreeO.merge(*TreeO.split(q, TFil(lambda x: ord(x) % 2, "g", inexclude="----"), copy=True)),
+            "Splitting and remerging dicts and sets works as if they were never separated",
         )
         with open("test-data.json") as fp:
             a = TreeO(json.load(fp))
+        in_, out = a.split(TFil(..., TCFil("state", 3)), path="data", copy=True, return_node=True)
+        self.assertIsInstance(in_, TreeO, "return_node is on, so in_ must be a TreeO")
+        self.assertIsInstance(out, TreeO, "return_node is on, so out must be a TreeO")
+        self.assertEqual({3}, set(in_.iter(filter_=TFil(..., "state"), reduce=-1)), "all items in in_ match the filter")
+        self.assertNotEqual({3}, set(out.iter(filter_=TFil(..., "state"), reduce=-1)), "no items in out match filter")
+        self.assertEqual((662, 762), tuple(out.iter(filter_=TFil(..., "id"), reduce=-1)), "correct ids in out")
+        self.assertEqual(len(a["data"]), len(in_) + len(out), "All elements are either in in our out")
+        in_, out = a.split(TFil(), path="data", copy=True)
+        self.assertEqual(a["data"], in_, "If the filter matches everything, in_ must be equal to the original node")
+        self.assertEqual([], out, "If the filter matches everything, out must be an empty list")
+        in_, out = a.split(TFil("a"), copy=True)
+        self.assertEqual({}, in_, "If the filter matches nothing, in_ must be an empty list")
+        self.assertEqual(a(), out, "If the filter matches nothing, in_ must be equal to the original node")
         self.assertEqual(
-            {"responseCode": 200, "limit": 10000, "size": 10000},
-            a.filter(TFil({"responseCode", "limit", "size"}), copy=True),
-            "Simplest ever filtering at base-level",
-        )
-        self.assertEqual(
-            {"responseCode": 200, "limit": 10000, "offset": 0, "count": 0, "size": 10000},
-            a.filter(TFil("data", inexclude="-"), copy=True),
-            "Using inexclude to turn around the filter and give everything except data at base-level",
-        )
-        self.assertEqual(
-            [
-                {"sourceId": 889, "roleId": 182, "firstSeen": 1548169200000, "lastSeen": 1561951800000},
-                {"sourceId": 5662, "roleId": 33, "firstSeen": 1548169200000, "lastSeen": 1552989600000},
-            ],
-            a.filter(
-                TFil(..., (TCFil("state", 3, invert=True), ".*(Seen|Id)"), str_as_re=True),
-                "data",
-                copy=True,
-            ),
-            "Testing invert on a TCheckFilter, getting all the nodes that have a state unlike 3",
-        )
-        b = TreeO(a, copy=True)
-        b.filter(
-            path="data",
-            filter_=TFil(
-                ...,
-                (
-                    TCFil(
-                        (
-                            TVFil(lambda x: len(x) == 3, lambda x: bool(x)),
-                            TCFil("alias", "file-analyzer-domain"),
-                            "source",
-                        ),
-                        "id",
-                        889,
-                    ),
-                    TFil("state", 1, inexclude="+-"),
-                    "role",
-                ),
-                "alias",
-                inexclude="++-",
-            ),
-        ),
-        self.assertEqual(
-            TreeO(
-                {
-                    "responseCode": 200,
-                    "limit": 10000,
-                    "offset": 0,
-                    "count": 0,
-                    "metaData": {},
-                    "messages": [],
-                    "data": [{"role": {"id": 182, "name": "Intel from sandbox runs"}, "state": 2}],
-                    "size": 10000,
-                }
-            ),
-            b,
-            "A lot of check- and ordinary filters stacked into each other. Filtering at path, comparing the whole obj",
-        )
-        self.assertEqual(
-            [],
-            a.filter(path="data", filter_=TFil((TVFil(lambda x: len(x) < 1), ...)), copy=True),
-            "Verifying that a value-filter actually returns an empty list if its condition isn't met",
-        )
-        self.assertEqual(
-            a["data"],
-            a.filter(path="data", filter_=TFil((TVFil(lambda x: len(x) == 10), ...)), copy=True),
-            "Verifying that a value-filter actually returns the whole node if its condition is met",
-        )
-        self.assertEqual(
-            {"data": a["data"]},
-            a.filter(filter_=TFil("data", TVFil(lambda x: len(x) > 1)), copy=True),
-            "Verifying that a value-filter also works if it comes as a standalone argument, then including all the "
-            "subnodes the filter matches (in this case all).",
-        )
-        self.assertEqual(
-            {"data": a["data"]},
-            a.filter(filter_=TFil("data", TVFil(lambda x: len(x) < 10, invert=True)), copy=True),
-            "Verifying that a value-filter also works if it comes as a standalone argument, then including all the "
-            "subnodes the filter matches (in this case all).",
+            ("a", "a"), a.split(TFil(), "a", default="a"), "Default is returned for in_ and out if path doesn't exist"
         )
 
     def test_set(self):
@@ -491,9 +445,9 @@ class TestTreeO(unittest.TestCase):
         a = TreeO(self.a, copy=True)
         self.assertNotEqual(a(), a.set(False, "1 1", copy=True), "The source object is not modified when copy is used")
         self.assertEqual(
-            {'1': [{'b': [False]}, {'a': False, '1': (1,)}], 'a': [[3, 4], {'b': 1}]},
+            {"1": [{"b": [False]}, {"a": False, "1": (1,)}], "a": [[3, 4], {"b": 1}]},
             a.set(False, "1 0 b 1", node_types="   l", copy=True),
-            "space works to not enforce node_types in path - dicts and lists are traversed as long as the keys allow it"
+            "space works to not enforce node_types in path - dicts and lists are traversed as long as the keys allow it",
         )
 
     def test_append(self):
@@ -521,10 +475,6 @@ class TestTreeO(unittest.TestCase):
         b["a"][0].extend((5, 6))
         self.assertEqual(TreeO.extend(a, (5, 6), "a 0"), b, "appending to existing list")
         b["1"][0][3] = list(b["1"][0][3])
-
-
-
-
 
     def test_append(self):
         a = copy.deepcopy(self.a)

@@ -28,7 +28,8 @@ from collections.abc import (
 from datetime import date, datetime, time
 from typing import Union, Tuple, Any, Optional, List
 
-RE_PATTERN = getattr(re, "Pattern" if hasattr(re, "Pattern") else "_pattern_type")
+_RE_PATTERN = getattr(re, "Pattern" if hasattr(re, "Pattern") else "_pattern_type")
+END = sys.maxsize
 
 
 class _None:
@@ -91,7 +92,7 @@ class TVFil(TFilBase):
             inexclude: In some cases it's easier to specify that a filter shall match everything except b, rather than
                 match a. ~ can be used to specify for each argument if the filter shall include it (+) or exclude it
                 (-). Valid example: "++-+". If this parameter isn't specified, all args will be treated as (+).
-            invert: Invert this whole filter to match if it doesn't match. E. g. if you want to select all the nodes
+            invert: Invert this whole filter to match if it doesn't match. E.g. if you want to select all the nodes
                 that don't have a certain property.
         """
         if not all(callable(arg) or TreeO.__is__(arg, Collection) for arg in filter_args):
@@ -220,7 +221,7 @@ class TKFil(TFilBase):
             else:
                 if callable(e):
                     match = e(value)
-                elif isinstance(e, RE_PATTERN):
+                elif isinstance(e, _RE_PATTERN):
                     match = bool(e.fullmatch(value))
                 elif isinstance(e, Set):
                     match = value in e
@@ -403,9 +404,10 @@ class TreeOMeta(ABCMeta):
         iter_nodes=(False, bool),
         is_not=((str, bytes, bytearray), tuple, lambda x: all(isinstance(e, type) for e in x)),
         list_insert=(
-            sys.maxsize,
+            END,
             int,
-            "List-insert must be a positive int. By default (list_insert == sys.maxsize), all existing list-indices are"
+            lambda x: x >= 0,
+            "List-insert must be a positive int. By default (list_insert == END), all existing list-indices are"
             " traversed. If list-insert < maxsize, earliest at level n a new node is inserted if that node is a list",
         ),
         no_node=((str, bytes, bytearray), tuple, lambda x: all(isinstance(e, type) for e in x)),
@@ -557,27 +559,33 @@ class TreeO(Mapping, Sequence, metaclass=TreeOMeta):
         return node
 
     def _mutable_parent(
-        self: Collection, l_path: list, list_insert=sys.maxsize, default=None
-    ) -> Optional[Union[MutableMapping, MutableSequence, MutableSet]]:
+        self: Collection, l_path: list, list_insert: int = END, node_types: str = ""
+    ) -> Union[MutableMapping, MutableSequence, MutableSet, type(_None)]:
         """Internal function retrieving the parent_node, changing necessary nodes on the way to make it mutable
 
         Args:
             l_path: must already be a list, so a string from a calling path-function must already be split
-            default: returned if path doesn't exist in self
-            list_insert: defines at which list-level a new node shall be inserted instead of traversing the tree. See
-                docstring for set or README.md for more thorough documentation. Default 0 (parameter is ignored)
+            list_insert: * Level at which a new node shall be inserted into the list instead of traversing the existing
+                node in the list at that index. See README
+            node_types: * Can be used to manually define if the nodes along path are supposed to be (l)ists or (d)icts.
+                E.g. "dll" to create a dict at level 0, and lists at level 1 and 2. " " can also be used - space doesn't
+                enforce a node-type like d or l. For " ", existing nodes are traversed if possible, otherwise
+                default_node_type is used to create new nodes. Default "", interpreted as " " at each level.
 
         Returns:
             the parent node if it exists, otherwise None
         """
         node = self.obj if isinstance(self, TreeO) else self
         nodes = [node]
+        node_types = TreeO._opt(self, "node_types", node_types)
         try:
             for i in range(len(l_path) - 1):
                 if isinstance(node, Sequence):
+                    if list_insert <= 0 or node_types[i : i + 1] == "d":
+                        return _None
                     l_path[i] = int(l_path[i])
-                    if list_insert <= 0:
-                        return default
+                elif node_types[i : i + 1] == "l":
+                    return _None
                 node = node[l_path[i]]
                 nodes.append(node)
                 list_insert -= 1
@@ -585,11 +593,11 @@ class TreeO(Mapping, Sequence, metaclass=TreeOMeta):
                 return TreeO._mutable_node(nodes, l_path)
         except (IndexError, ValueError, KeyError):
             pass
-        return default
+        return _None
 
     def iter(
         self: Collection,
-        max_depth: int = sys.maxsize,
+        max_depth: int = END,
         path: Any = "",
         filter_: TFil = None,
         return_node: bool = ...,
@@ -609,12 +617,12 @@ class TreeO(Mapping, Sequence, metaclass=TreeOMeta):
                 If max_depth is sys.max_size, all the nodes are traversed: [("a", "b", "c"), ("a", "b", "d"]),
                 ("e", "f")]. If max_depth is 1, iter returns [("a", "b", ["c", "d"]), ("e", "f")], so ["c", "d"] is not
                 iterated through but returned as a node. If max_depth is 0, iter returns [("a", ["b", ["c", "d"]]),
-                ("e", "f")], effectively the same as dict.items(). Default sys.maxsize (iterate as deeply as possible)
-                A negative number (e.g. -1) is treated as sys.maxsize.
+                ("e", "f")], effectively the same as dict.items(). Default END (iterate as deeply as possible)
+                A negative number (e.g. -1) is treated as END.
             path: Start iterating at path. Internally calls get(path), and iterates on the node get returns. See get()
             filter_: Only iterate over specific nodes defined using TFilter (see README.md and TFilter for more info)
             return_node: * If the leaf in the tuple is a dict or list, return it as a TreeO-object. This setting has no
-                effect if max_items is sys.maxsize.
+                effect if max_items is END.
             iter_fill: * Fill up tuples with iter_fill (can be any object, e.g. None) to ensure that all the tuples
                 iter() returns are exactly max_items long. This can be useful if you want to unpack the keys / leaves
                 from the tuples in a loop, which fails if the count of items in the tuples varies. This setting has no
@@ -681,7 +689,7 @@ class TreeO(Mapping, Sequence, metaclass=TreeOMeta):
         if copy:
             parent_node = TreeO.get(self, l_path[:-1], _None, False, copy, value_split)
         else:
-            parent_node = TreeO._mutable_parent(self, l_path, default=_None)
+            parent_node = TreeO._mutable_parent(self, l_path)
         node = _None if parent_node is _None else TreeO.get(parent_node, l_path[-1:], _None, False)
         if node is _None or not TreeO.__is__(node, Collection):
             filtered = TreeO._opt(self, "default", default)
@@ -745,7 +753,7 @@ class TreeO(Mapping, Sequence, metaclass=TreeOMeta):
         copy: bool = False,
         default=...,
         value_split: str = ...,
-    ) -> Collection:
+    ) -> Union[Tuple[Collection, Collection], Tuple[Any, Any]]:
         """Splits self into nodes that pass the filter, and nodes that don't pass the filter
 
         \\* means that the parameter is a TreeO-Setting, see TreeO-class-docstring for more information about settings
@@ -769,7 +777,7 @@ class TreeO(Mapping, Sequence, metaclass=TreeOMeta):
         if copy:
             parent_node = TreeO.get(self, l_path[:-1], _None, False, copy, value_split)
         else:
-            parent_node = TreeO._mutable_parent(self, l_path, default=_None)
+            parent_node = TreeO._mutable_parent(self, l_path)
         node = _None if parent_node is _None else TreeO.get(parent_node, l_path[-1:], _None, False)
         if node is _None or not TreeO.__is__(node, Collection):
             filter_in, filter_out = 2 * (TreeO._opt(self, "default", default),)
@@ -787,12 +795,14 @@ class TreeO(Mapping, Sequence, metaclass=TreeOMeta):
                     getattr(parent_node, "extend" if isinstance(parent_node, MutableSequence) else "update")(filter_in)
         return (
             (TreeO.child(self, filter_in), TreeO.child(self, filter_out))
-            if TreeO._opt(self, "return_node", return_node)
-            else (filter_in, filter_out),
+            if TreeO._opt(self, "return_node", return_node) and TreeO.__is__(filter_in, Collection)
+            else (filter_in, filter_out)
         )
 
     @staticmethod
-    def split_r(node: Collection, copy: bool, filter_: Optional[TFil], index: int = 0) -> Collection:
+    def split_r(
+        node: Collection, copy: bool, filter_: Optional[TFil], index: int = 0
+    ) -> Tuple[Union[MutableMapping, MutableSequence, MutableSet], Union[MutableMapping, MutableSequence, MutableSet]]:
         """Internal recursive method that facilitates filtering
 
         Args:
@@ -1186,7 +1196,7 @@ class TreeO(Mapping, Sequence, metaclass=TreeOMeta):
                                 node = TreeO._mutable_node(nodes, l_path[: i + 1])
                                 nodes.clear()
                             node.insert(node_key, [] if next_node is Sequence else {})
-                            list_insert = sys.maxsize
+                            list_insert = END
                         else:
                             next_node_type = (
                                 Mapping
@@ -1318,15 +1328,20 @@ class TreeO(Mapping, Sequence, metaclass=TreeOMeta):
             l_path = path.split(TreeO._opt(self, "value_split", value_split)) if path else []
         else:
             l_path = list(path) if TreeO.__is__(path, Collection) else [path]
-        parent_node = TreeO._mutable_parent(self, l_path, TreeO._opt(self, "list_insert", list_insert), _None)
+        parent_node = TreeO._mutable_parent(
+            self, l_path, TreeO._opt(self, "list_insert", list_insert), TreeO._opt(self, "node_types", node_types)
+        )
         if parent_node is _None:
             value = TreeO._opt(self, "default", default)
             TreeO.set(self, value, path, node_types, list_insert, value_split, False, default_node_type)
         else:
             value = TreeO.get(parent_node, l_path[-1], _None, return_node=False)
-            if value is _None:
+            if value is _None or (list_insert == len(l_path) - 1 and isinstance(parent_node, MutableSequence)):
                 value = TreeO._opt(self, "default", default)
-                TreeO.set(self, value, path, node_types, list_insert, value_split, False, default_node_type)
+                if isinstance(parent_node, MutableSequence):
+                    parent_node.insert(int(l_path[-1]), value)
+                else:
+                    parent_node[l_path[-1]] = value
         return (
             TreeO.child(self, value)
             if TreeO._opt(self, "return_node", return_node) and TreeO.__is__(value, Collection)
@@ -1380,7 +1395,10 @@ class TreeO(Mapping, Sequence, metaclass=TreeOMeta):
             l_path = path.split(TreeO._opt(self, "value_split", value_split)) if path else []
         else:
             l_path = list(path) if TreeO.__is__(path, Collection) else [path]
-        parent = TreeO._mutable_parent(self, l_path, list_insert=TreeO._opt(self, "list_insert", list_insert))
+        list_insert = TreeO._opt(self, "list_insert", list_insert)
+        parent = TreeO._mutable_parent(
+            self, l_path, list_insert=list_insert, node_types=TreeO._opt(self, "node_types", node_types)
+        )
         if isinstance(parent, (MutableMapping, MutableSequence)) and list_insert != len(l_path):
             old_value = TreeO.get(parent, l_path[-1], _None, return_node=False)
             if replace_value:
@@ -1412,7 +1430,7 @@ class TreeO(Mapping, Sequence, metaclass=TreeOMeta):
         path: Any = "",
         replace_value=True,
         default=...,
-        max_depth: int = sys.maxsize,
+        max_depth: int = END,
         return_node: bool = ...,
         copy=False,
         value_split: str = ...,
@@ -1482,7 +1500,7 @@ class TreeO(Mapping, Sequence, metaclass=TreeOMeta):
         else:
             l_path = list(path) if TreeO.__is__(path, Collection) else [path]
         default = TreeO._opt(self, "default", default)
-        node = TreeO._mutable_parent(self, l_path, default=default)
+        node = TreeO._mutable_parent(self, l_path)
         try:
             if isinstance(node, MutableMapping):
                 node = node.pop(l_path[-1])
@@ -1491,6 +1509,8 @@ class TreeO(Mapping, Sequence, metaclass=TreeOMeta):
             elif isinstance(node, MutableSet):
                 node.remove(l_path[-1])
                 node = l_path[-1]
+            else:
+                node = default
         except (IndexError, ValueError, KeyError):
             node = default
         return (
@@ -1855,8 +1875,8 @@ class TreeO(Mapping, Sequence, metaclass=TreeOMeta):
         obj: Union["TreeOIterator", Collection],
         path: Any = "",
         new_value_action: str = "r",
-        extend_from: int = sys.maxsize,
-        update_from: int = sys.maxsize,
+        extend_from: int = END,
+        update_from: int = END,
         return_node: bool = ...,
         copy: bool = False,
         copy_obj: bool = False,
@@ -2290,7 +2310,7 @@ class TreeOIterator:
     def __init__(
         self,
         obj: TreeO,
-        max_depth: int = sys.maxsize,
+        max_depth: int = END,
         filter_: TFil = None,
         return_node: bool = False,
         iter_fill=_None,
@@ -2303,7 +2323,7 @@ class TreeOIterator:
 
         Initiate this iterator through TreeO.iter(), there the parameters are discussed as well."""
         self.obj = obj
-        self.max_depth = sys.maxsize if max_depth < 0 else max_depth
+        self.max_depth = END if max_depth < 0 else max_depth
         self.return_node = return_node
         self.iter_fill = iter_fill
         self.filter_ends = filter_ends
@@ -2348,7 +2368,7 @@ class TreeOIterator:
                         TreeO.copy_any(v) if self.copy else v,
                         *(
                             (self.iter_fill,) * (self.max_depth - len(self.iterators) + 1)
-                            if self.iter_fill is not _None and self.max_depth < sys.maxsize
+                            if self.iter_fill is not _None and self.max_depth < END
                             else ()
                         ),
                     )
