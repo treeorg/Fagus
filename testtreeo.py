@@ -410,7 +410,7 @@ class TestTreeO(unittest.TestCase):
         # new nodes can only either be lists or dicts, expressed by l's and
         self.assertRaisesRegex(ValueError, "The only allowed characters in ", TreeO.set, a["1"], "f", "0", "pld")
         # Due to limitations on how references work in Python, the base-object can't be changed. So if the base-object
-        # is a list, it can't be converted into a dict. These kind of changes are possible at the lower levels.
+        # is a list, it can't be converted into a dict. This kind of changes are possible at the lower levels.
         self.assertRaisesRegex(TypeError, "Your base object is a (.*|see comment)", TreeO.set, a, "f", "0", "lld")
         # if the user defines that he wants a list, but it's not possible to parse numeric index from t_path raise error
         self.assertRaisesRegex(ValueError, "Can't parse numeric list-index from", TreeO.set, a, "f", "1 f", "dl")
@@ -657,9 +657,9 @@ class TestTreeO(unittest.TestCase):
         def fancy_network_mask(network, format_string: str, **kwargs):
             if type(network) == IPv4Network:
                 return (
-                        format_string % (network, network.netmask)
-                        + kwargs.get("broadcast", " and the bc-address ")
-                        + str(network.broadcast_address)
+                    format_string % (network, network.netmask)
+                    + kwargs.get("broadcast", " and the bc-address ")
+                    + str(network.broadcast_address)
                 )
             return format_string % (network, network.netmask)
 
@@ -808,6 +808,14 @@ class TestTreeO(unittest.TestCase):
         a.pop("1 2 1 1")
         self.assertEqual((((1, 0), 2), [3, 4, [5, [6]], 8]), a(), "Keeping tuples below if possible")
 
+    def test_keys(self):
+        self.assertEqual(("1", "a"), tuple(TreeO.keys(self.a)), "Getting dict-keys from base dict")
+        self.assertIsInstance(TreeO.keys(self.a, "a 1"), type({}.keys()), "Dicts (also inside the node) give dict_keys")
+        self.assertIsInstance(TreeO.keys(self.a, "1"), range, "A list returns a range")
+        self.assertEqual((0, 1), tuple(TreeO.keys(self.a, "1")), "A list returns numeric indexes")
+        self.assertEqual((..., ...), tuple(TreeO.keys(self.a, "1 0 3 1")), "A Set gives ... for each element")
+        self.assertEqual((), TreeO.keys(self.a, "1 0 3 5"), "A nonexisting path gives empty keys (an empty tuple)")
+
     def test_values(self):
         with open("test-data.json") as fp:
             a = TreeO(json.load(fp))
@@ -826,11 +834,36 @@ class TestTreeO(unittest.TestCase):
             None,
             TreeO({"fqdn": "dlp.dlsofteclipse.com"}),
         ]
-        self.assertEqual(b, a.values("data 4", return_node=True), "Returning correctly nodes in a dict, with TreeO's")
+        self.assertEqual(b, list(a.values("data 4", return_node=True)), "Correctly returning dict values, with TreeO's")
         b = (200, 10000, 0, 0, TreeO({}), TreeO([]), a.get("data", return_node=True), 10000)
         self.assertEqual(b, tuple(a.values(return_node=True)), "Correctly returning nodes in a dict")
         self.assertEqual((), a.values("data 12"), "Returning empty tuple for a path that doesn't exist")
         self.assertEqual((10000,), a.values("size"), "Singleton value is returned alone in a tuple")
+
+    def test_items(self):
+        self.assertIsInstance(TreeO.items(self.a), type({}.items()), "Dict gives dict-items")
+        self.assertIsInstance(TreeO.items(self.a, "1"), enumerate, "List gives enumerate-obj")
+        self.assertTrue(all(isinstance(v, TreeO) for _, v in TreeO.items(self.a, return_node=True)), "return_node ok")
+        self.assertEqual({(..., "a"), (..., "q")}, set(TreeO.items(self.a, "1 0 3 1")), "(..., e) for elements set")
+        self.assertEqual(tuple(TreeO.iter(self.a, 0)), tuple(TreeO.items(self.a)), "items at base = iter at base")
+
+    def test_clear(self):
+        self.assertEqual({}, TreeO.clear(self.a, copy=True), "Emptying at base level gives an empty dict")
+        self.assertEqual({"1": [], "a": [[3, 4], {"b": 1}]}, TreeO.clear(self.a, "1", copy=True), "clear a list inside")
+        self.assertEqual(
+            {"1": [[1, True, "a", []], {"a": False, "1": (1,)}], "a": [[3, 4], {"b": 1}]},
+            TreeO.clear(self.a, "1 0 3", copy=True),
+            "Clearing a tuple (giving an empty list)",
+        )
+        self.assertEqual(self.a, TreeO.clear(self.a, "a b c", copy=True), "No change if node doesn't exist")
+        self.assertEqual(self.a, TreeO.clear(self.a, "a 0 1", copy=True), "No change if node can't be cleared")
+
+    def test_contains(self):
+        self.assertTrue(TreeO.contains(self.a, True, "1 0"), "path exists, and value is in node at path")
+        self.assertFalse(TreeO.contains(self.a, False, "1 0"), "path exists, but value doesn't exist in node at path")
+        self.assertTrue(TreeO.contains(self.a, "a", "1 0 2"), "If it is not a node but just a value, compare that")
+        self.assertFalse(TreeO.contains(self.a, "q", "1 0 2"), "If it is not a node but just a value, compare that")
+        self.assertFalse(TreeO.contains(self.a, "q", "1 0 ha"), "False if path doesn̈́'t exist")
 
     def test_count(self):
         self.assertEqual(4, TreeO.count(self.a, "1 0"), "Counting an existing list")
@@ -838,6 +871,40 @@ class TestTreeO(unittest.TestCase):
         self.assertEqual(2, TreeO.count(self.a, "1 0 3 1"), "Counting an existing set")
         self.assertEqual(0, TreeO.count(self.a, "Hei god morgen"), "When the node doesn't exist, return 0")
         self.assertEqual(1, TreeO.count(self.a, "1 0 1"), "When the node is a simple value, return 1")
+
+    def test_reversed(self):
+        self.assertEqual(
+            (
+                [[3, 4], {"b": 1}],
+                [[1, True, "a", ("f", {"a", "q"})], {"a": False, "1": (1,)}],
+            ),
+            tuple(TreeO.reversed(self.a)),
+            "Reversing dict-values works, gives lifo-ordering instead of default fifo",
+        )
+        self.assertEqual((("f", {"a", "q"}), "a", True, 1), tuple(TreeO.reversed(self.a, "1 0")), "Reversing list")
+        self.assertTrue(
+            all(isinstance(e, TreeO) for e in TreeO.reversed(self.a, "a", return_node=True)), "return_node does its job"
+        )
+        self.assertEqual((), tuple(TreeO.reversed(self.a, "hei og hopp")), "Return empty tuple if noed doesn't exist")
+
+    def test_reverse(self):
+        self.assertRaisesRegex(TypeError, "Cannot reverse base node of type", TreeO.reverse, set())
+        self.assertRaisesRegex(TypeError, "Cannot reverse base node of type", TreeO.reverse, self.a["1"][0][3])
+        self.assertRaisesRegex(TypeError, "Cannot reverse node of type", TreeO.reverse, self.a, "1 0 3 1", copy=True)
+        self.assertEqual({"a": self.a["a"], "1": self.a["1"]}, TreeO.reverse(self.a, copy=True), "Reversing base dict")
+        a = TreeO(self.a, copy=True)
+        b = TreeO.copy(self.a)
+        b["1"][0].reverse()
+        self.assertEqual(b, a.reverse("1 0"), "Reversing list inside tree")
+        b["1"][0][0] = list(reversed(b["1"][0][0]))
+        self.assertEqual(b, a.reverse("1 0 0"), "Reversing tuple (which converts it to a list)")
+        b["1"].reverse()
+        self.assertEqual(b["1"], TreeO.reverse(a["1"]), "Reversing base list")
+        a = {"a": {"b": 1, "c": {"f": 4, "g": 3}}, "d": 3}
+        self.assertEqual(a, TreeO.reverse(TreeO.reverse(a, "a"), "a"), "Double reversing a dict inside a tree")
+        b = TreeO.copy(a)
+        b["a"]["c"] = {"g": 3, "f": 4}
+        self.assertEqual(b, TreeO.reverse(a, "a c"), "Reversing a dict inside a tree")
 
     def test_copy(self):
         a = copy.deepcopy(self.a)
