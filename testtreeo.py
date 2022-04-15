@@ -475,32 +475,6 @@ class TestTreeO(unittest.TestCase):
         b["a"][0].extend((5, 6))
         self.assertEqual(TreeO.extend(a, (5, 6), "a 0"), b, "appending to existing list")
         b["1"][0][3] = list(b["1"][0][3])
-
-    def test_append(self):
-        a = copy.deepcopy(self.a)
-        b = copy.deepcopy(self.a)
-        b["a"][0].append(5)
-        self.assertEqual(TreeO.append(a, 5, "a 0"), b, "appending to existing list")
-        b["1"][0][3] = list(b["1"][0][3])
-        b["1"][0][3][1] = list(b["1"][0][3][1])
-        b["1"][0][3][1].append("f")
-        b["1"][0][3][1].sort()
-        TreeO.append(a, "f", "1 0 3 1")
-        TreeO.get(a, "1 0 3 1").sort()
-        self.assertEqual(
-            a, b, "appending to set (converting to list first, both sets must be sorted for the test not to fail)"
-        )
-        b["1"][0][0] = [1, 5]
-        self.assertEqual(TreeO.append(a, 5, "1 0 0"), b, "Creating list from singleton value and appending to it")
-        b["q"] = [6]
-        self.assertEqual(TreeO.append(a, 6, "q"), b, "Create new list for value at a path that didn't exist before")
-
-    def test_extend(self):
-        a = copy.deepcopy(self.a)
-        b = copy.deepcopy(self.a)
-        b["a"][0].extend((5, 6))
-        self.assertEqual(TreeO.extend(a, (5, 6), "a 0"), b, "appending to existing list")
-        b["1"][0][3] = list(b["1"][0][3])
         b["1"][0][3][1] = list(b["1"][0][3][1])
         b["1"][0][3][1].extend("fg")
         b["1"][0][3][1].sort()
@@ -639,26 +613,80 @@ class TestTreeO(unittest.TestCase):
             "Only necessary modifications when nodes are transformed from immodifyable to modifyable. Also testing set",
         )
 
-    def test_pop(self):
-        a = TreeO(self.a, copy=True)
-        b = copy.deepcopy(self.a)
-        self.assertEqual(a.pop("1 0 2"), b["1"][0].pop(2), "Pop correctly drops the value at the position")
-        a.pop("8 9 10")
-        self.assertEqual(a(), b, "Pop did not modify the object as path doesn't exist")
-        self.assertIsNone(a.pop("8"), "When pop fails because the Key didn't exist in the node, default is returned")
-        b["1"][0][2][1].remove("a")
-        self.assertEqual("a", a.pop("1 0 2 1 a"), "Correctly popping from set (internally calling remove)")
-        self.assertEqual(b.pop("a"), a.pop("a"), "Correctly popping from dict at base-level")
-        self.assertEqual(a(), b, "Pop has correctly modified the object")
-        a = TreeO((((1, 0), 2), (3, 4, (5, (6, 7)), 8)))
-        self.assertRaisesRegex(TypeError, "Can't modify base-object self having the immutable type", a.pop, "1 2 1 1")
-        a = TreeO(list(a))
-        self.assertEqual(7, a.pop("1 2 1 1"), "Correctly popping when all tuples on the way must be converted to lists")
-        self.assertEqual([((1, 0), 2), [3, 4, [5, [6]], 8]], a(), "The tuples were correctly converted to lists")
-        self.assertEqual(TreeO((1, 0)), a.pop("0 0", return_node=True), "Returning TreeO-object if return_value is set")
-        a = TreeO((((1, 0), 2), [3, 4, (5, (6, 7)), 8]))
-        a.pop("1 2 1 1")
-        self.assertEqual((((1, 0), 2), [3, 4, [5, [6]], 8]), a(), "Keeping tuples below if possible")
+    def test_serialize(self):
+        test_obj = {date(2021, 3, 6): [time(6, 45, 22), datetime(2021, 6, 23, 5, 45, 22)], ("hei", "du"): {3, 4, 5}}
+        a = TreeO(test_obj, copy=True)
+        self.assertRaisesRegex(
+            TypeError,
+            "Can't modify base-object self having the immutable type",
+            TreeO((1, 2, 3, [4, 5, 6], {6, 5})).serialize,
+        )
+        self.assertRaisesRegex(
+            ValueError, "Dicts with composite keys \\(tuples\\) are not supported in", a.serialize, copy=True
+        )
+        b = {"2021-03-06": ["06:45:22", "2021-06-23 05:45:22"], "hei du": [3, 4, 5]}
+        self.assertEqual(a.serialize({"tuple_keys": lambda x: " ".join(x)}), b, "Serialized datetime and tuple-key")
+        self.assertEqual(a.serialize(), b, "Nothing changes if there is nothing to change")
+        a = TreeO(test_obj, copy=True)
+        a[("hei du",)] = a.pop((("hei", "du"),))
+        self.assertEqual(a.serialize(), b, "Also works when no mod-functions are defined in the parameter")
+        a = TreeO(TreeO(self.a, copy=True).serialize())
+        a["1 0 3 1"].sort()
+        self.assertEqual(
+            {"1": [[1, True, "a", ["f", ["a", "q"]]], {"a": False, "1": [1]}], "a": [[3, 4], {"b": 1}]},
+            a(),
+            "Removing tuples / sets in complex dict / list tree",
+        )
+        a = TreeO(default_node_type="l")
+        a["a 1"] = ip_address("::1")
+        a.append(ip_address("127.0.0.1"), "a 0")
+        a["a -8"] = IPv4Network("192.168.178.0/24")
+        a["a 6"] = IPv6Network("2001:0db8:85a3::/80")
+        self.assertEqual(
+            {
+                "a": [
+                    "IPv4Network('192.168.178.0/24')",
+                    ["IPv6Address('::1')", "IPv4Address('127.0.0.1')"],
+                    "IPv6Network('2001:db8:85a3::/80')",
+                ]
+            },
+            a.serialize(copy=True),
+            "Only using default function with str on IP-objects",
+        )
+
+        def fancy_network_mask(network, format_string: str, **kwargs):
+            if type(network) == IPv4Network:
+                return (
+                        format_string % (network, network.netmask)
+                        + kwargs.get("broadcast", " and the bc-address ")
+                        + str(network.broadcast_address)
+                )
+            return format_string % (network, network.netmask)
+
+        self.assertEqual(
+            {
+                "a": [
+                    "The network 192.168.178.0/24 with the netmask 255.255.255.0 and the broadcast-address "
+                    "192.168.178.255",
+                    ["::1 0000:0000:0000:0000:0000:0000:0000:0001", "local"],
+                    "The network 2001:db8:85a3::/80 with the netmask ffff:ffff:ffff:ffff:ffff::",
+                ]
+            },
+            a.serialize(
+                {
+                    IPv6Address: lambda x: f"{x.compressed} {x.exploded}",
+                    "default": lambda x: "global" if x.is_global else "local",
+                    (IPv4Network, IPv6Network): TFunc(
+                        fancy_network_mask,
+                        1,
+                        "The network %s with the netmask %s",
+                        broadcast=" and the broadcast-address ",
+                    ),
+                },
+                copy=True,
+            ),
+            "Complex mod-functions with function pointer, args, kwargs, lambdas and tuple-types, overriding default",
+        )
 
     def test_merge(self):
         b = {"a": {"b": {"c": 5}}, "d": "e"}
@@ -759,87 +787,26 @@ class TestTreeO(unittest.TestCase):
         self.assertEqual([1, 2, 3], TreeO([{"a": 1}]) + [1, 2, 3], "Testing the plus (+) operator")
         self.assertEqual([{"a": 1}, 2, 3], [1, 2, 3] + TreeO([{"a": 1}]), "Testing the plus (+) operator from right")
 
-    def test_serialize(self):
-        test_obj = {date(2021, 3, 6): [time(6, 45, 22), datetime(2021, 6, 23, 5, 45, 22)], ("hei", "du"): {3, 4, 5}}
-        a = TreeO(test_obj, copy=True)
-        self.assertRaisesRegex(
-            TypeError,
-            "Can't modify base-object self having the immutable type",
-            TreeO((1, 2, 3, [4, 5, 6], {6, 5})).serialize,
-        )
-        self.assertRaisesRegex(
-            ValueError, "Dicts with composite keys \\(tuples\\) are not supported in", a.serialize, copy=True
-        )
-        b = {"2021-03-06": ["06:45:22", "2021-06-23 05:45:22"], "hei du": [3, 4, 5]}
-        self.assertEqual(a.serialize({"tuple_keys": lambda x: " ".join(x)}), b, "Serialized datetime and tuple-key")
-        self.assertEqual(a.serialize(), b, "Nothing changes if there is nothing to change")
-        a = TreeO(test_obj, copy=True)
-        a[("hei du",)] = a.pop((("hei", "du"),))
-        self.assertEqual(a.serialize(), b, "Also works when no mod-functions are defined in the parameter")
-        a = TreeO(TreeO(self.a, copy=True).serialize())
-        a["1 0 3 1"].sort()
-        self.assertEqual(
-            {"1": [[1, True, "a", ["f", ["a", "q"]]], {"a": False, "1": [1]}], "a": [[3, 4], {"b": 1}]},
-            a(),
-            "Removing tuples / sets in complex dict / list tree",
-        )
-        a = TreeO(default_node_type="l")
-        a["a 1"] = ip_address("::1")
-        a.append(ip_address("127.0.0.1"), "a 0")
-        a["a -8"] = IPv4Network("192.168.178.0/24")
-        a["a 6"] = IPv6Network("2001:0db8:85a3::/80")
-        self.assertEqual(
-            {
-                "a": [
-                    "IPv4Network('192.168.178.0/24')",
-                    ["IPv6Address('::1')", "IPv4Address('127.0.0.1')"],
-                    "IPv6Network('2001:db8:85a3::/80')",
-                ]
-            },
-            a.serialize(copy=True),
-            "Only using default function with str on IP-objects",
-        )
-
-        def fancy_network_mask(network, format_string: str, **kwargs):
-            if type(network) == IPv4Network:
-                return (
-                    format_string % (network, network.netmask)
-                    + kwargs.get("broadcast", " and the bc-address ")
-                    + str(network.broadcast_address)
-                )
-            return format_string % (network, network.netmask)
-
-        self.assertEqual(
-            {
-                "a": [
-                    "The network 192.168.178.0/24 with the netmask 255.255.255.0 and the broadcast-address "
-                    "192.168.178.255",
-                    ["::1 0000:0000:0000:0000:0000:0000:0000:0001", "local"],
-                    "The network 2001:db8:85a3::/80 with the netmask ffff:ffff:ffff:ffff:ffff::",
-                ]
-            },
-            a.serialize(
-                {
-                    IPv6Address: lambda x: f"{x.compressed} {x.exploded}",
-                    "default": lambda x: "global" if x.is_global else "local",
-                    (IPv4Network, IPv6Network): TFunc(
-                        fancy_network_mask,
-                        1,
-                        "The network %s with the netmask %s",
-                        broadcast=" and the broadcast-address ",
-                    ),
-                },
-                copy=True,
-            ),
-            "Complex mod-functions with function pointer, args, kwargs, lambdas and tuple-types, overriding default",
-        )
-
-    def test_count(self):
-        self.assertEqual(4, TreeO.count(self.a, "1 0"), "Counting an existing list")
-        self.assertEqual(2, TreeO.count(self.a, "1 1"), "Counting an existing dict")
-        self.assertEqual(2, TreeO.count(self.a, "1 0 3 1"), "Counting an existing set")
-        self.assertEqual(0, TreeO.count(self.a, "Hei god morgen"), "When the node doesn't exist, return 0")
-        self.assertEqual(1, TreeO.count(self.a, "1 0 1"), "When the node is a simple value, return 1")
+    def test_pop(self):
+        a = TreeO(self.a, copy=True)
+        b = copy.deepcopy(self.a)
+        self.assertEqual(a.pop("1 0 2"), b["1"][0].pop(2), "Pop correctly drops the value at the position")
+        a.pop("8 9 10")
+        self.assertEqual(a(), b, "Pop did not modify the object as path doesn't exist")
+        self.assertIsNone(a.pop("8"), "When pop fails because the Key didn't exist in the node, default is returned")
+        b["1"][0][2][1].remove("a")
+        self.assertEqual("a", a.pop("1 0 2 1 a"), "Correctly popping from set (internally calling remove)")
+        self.assertEqual(b.pop("a"), a.pop("a"), "Correctly popping from dict at base-level")
+        self.assertEqual(a(), b, "Pop has correctly modified the object")
+        a = TreeO((((1, 0), 2), (3, 4, (5, (6, 7)), 8)))
+        self.assertRaisesRegex(TypeError, "Can't modify base-object self having the immutable type", a.pop, "1 2 1 1")
+        a = TreeO(list(a))
+        self.assertEqual(7, a.pop("1 2 1 1"), "Correctly popping when all tuples on the way must be converted to lists")
+        self.assertEqual([((1, 0), 2), [3, 4, [5, [6]], 8]], a(), "The tuples were correctly converted to lists")
+        self.assertEqual(TreeO((1, 0)), a.pop("0 0", return_node=True), "Returning TreeO-object if return_value is set")
+        a = TreeO((((1, 0), 2), [3, 4, (5, (6, 7)), 8]))
+        a.pop("1 2 1 1")
+        self.assertEqual((((1, 0), 2), [3, 4, [5, [6]], 8]), a(), "Keeping tuples below if possible")
 
     def test_values(self):
         with open("test-data.json") as fp:
@@ -865,13 +832,12 @@ class TestTreeO(unittest.TestCase):
         self.assertEqual((), a.values("data 12"), "Returning empty tuple for a path that doesn't exist")
         self.assertEqual((10000,), a.values("size"), "Singleton value is returned alone in a tuple")
 
-    def test_mul(self):
-        a = TreeO(self.a["1"])
-        # print(1 * a)
-        a = TreeO([3, 2, 1])
-        b = TreeO([5, 4, 3])
-        # print(a - 3)
-        # b.get(1, krzpk=1, hanswurst=7)
+    def test_count(self):
+        self.assertEqual(4, TreeO.count(self.a, "1 0"), "Counting an existing list")
+        self.assertEqual(2, TreeO.count(self.a, "1 1"), "Counting an existing dict")
+        self.assertEqual(2, TreeO.count(self.a, "1 0 3 1"), "Counting an existing set")
+        self.assertEqual(0, TreeO.count(self.a, "Hei god morgen"), "When the node doesn't exist, return 0")
+        self.assertEqual(1, TreeO.count(self.a, "1 0 1"), "When the node is a simple value, return 1")
 
     def test_copy(self):
         a = copy.deepcopy(self.a)
@@ -888,6 +854,14 @@ class TestTreeO(unittest.TestCase):
         b = TreeO(a, copy=True)
         b.pop("1 0 3")
         self.assertNotEqual(a, b(), "Can pop deeply in the object without affecting the original object")
+
+    def test_mul(self):
+        a = TreeO(self.a["1"])
+        # print(1 * a)
+        a = TreeO([3, 2, 1])
+        b = TreeO([5, 4, 3])
+        # print(a - 3)
+        # b.get(1, krzpk=1, hanswurst=7)
 
 
 if __name__ == "__main__":
