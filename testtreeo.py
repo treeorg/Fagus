@@ -28,6 +28,12 @@ class TestTreeO(unittest.TestCase):
         self.assertIn("q", TreeO.get(self.a, ("1", 0, 3, 1)), "Path existing, return value at path")
         self.assertEqual(1, TreeO(self.a).get((1, 0, 0), 1), "Path not existing return default that comes from param")
         self.assertEqual(1, TreeO.get((((1, 0), 2), 3), "0 0 0"), "Successfully traversing tuples")
+        self.assertEqual([[3, 4], {"b": 1}], a.a, "Using dot-notation to get value from TreeO")
+        a.value_split = "_"
+        self.assertEqual(1, a.a_1_b, "Using dot-notation with value_split as _ to get value from TreeO")
+        a.c_e = {"a_haa_k": 72}
+        a.value_split = "__"
+        self.assertEqual(72, a.c__e__a_haa_k, "Using dot-notation with __ as value_split to get keys with _ inside")
         del TreeO.default
 
     def test_iter(self):
@@ -440,8 +446,8 @@ class TestTreeO(unittest.TestCase):
         a = TreeO(list(a))
         self.assertEqual([((1, 0), 2), [3, 4, [5, [6, 5]], 8]], a.set(5, "1 2 1 1"), "Converting right tuples to lists")
         a = TreeO((((1, 0), 2), [3, 4, (5, (6, 7)), 8]))
-        a.set(5, "1 2 1 1")
-        self.assertEqual((((1, 0), 2), [3, 4, [5, [6, 5]], 8]), a(), "Keeping tuples below if possible")
+        a["1 2 1 1"] = 5
+        self.assertEqual((((1, 0), 2), [3, 4, [5, [6, 5]], 8]), a(), "Keeping tuples below if possible, testing []")
         a = TreeO(self.a, copy=True)
         self.assertNotEqual(a(), a.set(False, "1 1", copy=True), "The source object is not modified when copy is used")
         self.assertEqual(
@@ -805,8 +811,11 @@ class TestTreeO(unittest.TestCase):
         self.assertEqual([((1, 0), 2), [3, 4, [5, [6]], 8]], a(), "The tuples were correctly converted to lists")
         self.assertEqual(TreeO((1, 0)), a.pop("0 0", return_node=True), "Returning TreeO-object if return_value is set")
         a = TreeO((((1, 0), 2), [3, 4, (5, (6, 7)), 8]))
-        a.pop("1 2 1 1")
-        self.assertEqual((((1, 0), 2), [3, 4, [5, [6]], 8]), a(), "Keeping tuples below if possible")
+        del a["1 2 1 1"]
+        self.assertEqual((((1, 0), 2), [3, 4, [5, [6]], 8]), a(), "Keeping tuples below if possible, testing [] del")
+        a = TreeO({"a": "b", "c": "d"})
+        del a.c
+        self.assertEqual({"a": "b"}, a(), "Using dot-notation for deleting")
 
     def test_keys(self):
         self.assertEqual(("1", "a"), tuple(TreeO.keys(self.a)), "Getting dict-keys from base dict")
