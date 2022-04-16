@@ -1936,30 +1936,54 @@ class TreeO(Mapping, Sequence, metaclass=TreeOMeta):
         res = TreeO.merge(other if isinstance(other, TreeO) else self.child(other), self, copy=True)
         return self.child(res) if TreeO._opt(self if isinstance(self, TreeO) else other, "return_node") else res
 
+    def __isub__(self, other):
+        if isinstance(self.obj, (MutableMapping, MutableSet)):
+            for e in other if TreeO.__is__(other, Iterable) else (other,):
+                self.obj.pop(e, None)
+        elif isinstance(self.obj, MutableSequence):
+            other = set(other() if isinstance(other, TreeO) else other) if TreeO.__is__(other, Iterable) else (other,)
+            for i in (k for k, v in enumerate(self.obj) if v in other):
+                self.obj.pop(i)
+        else:
+            raise TypeError(
+                f"Unsupported operand types for -=: Can't remove items from self being an immutable {type(self.obj)}"
+            )
+        return self
+
     def __sub__(self, other):
-        obj = self() if isinstance(self, TreeO) else self
+        obj = self.obj if isinstance(self, TreeO) else self
         other = set(other() if isinstance(other, TreeO) else other) if TreeO.__is__(other, Iterable) else (other,)
         if isinstance(obj, Mapping):
-            res = {k: v for k, v in obj.items() if k in other}
-        else:  # isinstance(self(), Sequence):
-            res = list(filter(lambda x: x not in other, obj))
+            res = {k: v for k, v in obj.items() if k not in other}
+        else:  # isinstance(self(), (Sequence, Set)):
+            res = (set if isinstance(obj, Set) else list)(filter(lambda x: x not in other, obj))
         return self.child(res) if TreeO._opt(self if isinstance(self, TreeO) else other, "return_node") else res
 
     def __rsub__(self, other):
         return TreeO.__sub__(other, self)
 
+    def __imul__(self, times: int):
+        if not isinstance(times, int):
+            raise TypeError(f"Unsupported operand types for *: times must b an int, got {type(times)}")
+        if TreeO.__is__(self.obj, MutableSequence):
+            self.obj.extend(tuple(self.obj) * (times - 1))
+            return self
+        raise TypeError(f"Unsupported operand types for *=: base-object must be a list, got {type(self.obj)}")
+
     def __mul__(self, times: int):
         if not isinstance(times, int):
-            raise TypeError("To use the * (times)-operator, times must be an int")
+            raise TypeError(f"Unsupported operand types for *: times must b an int, got {type(times)}")
         if not TreeO.__is__(self(), Sequence):
-            raise TypeError("Your base-object must a tuple or list to get multiplied.")
+            raise TypeError(
+                f"Unsupported operand types for *: base must a tuple or list to get multiplied, got {type(self.obj)}"
+            )
         return self.child(self() * times) if TreeO._opt(self, "return_node") else self() * times
 
-    def __rmul__(self, other):
-        return TreeO.__mul__(self, other)
+    def __rmul__(self, times: int):
+        return TreeO.__mul__(self, times)
 
-    def __reversed__(self: Collection):
-        return TreeO.reversed(self)
+    def __reversed__(self):
+        return self.reversed()
 
 
 class TFilBase:
@@ -2266,7 +2290,7 @@ class TFunc:
         self.function_pointer = function_pointer
         self.old_pos = old_value_position
         self.middle_index = old_value_position in (-1, 0)
-        if not self.middle_index:
+        if not self.middle_index and isinstance(old_value_position, int):
             self.old_pos += 1 if old_value_position < 0 else -1
         self.args = args
         self.kwargs = kwargs

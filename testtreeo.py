@@ -895,6 +895,7 @@ class TestTreeO(unittest.TestCase):
             all(isinstance(e, TreeO) for e in TreeO.reversed(self.a, "a", return_node=True)), "return_node does its job"
         )
         self.assertEqual((), tuple(TreeO.reversed(self.a, "hei og hopp")), "Return empty tuple if noed doesn't exist")
+        self.assertEqual((3, 2, 1), tuple(reversed(TreeO((1, 2, 3)))), "Testing if __reversed__ also works")
 
     def test_reverse(self):
         self.assertRaisesRegex(TypeError, "Cannot reverse base node of type", TreeO.reverse, set())
@@ -915,6 +916,11 @@ class TestTreeO(unittest.TestCase):
         b["a"]["c"] = {"g": 3, "f": 4}
         self.assertEqual(b, TreeO.reverse(a, "a c"), "Reversing a dict inside a tree")
 
+    def test_child(self):
+        a = TreeO(self.a, return_node=True, value_split="_")
+        b = a.child({"1": 9, 3: 11})
+        self.assertEqual(a._options, b._options, "a child has the same settings as its parent")
+
     def test_copy(self):
         a = copy.deepcopy(self.a)
         b = TreeO(a, copy=True)
@@ -931,13 +937,58 @@ class TestTreeO(unittest.TestCase):
         b.pop("1 0 3")
         self.assertNotEqual(a, b(), "Can pop deeply in the object without affecting the original object")
 
+    def test_repr(self):
+        a = TreeO({"a": 9, "c": [1, 2, False]}, value_split="_", return_node=True)
+        b = eval(repr(a))
+        self.assertEqual(a, b, "Able to create equivalent obj from repr")
+        self.assertEqual(a._options, b._options, "Able to create equivalent obj from repr, even with settings")
+
+    # tests for the + and +=-operators are in test_merge, test_add tests the add-function
+
+    def test_sub(self):
+        a = TreeO(self.a, copy=True)
+        self.assertEqual({"a": [[3, 4], {'b': 1}]}, a - {"1"}, "Removing keys from base-dict")
+        a.return_node = True
+        self.assertEqual(TreeO({"a": [[3, 4], {'b': 1}]}), a - "1", "Removing key from base-dict, with return_node")
+        self.assertEqual(self.a, a(), "a was not modified by these operations")
+        b = TreeO(a["1 0"], copy=True)
+        b -= [1, "a"]
+        self.assertEqual([True, ("f", {"a", "q"})], b() , "isub removes items as it should")
+        self.assertRaisesRegex(TypeError, "Unsupported operand types for -=", TreeO(("a", "b")).__isub__, ("a",))
+        self.assertEqual([8, 9], (6, 8, 7, 9, 11) - TreeO({6, 7, 11}), "rsub with a set on a tuple gives a list")
+        self.assertEqual({8, 9}, frozenset({6, 8, 7, 9}) - TreeO((6, 7)), "rsub with a tuple on a set gives a set")
+
     def test_mul(self):
-        a = TreeO(self.a["1"])
-        # print(1 * a)
-        a = TreeO([3, 2, 1])
-        b = TreeO([5, 4, 3])
-        # print(a - 3)
-        # b.get(1, krzpk=1, hanswurst=7)
+        a = TreeO(self.a["1"][0], copy=True)
+        self.assertEqual(3 * self.a["1"][0], 3 * a, "rmul works as intended on a list")
+        self.assertEqual((3, 9, 3, 9, 3, 9, 3, 9), TreeO((3, 9)) * 4, "mul works as intended on a tuple")
+        self.assertEqual(self.a["1"][0], a(), "A was not modified by mul and rmul")
+        self.assertRaisesRegex(TypeError, "Unsupported operand types for", TreeO(self.a).__mul__, 3)
+        a *= 2
+        self.assertEqual(2 * self.a["1"][0], a(), "imul does what it's supposed to do")
+        self.assertRaisesRegex(TypeError, "Unsupported operand types for", TreeO(self.a).__imul__, 3)
+        self.assertRaisesRegex(TypeError, "Unsupported operand types for", a.__imul__, "a")
+        self.assertRaisesRegex(TypeError, "Unsupported operand types for", a.__rmul__, "a")
+
+    def test_tfunc(self):
+        def f(*args, **kwargs):
+            return args, kwargs
+
+        self.assertEqual(((987,), {}), TFunc(f)(987), "Default puts only old value as argument")
+        a = TFunc(f, 1, "hans", egil="snorkler")
+        self.assertEqual((("wurst", "hans"), {"egil": "snorkler"}), a("wurst"), "default argument old_value first")
+        a = TFunc(f, "kwarg", "henriette", klaus="wagner")
+        self.assertEqual((("henriette",), {"kwarg": 72, "klaus": "wagner"}), a(72), "old_value comes as kwarg")
+        a = TFunc(f, 2, "hans", "wurst", egil="snorkler")
+        self.assertEqual((("hans", 0, "wurst"), {"egil": "snorkler"}), a(0), "old_value in the middle")
+        a = TFunc(f, -2, "hans", "wurst", egil="snorkler")
+        self.assertEqual((("hans", 0, "wurst"), {"egil": "snorkler"}), a(0), "old_value in the middle, negative index")
+        a = TFunc(f, -1, "hans", "wurst", egil="snorkler")
+        self.assertEqual((("hans", "wurst", 6), {"egil": "snorkler"}), a(6), "old_value in the end")
+        a = TFunc(f, 599, "hans", "wurst")
+        self.assertEqual((("hans", "wurst", 6), {}), a(6), "tooo large index goes to the end")
+        a = TFunc(f, -599, "hans", "wurst")
+        self.assertEqual(((7, "hans", "wurst"), {}), a(7), "tooo large negative index goes first")
 
 
 if __name__ == "__main__":
