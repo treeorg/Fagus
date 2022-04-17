@@ -3,8 +3,12 @@ import json
 import re
 import unittest
 from ipaddress import IPv6Address, IPv4Network, IPv6Network, ip_address
-from treeo import TreeO, TFunc, TFil, TCFil, TVFil
+from treeo import __version__, TreeO, TFunc, TFil, TCFil, TVFil
 from datetime import datetime, date, time
+
+
+def test_version():
+    assert __version__ == "0.1.0"
 
 
 class HashableDict(dict):
@@ -91,12 +95,10 @@ class TestTreeO(unittest.TestCase):
             ("a", 0, TreeO([3, 4])),
             ("a", 1, TreeO({"b": 1})),
         ]
-        self.assertEqual(
-            b, list(a.iter(1, return_node=True)), "Returning nodes as TreeO-objects when return_value=True"
-        )
+        self.assertEqual(b, list(a.iter(1, treeo=True)), "Returning nodes as TreeO-objects when return_value=True")
         self.assertTrue(
-            all(isinstance(e, TreeO) for e in a.iter(1, return_node=True, reduce=-1)),
-            "return_node actually returns back nodes if the nodes at the end are suitable to be converted",
+            all(isinstance(e, TreeO) for e in a.iter(1, treeo=True, reduce=-1)),
+            "treeo actually returns back nodes if the nodes at the end are suitable to be converted",
         )
         self.assertEqual(
             tuple(a.iter(4, "", filter_=TFil("a", 1, lambda x: x % 2 != 0, inexclude="---"))),
@@ -119,7 +121,7 @@ class TestTreeO(unittest.TestCase):
                 (TreeO([[3, 4], {"b": 1}]), 0, TreeO([3, 4]), 1, 4),
                 (TreeO([[3, 4], {"b": 1}]), 1, TreeO({"b": 1}), "b", 1),
             ],
-            list(a.iter(path="a", return_node=True, iter_nodes=True)),
+            list(a.iter(path="a", treeo=True, iter_nodes=True)),
             "Using iter_nodes to get references to all the nodes that have been traversed on the way",
         )
         self.assertEqual(
@@ -127,7 +129,7 @@ class TestTreeO(unittest.TestCase):
             a.iter(filter_=TFil(..., 1)).skip(0),
             "Using iterator.skip() actually filters the skipped node if necessary",
         )
-        with open("test-data.json") as fp:
+        with open("tests/test-data.json") as fp:
             a = TreeO(json.load(fp))
         self.assertEqual(
             [(0, "source", "id", 889), (1, "source", "id", 5662), (4, "source", "id", 301)],
@@ -259,7 +261,7 @@ class TestTreeO(unittest.TestCase):
             TreeO.filter(self.a, filter_=TFil(..., lambda x: x % 2, inexclude="--"), copy=True),
             "Filtering using a lambda on the default test-datastructure",
         )
-        with open("test-data.json") as fp:
+        with open("tests/test-data.json") as fp:
             a = TreeO(json.load(fp))
         self.assertEqual(
             {"responseCode": 200, "limit": 10000, "size": 10000},
@@ -376,11 +378,11 @@ class TestTreeO(unittest.TestCase):
             TreeO.merge(*TreeO.split(q, TFil(lambda x: ord(x) % 2, "g", inexclude="----"), copy=True)),
             "Splitting and remerging dicts and sets works as if they were never separated",
         )
-        with open("test-data.json") as fp:
+        with open("tests/test-data.json") as fp:
             a = TreeO(json.load(fp))
-        in_, out = a.split(TFil(..., TCFil("state", 3)), path="data", copy=True, return_node=True)
-        self.assertIsInstance(in_, TreeO, "return_node is on, so in_ must be a TreeO")
-        self.assertIsInstance(out, TreeO, "return_node is on, so out must be a TreeO")
+        in_, out = a.split(TFil(..., TCFil("state", 3)), path="data", copy=True, treeo=True)
+        self.assertIsInstance(in_, TreeO, "treeo is on, so in_ must be a TreeO")
+        self.assertIsInstance(out, TreeO, "treeo is on, so out must be a TreeO")
         self.assertEqual({3}, set(in_.iter(filter_=TFil(..., "state"), reduce=-1)), "all items in in_ match the filter")
         self.assertNotEqual({3}, set(out.iter(filter_=TFil(..., "state"), reduce=-1)), "no items in out match filter")
         self.assertEqual((662, 762), tuple(out.iter(filter_=TFil(..., "id"), reduce=-1)), "correct ids in out")
@@ -453,7 +455,7 @@ class TestTreeO(unittest.TestCase):
         self.assertEqual(
             {"1": [{"b": [False]}, {"a": False, "1": (1,)}], "a": [[3, 4], {"b": 1}]},
             a.set(False, "1 0 b 1", node_types="   l", copy=True),
-            "space works to not enforce node_types in path - dicts and lists are traversed as long as the keys allow it",
+            "space does not enforce node_types in path - dicts and lists are traversed as long as the keys allow it",
         )
 
     def test_append(self):
@@ -600,7 +602,7 @@ class TestTreeO(unittest.TestCase):
         self.assertEqual(b, a(), "Complex function taking keyword-arguments and ordinary arguments")
 
     def test_mod_all(self):
-        with open("test-data.json") as fp:
+        with open("tests/test-data.json") as fp:
             a = TreeO(json.load(fp))
         date_filter = TFil(..., {"firstSeen", "lastSeen", "lastModified"})
         b = TreeO.mod_all(a, lambda x: datetime.fromtimestamp(x / 1000), date_filter, "data", copy=True)
@@ -755,7 +757,7 @@ class TestTreeO(unittest.TestCase):
         self.assertRaisesRegex(TypeError, "Unsupported operand types", TreeO.merge, set(), {})
         self.assertRaisesRegex(TypeError, "Unsupported operand types", TreeO.merge, [1, 2, 3], {})
         self.assertRaisesRegex(TypeError, "Unsupported operand types", TreeO.merge, {}, [1, 2, 3])
-        with open("test-data.json") as fp:
+        with open("tests/test-data.json") as fp:
             a = TreeO(json.load(fp))
         self.assertEqual(
             a["data"][5:],
@@ -809,7 +811,7 @@ class TestTreeO(unittest.TestCase):
         a = TreeO(list(a))
         self.assertEqual(7, a.pop("1 2 1 1"), "Correctly popping when all tuples on the way must be converted to lists")
         self.assertEqual([((1, 0), 2), [3, 4, [5, [6]], 8]], a(), "The tuples were correctly converted to lists")
-        self.assertEqual(TreeO((1, 0)), a.pop("0 0", return_node=True), "Returning TreeO-object if return_value is set")
+        self.assertEqual(TreeO((1, 0)), a.pop("0 0", treeo=True), "Returning TreeO-object if return_value is set")
         a = TreeO((((1, 0), 2), [3, 4, (5, (6, 7)), 8]))
         del a["1 2 1 1"]
         self.assertEqual((((1, 0), 2), [3, 4, [5, [6]], 8]), a(), "Keeping tuples below if possible, testing [] del")
@@ -826,7 +828,7 @@ class TestTreeO(unittest.TestCase):
         self.assertEqual((), TreeO.keys(self.a, "1 0 3 5"), "A nonexisting path gives empty keys (an empty tuple)")
 
     def test_values(self):
-        with open("test-data.json") as fp:
+        with open("tests/test-data.json") as fp:
             a = TreeO(json.load(fp))
         self.assertEqual(tuple(a.values()), tuple(a.values()), "The same dict-values if the base node is a dict")
         b = [
@@ -843,16 +845,16 @@ class TestTreeO(unittest.TestCase):
             None,
             TreeO({"fqdn": "dlp.dlsofteclipse.com"}),
         ]
-        self.assertEqual(b, list(a.values("data 4", return_node=True)), "Correctly returning dict values, with TreeO's")
-        b = (200, 10000, 0, 0, TreeO({}), TreeO([]), a.get("data", return_node=True), 10000)
-        self.assertEqual(b, tuple(a.values(return_node=True)), "Correctly returning nodes in a dict")
+        self.assertEqual(b, list(a.values("data 4", treeo=True)), "Correctly returning dict values, with TreeO's")
+        b = (200, 10000, 0, 0, TreeO({}), TreeO([]), a.get("data", treeo=True), 10000)
+        self.assertEqual(b, tuple(a.values(treeo=True)), "Correctly returning nodes in a dict")
         self.assertEqual((), a.values("data 12"), "Returning empty tuple for a path that doesn't exist")
         self.assertEqual((10000,), a.values("size"), "Singleton value is returned alone in a tuple")
 
     def test_items(self):
         self.assertIsInstance(TreeO.items(self.a), type({}.items()), "Dict gives dict-items")
         self.assertIsInstance(TreeO.items(self.a, "1"), enumerate, "List gives enumerate-obj")
-        self.assertTrue(all(isinstance(v, TreeO) for _, v in TreeO.items(self.a, return_node=True)), "return_node ok")
+        self.assertTrue(all(isinstance(v, TreeO) for _, v in TreeO.items(self.a, treeo=True)), "treeo ok")
         self.assertEqual({(..., "a"), (..., "q")}, set(TreeO.items(self.a, "1 0 3 1")), "(..., e) for elements set")
         self.assertEqual(tuple(TreeO.iter(self.a, 0)), tuple(TreeO.items(self.a)), "items at base = iter at base")
 
@@ -892,7 +894,7 @@ class TestTreeO(unittest.TestCase):
         )
         self.assertEqual((("f", {"a", "q"}), "a", True, 1), tuple(TreeO.reversed(self.a, "1 0")), "Reversing list")
         self.assertTrue(
-            all(isinstance(e, TreeO) for e in TreeO.reversed(self.a, "a", return_node=True)), "return_node does its job"
+            all(isinstance(e, TreeO) for e in TreeO.reversed(self.a, "a", treeo=True)), "treeo does its job"
         )
         self.assertEqual((), tuple(TreeO.reversed(self.a, "hei og hopp")), "Return empty tuple if noed doesn't exist")
         self.assertEqual((3, 2, 1), tuple(reversed(TreeO((1, 2, 3)))), "Testing if __reversed__ also works")
@@ -917,7 +919,7 @@ class TestTreeO(unittest.TestCase):
         self.assertEqual(b, TreeO.reverse(a, "a c"), "Reversing a dict inside a tree")
 
     def test_child(self):
-        a = TreeO(self.a, return_node=True, value_split="_")
+        a = TreeO(self.a, treeo=True, value_split="_")
         b = a.child({"1": 9, 3: 11})
         self.assertEqual(a._options, b._options, "a child has the same settings as its parent")
 
@@ -938,7 +940,7 @@ class TestTreeO(unittest.TestCase):
         self.assertNotEqual(a, b(), "Can pop deeply in the object without affecting the original object")
 
     def test_repr(self):
-        a = TreeO({"a": 9, "c": [1, 2, False]}, value_split="_", return_node=True)
+        a = TreeO({"a": 9, "c": [1, 2, False]}, value_split="_", treeo=True)
         b = eval(repr(a))
         self.assertEqual(a, b, "Able to create equivalent obj from repr")
         self.assertEqual(a._options, b._options, "Able to create equivalent obj from repr, even with settings")
@@ -947,13 +949,13 @@ class TestTreeO(unittest.TestCase):
 
     def test_sub(self):
         a = TreeO(self.a, copy=True)
-        self.assertEqual({"a": [[3, 4], {'b': 1}]}, a - {"1"}, "Removing keys from base-dict")
-        a.return_node = True
-        self.assertEqual(TreeO({"a": [[3, 4], {'b': 1}]}), a - "1", "Removing key from base-dict, with return_node")
+        self.assertEqual({"a": [[3, 4], {"b": 1}]}, a - {"1"}, "Removing keys from base-dict")
+        a.treeo = True
+        self.assertEqual(TreeO({"a": [[3, 4], {"b": 1}]}), a - "1", "Removing key from base-dict, with treeo")
         self.assertEqual(self.a, a(), "a was not modified by these operations")
         b = TreeO(a["1 0"], copy=True)
         b -= [1, "a"]
-        self.assertEqual([True, ("f", {"a", "q"})], b() , "isub removes items as it should")
+        self.assertEqual([True, ("f", {"a", "q"})], b(), "isub removes items as it should")
         self.assertRaisesRegex(TypeError, "Unsupported operand types for -=", TreeO(("a", "b")).__isub__, ("a",))
         self.assertEqual([8, 9], (6, 8, 7, 9, 11) - TreeO({6, 7, 11}), "rsub with a set on a tuple gives a list")
         self.assertEqual({8, 9}, frozenset({6, 8, 7, 9}) - TreeO((6, 7)), "rsub with a tuple on a set gives a set")
@@ -986,9 +988,9 @@ class TestTreeO(unittest.TestCase):
         a = TFunc(f, -1, "hans", "wurst", egil="snorkler")
         self.assertEqual((("hans", "wurst", 6), {"egil": "snorkler"}), a(6), "old_value in the end")
         a = TFunc(f, 599, "hans", "wurst")
-        self.assertEqual((("hans", "wurst", 6), {}), a(6), "tooo large index goes to the end")
+        self.assertEqual((("hans", "wurst", 6), {}), a(6), "too large index goes to the end")
         a = TFunc(f, -599, "hans", "wurst")
-        self.assertEqual(((7, "hans", "wurst"), {}), a(7), "tooo large negative index goes first")
+        self.assertEqual(((7, "hans", "wurst"), {}), a(7), "too large negative index goes first")
 
 
 if __name__ == "__main__":

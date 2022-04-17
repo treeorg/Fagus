@@ -1,5 +1,5 @@
 /venv/
 /.idea/
-/api-eksempel.json
-/api-eksempel-raw.json
+/.python-version
 **/__pycache__
+*.pyc
