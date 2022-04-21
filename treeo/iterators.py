@@ -1,3 +1,4 @@
+"""This module contains iterator-classes that are used to iterate over TreeO-objects"""
 from collections.abc import Collection, Sequence, Mapping, Iterable
 from typing import Union, TYPE_CHECKING
 

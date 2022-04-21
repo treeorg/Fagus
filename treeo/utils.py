@@ -1,3 +1,4 @@
+"""This module contains classes and functions used across the TreeO-library that didn't fit in another module"""
 import copy as cp
 import re
 import sys
@@ -42,8 +43,7 @@ class TreeOMeta(ABCMeta):
             if len(opt_cls) > 3 and not opt_cls[2](option):
                 raise ValueError(opt_cls[3])
             return option
-        else:
-            raise ValueError(f"The option named {option_name} is not defined in TreeO.")
+        raise ValueError(f"The option named {option_name} is not defined in TreeO.")
 
     __default_options__ = dict(
         default_node_type=(
@@ -83,7 +83,7 @@ class TreeOMeta(ABCMeta):
             "",
             str,
             lambda x: bool(re.fullmatch("[dl ]*", x)),
-            "The only allowed characters in node_types are d (for dict) and l (for list). \" \" can also be used. "
+            'The only allowed characters in node_types are d (for dict) and l (for list). " " can also be used. '
             "In that case, existing nodes are used if possible, and default_node_type is used to create new nodes.",
         ),
         treeo=(False, bool),
@@ -93,10 +93,10 @@ class TreeOMeta(ABCMeta):
 
     no_node = (str, bytes, bytearray)
 
-    def __new__(mcs, name, bases, dct):
-        node = super().__new__(mcs, name, bases, dct)
+    def __new__(cls, name, bases, dct):
+        node = super().__new__(cls, name, bases, dct)
         for option_name, option in TreeOMeta.__default_options__.items():
-            setattr(mcs, option_name, option[0])
+            setattr(cls, option_name, option[0])
         return node
 
     def __setattr__(cls, attr, value):
@@ -158,7 +158,7 @@ class TFunc:
             if self.old_pos == 0:
                 return self.function_pointer(*self.args, **self.kwargs)
             return self.function_pointer(*self.args, old_value, **self.kwargs)
-        elif isinstance(self.old_pos, str):
+        if isinstance(self.old_pos, str):
             return self.function_pointer(*self.args, **{**self.kwargs, self.old_pos: old_value})
         return self.function_pointer(*self.args[: self.old_pos], old_value, *self.args[self.old_pos :], **self.kwargs)
 
@@ -259,7 +259,6 @@ def _is(value, *args, is_not: Union[tuple, type] = None):
         whether the value is instance of one of the types in args (but not str, bytes or bytearray)"""
     if is_not is None:
         return not isinstance(value, TreeOMeta.no_node) and isinstance(value, args)
-    elif isinstance(is_not, type):
+    if isinstance(is_not, type):
         return not isinstance(value, TreeOMeta.no_node + (is_not,)) and isinstance(value, args)
-    else:
-        return not isinstance(value, TreeOMeta.no_node + is_not) and isinstance(value, args)
+    return not isinstance(value, TreeOMeta.no_node + is_not) and isinstance(value, args)

@@ -714,7 +714,7 @@ class TreeO(Mapping, Sequence, metaclass=TreeOMeta):
         """internal function that sets, appends or adds value as the last step in building a node"""
         if action == "set":
             return value
-        elif action in ("append", "extend", "insert"):
+        if action in ("append", "extend", "insert"):
             if not _is(node, MutableSequence):
                 if _is(node, Iterable):
                     node = list(node)
@@ -738,6 +738,10 @@ class TreeO(Mapping, Sequence, metaclass=TreeOMeta):
                 elif isinstance(node, MutableMapping) and not isinstance(value, Mapping):
                     raise ValueError(f"Can't update dict with value of type {type(value).__name__} not being a Mapping")
                 getattr(node, action)(value)
+        else:
+            raise ValueError(
+                f"Invalid action for _build_node(): {action}, must be one of add, append, extend, insert, set, update"
+            )
         return node
 
     def setdefault(
@@ -1225,9 +1229,9 @@ class TreeO(Mapping, Sequence, metaclass=TreeOMeta):
         obj = TreeO.get(self, path, treeo=False, value_split=value_split)
         if isinstance(obj, Mapping):
             return obj.keys()
-        elif _is(obj, Sequence):
+        if _is(obj, Sequence):
             return range(len(obj))
-        elif isinstance(obj, Set):
+        if isinstance(obj, Set):
             return (... for _ in obj)
         return ()
 

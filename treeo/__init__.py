@@ -1,3 +1,5 @@
+"""TreeO (TreeObject) is a wrapper-class for complex, nested objects of dicts and lists in Python"""
+
 __version__ = "0.1.0"
 
 from treeo.treeo import TreeO

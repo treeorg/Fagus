@@ -1,3 +1,4 @@
+"""This module contains filter-classes used in TreeO"""
 import re
 from collections.abc import Collection, MutableSequence, Mapping, Set, Sequence
 from typing import Union, Any, Tuple, Optional
@@ -125,7 +126,7 @@ class TKFil(TFilBase):
                             raise TypeError(  # TFilter into a TCheckFilter, as that makes no sense.
                                 "All subfilters of TCheckFilter must be either TCheckFilter or TValueFilter."
                             )
-                        elif not isinstance(self, e.__class__):  # Move
+                        if not isinstance(self, e.__class__):  # Move
                             if not isinstance(self[i], MutableSequence):
                                 self[i] = list(arg)  # make self[i] a mutable list if necessary
                             self._set_extra_filter(i, self[i].pop(j))  # to be able to pop out the filter-arg
@@ -189,7 +190,7 @@ class TKFil(TFilBase):
         for e in filter_arg if _is(filter_arg, Collection, is_not=Set) else (filter_arg,):
             if e is ...:
                 return True, self, index + 1
-            elif isinstance(e, TKFil):
+            if isinstance(e, TKFil):
                 match, filter_, index_ = e.match(value, 0)  # recursion to correctly handle nested filters
             else:
                 if callable(e):
@@ -225,7 +226,7 @@ class TKFil(TFilBase):
         for e in filter_arg if _is(filter_arg, Collection, is_not=Set) else (filter_arg,):
             if e is ...:
                 return True, self, index + 1
-            elif isinstance(e, TKFil):
+            if isinstance(e, TKFil):
                 match, filter_, index_ = e.match_list(value, 0, node_length)
             else:
                 if callable(e):
