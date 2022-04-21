@@ -1,9 +1,9 @@
 [tool.poetry]
 name = "treeo"
 version = "0.1.0"
-description = ""
-authors = ["Lukas Neuenschwander <lukas.neu24@gmail.com>"]
-license = "ISC"
+description = "Library to easily create, edit and traverse nested objects of dicts and lists in Python"
+authors = ["Lukas Neuenschwander <fjellvannet@gmail.com>"]
+license = "MIT"
 
 [tool.poetry.dependencies]
 python = "^3.6.2"
@@ -11,6 +11,7 @@ python = "^3.6.2"
 [tool.poetry.dev-dependencies]
 black = "^22.3.0"
 flake8 = "^4.0.1"
+commitizen = "^2.24.0"
 
 [tool.black]
 line-length=120
