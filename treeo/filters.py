@@ -3,7 +3,7 @@ import re
 from collections.abc import Collection, MutableSequence, Mapping, Set, Sequence
 from typing import Union, Any, Tuple, Optional
 
-from treeo.utils import _None, _is
+from .utils import _None, _is
 
 _RE_PATTERN = getattr(re, "Pattern" if hasattr(re, "Pattern") else "_pattern_type")
 

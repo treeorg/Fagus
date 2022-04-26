@@ -8,7 +8,7 @@ from datetime import datetime, date, time
 from typing import Union, Optional, TYPE_CHECKING, Callable
 
 if TYPE_CHECKING:
-    from treeo.filters import TFil
+    from .filters import TFil
 
 END = sys.maxsize
 
@@ -20,7 +20,7 @@ class _None:
 
 
 class TreeOMeta(ABCMeta):
-    """Metaclass for TreeO-nodeects to facilitate settings at class-level"""
+    """Metaclass for TreeO-objects to facilitate settings at class-level"""
 
     @staticmethod
     def __verify_option__(option_name: str, option):

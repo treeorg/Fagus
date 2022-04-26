@@ -2,11 +2,11 @@
 from collections.abc import Collection, Sequence, Mapping, Iterable
 from typing import Union, TYPE_CHECKING
 
-from treeo.utils import _is, END, _None, _filter_r, _copy_node, _copy_any
+from .utils import _is, END, _None, _filter_r, _copy_node, _copy_any
 
 if TYPE_CHECKING:
-    from treeo.filters import TFil
-    from treeo.treeo import TreeO
+    from filters import TFil
+    from treeo import TreeO
 
 
 class TFilteredIterator:
