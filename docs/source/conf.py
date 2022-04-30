@@ -1,3 +1,5 @@
+from treeo import __version__
+
 # Configuration file for the Sphinx documentation builder.
 #
 # This file only contains a selection of the most common options. For a full
@@ -23,7 +25,7 @@ copyright = "2022, Lukas Neuenschwander"
 author = "Lukas Neuenschwander"
 
 # The full version, including alpha/beta/rc tags
-release = "0.1.0"
+release = __version__
 
 
 # -- General configuration ---------------------------------------------------

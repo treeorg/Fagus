@@ -1,6 +1,11 @@
 treeo package
 =============
 
+.. automodule:: treeo
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 Submodules
 ----------
 
@@ -11,11 +16,3 @@ Submodules
    treeo.iterators
    treeo.treeo
    treeo.utils
-
-Module contents
----------------
-
-.. automodule:: treeo
-   :members:
-   :undoc-members:
-   :show-inheritance:

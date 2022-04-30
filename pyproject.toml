@@ -1,7 +1,7 @@
 [tool.poetry]
 name = "treeo"
 description = "Library to easily create, edit and traverse nested objects of dicts and lists in Python"
-version = "0.1.17"
+version = "0.1.0"
 keywords = ["json", "yaml", "api", "dict", "list"]
 license = "ISC"
 authors = ["Lukas Neuenschwander <fjellvannet@gmail.com>"]
