@@ -11,6 +11,8 @@ Welcome to TreeO's documentation!
    :caption: Contents:
 
    modules
+   README<README>
+   CONTRIBUTING<CONTRIBUTING>
 
 Indices and tables
 ==================

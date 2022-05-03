@@ -33,11 +33,7 @@ release = __version__
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
-extensions = [
-    "sphinx.ext.autodoc",
-    "sphinx.ext.doctest",
-    "sphinx.ext.napoleon",
-]
+extensions = ["sphinx.ext.autodoc", "sphinx.ext.doctest", "sphinx.ext.napoleon", "myst_parser"]
 
 
 # Add any paths that contain templates here, relative to this directory.
@@ -62,6 +58,9 @@ html_theme = "sphinx_rtd_theme"
 html_static_path = ["_static"]
 html_css_files = ["wider_page.css"]
 
+suppress_warnings = ["myst.header"]
+
 
 # -- Extension configuration -------------------------------------------------
 strip_signature_backslash = True
+myst_heading_anchors = 4

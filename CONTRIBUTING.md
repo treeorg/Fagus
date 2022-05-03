@@ -62,10 +62,10 @@ This section shows you how you can set up a local environment to test and develo
 
 ### Software Dependencies For Development
 * [Python](https://www.python.org/) (at least 3.6.2)
-* [Poetry](https://python-poetry.org) for dependency management and deployment (creating packages for PyPi), instructions are found in [installation steps](#steps-for-setting-up-a-local-treeo-developing-environment)
+* [Poetry](https://python-poetry.org) for dependency management and deployment (creating packages for PyPi), instructions are found in [installation steps](#setting-up-a-local-treeo-developing-environment)
 * [Git](https://git-scm.com/) to checkout this repo
 * An IDE, I used [Intellij PyCharm Community](https://www.jetbrains.com/pycharm/download/). Not mandatory, but I found it handy to see how the data is modified in the debugger.
-* TreeO itself has no external dependencies, but some packages are used to smoothen the development process. They are installed and set up through poetry, check [pyproject.toml](https://github.com/treeorg/TreeO/blob/main/pyproject.toml) or [Code Styling Rules](#code-styling-rules) for a list.
+* TreeO itself has no external dependencies, but some packages are used to smoothen the development process. They are installed and set up through poetry, check [pyproject.toml](https://github.com/treeorg/TreeO/blob/main/pyproject.toml) or [Code Styling Rules](#code-styling-guidelines) for a list.
 
 ### Code Styling Guidelines
 * **Code formatting**: The code is formatted using the [PEP-8-Standard](https://peps.python.org/pep-0008/), but with a line length of 120 characters.
