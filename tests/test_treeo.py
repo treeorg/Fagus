@@ -102,7 +102,7 @@ class TestTreeO(unittest.TestCase):
         ]
         self.assertEqual(b, list(a.iter(1, treeo=True)), "Returning nodes as TreeO-objects when return_value=True")
         self.assertTrue(
-            all(isinstance(e, TreeO) for e in a.iter(1, treeo=True, reduce=-1)),
+            all(isinstance(e, TreeO) for e in a.iter(1, treeo=True, select=-1)),
             "treeo actually returns back nodes if the nodes at the end are suitable to be converted",
         )
         self.assertEqual(
@@ -112,7 +112,7 @@ class TestTreeO(unittest.TestCase):
         )
         self.assertEqual(
             ["a"],
-            list(a.iter(path=("1", 0, 3), filter_=TFil(1, ..., "q", inexclude="++-"), reduce=-1)),
+            list(a.iter(path=("1", 0, 3), filter_=TFil(1, ..., "q", inexclude="++-"), select=-1)),
             "Correctly filtering a set in the end",
         )
         self.assertEqual(
@@ -151,7 +151,7 @@ class TestTreeO(unittest.TestCase):
                         ...,
                         (TCFil("source", "id", lambda x: x > 300), "state"),
                     ),
-                    reduce=-1,
+                    select=-1,
                 )
             ),
             "Getting the states for all sources who's id is > 300 using reduce and a check-filter",
@@ -388,9 +388,9 @@ class TestTreeO(unittest.TestCase):
         in_, out = a.split(TFil(..., TCFil("state", 3)), path="data", copy=True, treeo=True)
         self.assertIsInstance(in_, TreeO, "treeo is on, so in_ must be a TreeO")
         self.assertIsInstance(out, TreeO, "treeo is on, so out must be a TreeO")
-        self.assertEqual({3}, set(in_.iter(filter_=TFil(..., "state"), reduce=-1)), "all items in in_ match the filter")
-        self.assertNotEqual({3}, set(out.iter(filter_=TFil(..., "state"), reduce=-1)), "no items in out match filter")
-        self.assertEqual((662, 762), tuple(out.iter(filter_=TFil(..., "id"), reduce=-1)), "correct ids in out")
+        self.assertEqual({3}, set(in_.iter(filter_=TFil(..., "state"), select=-1)), "all items in in_ match the filter")
+        self.assertNotEqual({3}, set(out.iter(filter_=TFil(..., "state"), select=-1)), "no items in out match filter")
+        self.assertEqual((662, 762), tuple(out.iter(filter_=TFil(..., "id"), select=-1)), "correct ids in out")
         self.assertEqual(len(a["data"]), len(in_) + len(out), "All elements are either in in our out")
         in_, out = a.split(TFil(), path="data", copy=True)
         self.assertEqual(a["data"], in_, "If the filter matches everything, in_ must be equal to the original node")
@@ -462,6 +462,11 @@ class TestTreeO(unittest.TestCase):
             a.set(False, "1 0 b 1", node_types="   l", copy=True),
             "space does not enforce node_types in path - dicts and lists are traversed as long as the keys allow it",
         )
+        self.assertEqual(self.a, TreeO.set(a, "", "a", if_=bool), "If the condition is not met, a isn't modified")
+        self.assertEqual({"5": 9, "c": (1, 2)}, TreeO.set({"5": 9}, (1, 2), "c", if_=bool), "if_ with bool")
+        self.assertEqual({"5": 9, "c": (1, 2)}, TreeO.set({"5": 9}, (1, 2), "c", if_=((1, 2),)), "if_ iterable value")
+        self.assertEqual({"5": 9, "c": 27}, TreeO.set({"5": 9}, 27, "c", if_=range(29)), "if_ with range")
+        self.assertEqual(self.a, TreeO.set(a, 27, "c", if_=range(3)), "if_ with range")
 
     def test_append(self):
         a = copy.deepcopy(self.a)

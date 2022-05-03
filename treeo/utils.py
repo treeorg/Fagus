@@ -53,6 +53,7 @@ class TreeOMeta(ABCMeta):
             'default_node_type must be either "d" for dict or "l" for list.',
         ),
         default=(None,),
+        if_=(_None,),
         iter_fill=(_None,),
         iter_nodes=(False, bool),
         list_insert=(
