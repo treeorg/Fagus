@@ -1,8 +1,8 @@
 # Contributing to Fagus
 
-:+1: :partying_face: First off, welcome and thank you for taking the time to contribute to Fagus! Any contribution, big or small, is welcome to make Fagus more useful such that more people can benefit from it. :+1: :partying_face:
+First off, welcome and thank you for taking the time to contribute to Fagus! Any contribution, big or small, is welcome to make Fagus more useful such that more people can benefit from it.
 
-The following is a set of guidelines for contribution to Fagus, which is hosted by the [fagusrg](https://github.com/fagusrg) organisation on GitHub. They are mostly guidelines, not rules. All of this can be discussed - use your best judgement, and feel free to propose changes to this document in a pull request.
+The following is a set of guidelines for contribution to Fagus, which is hosted by the [treeorg](https://github.com/treeorg) organisation on GitHub. They are mostly guidelines, not rules. All of this can be discussed - use your best judgement, and feel free to propose changes to this document in a pull request.
 
 ### Table of contents
 [Fagus Principles](#fagus-principles)
@@ -29,33 +29,33 @@ The following is a set of guidelines for contribution to Fagus, which is hosted 
 
 ### Reporting Bugs
 
-This section guides you through submitting a bug report for Fagus. Following these guidelines helps maintainers and the community understand your report :pencil:, reproduce the behavior :computer: :computer:, and find related reports :mag_right:.
+This section guides you through submitting a bug report for Fagus. Following these guidelines helps maintainers and the community understand your report, reproduce the behavior, and find related reports.
 
 #### Before Submitting A Bug Report
 
-* **Check the [FAQ](https://github.com/fagusrg/Fagus/discussions/categories/q-a) and the [discussions](https://github.com/fagusrg/Fagus/discussions)** for a list of common questions and problems.
-* **Check [issues](https://github.com/fagusrg/Fagus/issues) to see if your issue has already been reported**
+* **Check the [FAQ](https://github.com/treeorg/Fagus/discussions/categories/q-a) and the [discussions](https://github.com/treeorg/Fagus/discussions)** for a list of common questions and problems.
+* **Check [issues](https://github.com/treeorg/Fagus/issues) to see if your issue has already been reported**
   * If it has been reported **and the issue is still open**, add a comment to the existing issue instead of opening a new one.
   * If you find a **Closed** issue that seems like it is the same thing that you're experiencing, open a new issue and include a link to the original issue in the body of your new one.
 
 #### How Do I Submit A (Good) Bug Report?
 
-Bugs are tracked as [GitHub issues](https://guides.github.com/features/issues/). When you are creating a bug report, please [include as many details as possible (in particular test-data)](#how-do-i-submit-a-good-bug-report). Fill out [the required template](https://github.com/fagusrg/Fagus/issues/new?template=bug_report.md), the information it asks for helps us resolve issues faster.
+Bugs are tracked as [GitHub issues](https://guides.github.com/features/issues/). When you are creating a bug report, please [include as many details as possible (in particular test-data)](#how-do-i-submit-a-good-bug-report). Fill out [the required template](https://github.com/treeorg/Fagus/issues/new?template=bug_report.md), the information it asks for helps us resolve issues faster.
 
 ### Requesting New Features
 
-This section guides you through submitting an enhancement suggestion for Fagus, including completely new features and minor improvements to existing functionality. Following these guidelines helps maintainers and the community understand your suggestion :pencil: and find related suggestions :mag_right:.
+This section guides you through submitting an enhancement suggestion for Fagus, including completely new features and minor improvements to existing functionality. Following these guidelines helps maintainers and the community understand your suggestion and find related suggestions.
 
 #### Before Submitting A Feature Request
 
-* **Check the [FAQ](https://github.com/fagusrg/Fagus/discussions/categories/q-a) and the [discussions](https://github.com/fagusrg/Fagus/discussions)** for a list of common questions and problems. Probably there already is a solution for your feature-request?
-* **Check [issues](https://github.com/fagusrg/Fagus/issues) to see if your feature request has already been reported**
+* **Check the [FAQ](https://github.com/treeorg/Fagus/discussions/categories/q-a) and the [discussions](https://github.com/treeorg/Fagus/discussions)** for a list of common questions and problems. Probably there already is a solution for your feature-request?
+* **Check [issues](https://github.com/treeorg/Fagus/issues) to see if your feature request has already been reported**
   * If it has been reported **and the feature request is still open**, add a comment to the existing issue instead of opening a new one. You can also give it a like to get it prioritized.
   * If you find a **Closed** feature request that seems like it is the same thing that you would like to get added, you can create a new one and include a link to the old one. If many people would like to have a new feature it is more likely to get prioritized.
 
 #### How Do I Submit A (Good) Feature Request?
 
-Feature requests are tracked as [GitHub issues](https://guides.github.com/features/issues/). When you are creating a feature request, please [include as many details as possible (in particular test-data)](#how-do-i-submit-a-good-feature-request). Fill out [the required template](https://github.com/fagusrg/Fagus/issues/new?template=feature_request.md), the information it asks for helps us to better judge and understand your suggestion.
+Feature requests are tracked as [GitHub issues](https://guides.github.com/features/issues/). When you are creating a feature request, please [include as many details as possible (in particular test-data)](#how-do-i-submit-a-good-feature-request). Fill out [the required template](https://github.com/treeorg/Fagus/issues/new?template=feature_request.md), the information it asks for helps us to better judge and understand your suggestion.
 
 ## Developing Fagus
 This section shows you how you can set up a local environment to test and develop Fagus, and finally how you can make your contribution.
@@ -65,7 +65,7 @@ This section shows you how you can set up a local environment to test and develo
 * [Poetry](https://python-poetry.org) for dependency management and deployment (creating packages for PyPi), instructions are found in [installation steps](#setting-up-a-local-fagus-developing-environment)
 * [Git](https://git-scm.com/) to checkout this repo
 * An IDE, I used [Intellij PyCharm Community](https://www.jetbrains.com/pycharm/download/). Not mandatory, but I found it handy to see how the data is modified in the debugger.
-* Fagus itself has no external dependencies, but some packages are used to smoothen the development process. They are installed and set up through poetry, check [pyproject.toml](https://github.com/fagusrg/Fagus/blob/main/pyproject.toml) or [Code Styling Rules](#code-styling-guidelines) for a list.
+* Fagus itself has no external dependencies, but some packages are used to smoothen the development process. They are installed and set up through poetry, check [pyproject.toml](https://github.com/treeorg/Fagus/blob/main/pyproject.toml) or [Code Styling Rules](#code-styling-guidelines) for a list.
 
 ### Code Styling Guidelines
 * **Code formatting**: The code is formatted using the [PEP-8-Standard](https://peps.python.org/pep-0008/), but with a line length of 120 characters.
@@ -77,13 +77,13 @@ This section shows you how you can set up a local environment to test and develo
 
 ### Setting Up A Local Fagus Developing Environment
 1. Install [Python](https://www.python.org/downloads/) and [Git](https://git-scm.com/)
-2. Checkout the repository: `git checkout https://github.com/fagusrg/Fagus.git; cd Fagus`
+2. Checkout the repository: `git checkout https://github.com/treeorg/Fagus.git; cd Fagus`
 3. Instructions how to install poetry can be found [here](https://python-poetry.org/docs/)
    * you might have to reopen your terminal after installing poetry (or run `source ~/.bashrc` on Linux)
 4. Run `poetry shell` to open a terminal that is set up with the development tools for Fagus.
     * check if you can now run this command without getting errors: `poetry shell`
     * if the `poetry`-command is not found, you might have to add `eval "$(pyenv init --path)"` to your `.bashrc` (on Linux)
-    * if you have problems setting this up, just ask a [question](https://github. com/fagusrg/Fagus/discussions/categories/q-a), we can later include the problem and the solution we found into this guide
+    * if you have problems setting this up, just ask a [question](https://github.com/treeorg/Fagus/discussions/categories/q-a), we can later include the problem and the solution we found into this guide
 5. Install the project and developing dependencies: `poetry install`
 6. If you use an IDE, you can now open your project there. If it has a poetry mode, use that mode - `poetry shell` will then be executed automatically in the terminal of your IDE.
 
@@ -100,7 +100,7 @@ You can run `python3 -m unittest discover` to run all the tests in `./tests`. If
    * If there are errors in the tests, or flake8 observes problems, you'll have to go back in the code and fix the problems.
 3. Repeat Step 1 and 2 until all the tests are green.
 4. Use `git cz c` to commit using commitizen.
-   * If the pre-commit-checks fail, your commit is rejected and after fixing the issues you'd have to retype the commit-message. To not have that problem, do step 3 beforehand :wink:.
+   * If the pre-commit-checks fail, your commit is rejected and after fixing the issues you'd have to retype the commit-message. To not have that problem, do step 3 beforehand.
 
 #### Releasing A New Fagus Package on PyPi
 1. Run `poetry version <major, minor or patch>`to increment the version number in poetry.

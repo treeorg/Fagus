@@ -85,7 +85,7 @@ class FagusIterator:
         filter_: "Fil" = None,
         fagus: bool = False,
         iter_fill=_None,
-        reduce: Union[int, Iterable] = None,
+        select: Union[int, Iterable] = None,
         iter_nodes: bool = False,
         copy: bool = False,
         filter_ends: bool = False,
@@ -100,15 +100,15 @@ class FagusIterator:
         self.filter_ends = filter_ends
         self.copy = copy
         if not (
-            reduce is None
-            or isinstance(reduce, int)
-            or isinstance(reduce, Iterable)
-            and all(isinstance(e, int) for e in reduce)
+            select is None
+            or isinstance(select, int)
+            or isinstance(select, Iterable)
+            and all(isinstance(e, int) for e in select)
         ):
             raise TypeError(
-                "Invalid type %s for reduce parameter. Must be int or list of ints." % type(reduce).__name__
+                "Invalid type %s for select parameter. Must be int or list of ints." % type(select).__name__
             )
-        self.reduce = reduce
+        self.select = select
         self.iter_nodes = iter_nodes
         self.iter_keys = [obj if fagus else obj()]
         self.iterators = [FilteredIterator.optimal_iterator(obj(), filter_ends and not max_depth, filter_)]
@@ -145,10 +145,10 @@ class FagusIterator:
                             else ()
                         ),
                     )
-                    if self.reduce is not None:
-                        if isinstance(self.reduce, int):
-                            return iter_list[self.reduce]
-                        return tuple(iter_list[i] for i in self.reduce if -len(iter_list) <= i < len(iter_list))
+                    if self.select is not None:
+                        if isinstance(self.select, int):
+                            return iter_list[self.select]
+                        return tuple(iter_list[i] for i in self.select if -len(iter_list) <= i < len(iter_list))
                     return iter_list
             except StopIteration:
                 try:

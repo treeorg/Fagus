@@ -115,7 +115,7 @@ found in README.md.</p>
 <li><p><strong>path</strong> – List/Tuple of key-values that are traversed in self. If no nodes exist at the keys, new nodes are
 created. Can also be specified as a string, that is split into a tuple using value_split. See get()</p></li>
 <li><p><strong>node_types</strong> – * Can be used to manually define if the nodes along path are supposed to be (l)ists or
-(d)icts. E.g. “dll” to create a dict at level 0, and lists at level 1 and 2. ” ” can also be used -
+(d)icts. E.g. “dll” to create a dict at level 1, and lists at level 2 and 3. ” ” can also be used -
 space doesn’t enforce a node-type like d or l. For ” “, existing nodes are traversed if possible,
 otherwise default_node_type is used to create new nodes. Default “”, interpreted as ” ” at each level.</p></li>
 <li><p><strong>list_insert</strong> – * Level at which a new node shall be inserted into the list instead of traversing the
@@ -131,6 +131,14 @@ either “d” or “l”, default “d”</p></li>
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><p>self as a node if fagus is set, or a modified copy of self if copy is set</p>
+</dd>
+<dt class="field-odd">Raises</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ValueError</strong> – if it isn’t possible to parse an int-index from the provided key in a position where node-types
+    defines that the node shall be a list (if node-types is not l, the node will be replaced with a dict)</p></li>
+<li><p><strong>TypeError</strong> – if path is empty and the base node is not a set (can’t add to list or dict) or the base-node
+    needs to be modified and isn’t modifiable (e.g. tuple or frozenset)</p></li>
+</ul>
 </dd>
 </dl>
 </dd></dl>
@@ -148,7 +156,7 @@ either “d” or “l”, default “d”</p></li>
 <li><p><strong>path</strong> – List/Tuple of key-values that are traversed in self. If no nodes exist at the keys, new nodes are
 created. Can also be specified as a string, that is split into a tuple using value_split. See get()</p></li>
 <li><p><strong>node_types</strong> – * Can be used to manually define if the nodes along path are supposed to be (l)ists or
-(d)icts. E.g. “dll” to create a dict at level 0, and lists at level 1 and 2. ” ” can also be used -
+(d)icts. E.g. “dll” to create a dict at level 1, and lists at level 2 and 3. ” ” can also be used -
 space doesn’t enforce a node-type like d or l. For ” “, existing nodes are traversed if possible,
 otherwise default_node_type is used to create new nodes. Default “”, interpreted as ” ” at each level.</p></li>
 <li><p><strong>list_insert</strong> – * Level at which a new node shall be inserted into the list instead of traversing the
@@ -164,6 +172,14 @@ either “d” or “l”, default “d”</p></li>
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><p>self as a node if fagus is set, or a modified copy of self if copy is set</p>
+</dd>
+<dt class="field-odd">Raises</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ValueError</strong> – if it isn’t possible to parse an int-index from the provided key in a position where node-types
+    defines that the node shall be a list (if node-types is not l, the node will be replaced with a dict)</p></li>
+<li><p><strong>TypeError</strong> – if path is empty and the base node is not a list (can’t append to a dict, tuple or set) or the
+    base-node needs to be modified and isn’t modifiable (e.g. tuple or frozenset)</p></li>
+</ul>
 </dd>
 </dl>
 </dd></dl>
@@ -190,6 +206,9 @@ either “d” or “l”, default “d”</p></li>
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><p>self as a node if fagus is set, or a modified copy of self if copy is set</p>
+</dd>
+<dt class="field-odd">Raises</dt>
+<dd class="field-odd"><p><strong>TypeError</strong> – if the base-node needs to be modified and isn’t modifiable (e.g. tuple or frozenset)</p>
 </dd>
 </dl>
 </dd></dl>
@@ -268,7 +287,7 @@ at path is not a node, 1 is returned</p>
 <li><p><strong>path</strong> – List/Tuple of key-values that are traversed in self. If no nodes exist at the keys, new nodes are
 created. Can also be specified as a string, that is split into a tuple using value_split. See get()</p></li>
 <li><p><strong>node_types</strong> – * Can be used to manually define if the nodes along path are supposed to be (l)ists or
-(d)icts. E.g. “dll” to create a dict at level 0, and lists at level 1 and 2. ” ” can also be used -
+(d)icts. E.g. “dll” to create a dict at level 1, and lists at level 2 and 3. ” ” can also be used -
 space doesn’t enforce a node-type like d or l. For ” “, existing nodes are traversed if possible,
 otherwise default_node_type is used to create new nodes. Default “”, interpreted as ” ” at each level.</p></li>
 <li><p><strong>list_insert</strong> – * Level at which a new node shall be inserted into the list instead of traversing the
@@ -284,6 +303,14 @@ either “d” or “l”, default “d”</p></li>
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><p>self as a node if fagus is set, or a modified copy of self if copy is set</p>
+</dd>
+<dt class="field-odd">Raises</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ValueError</strong> – if it isn’t possible to parse an int-index from the provided key in a position where node-types
+    defines that the node shall be a list (if node-types is not l, the node will be replaced with a dict)</p></li>
+<li><p><strong>TypeError</strong> – if path is empty and the base node is not a list (can’t extend a dict, tuple or set) or the
+    base-node needs to be modified and isn’t modifiable (e.g. tuple or frozenset)</p></li>
+</ul>
 </dd>
 </dl>
 </dd></dl>
@@ -307,6 +334,9 @@ Default “”, meaning that the base object is filtered, see get() and README f
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><p>the filtered object, starting at path</p>
+</dd>
+<dt class="field-odd">Raises</dt>
+<dd class="field-odd"><p><strong>TypeError</strong> – if the base-node needs to be modified and isn’t modifiable (e.g. tuple or frozenset)</p>
 </dd>
 </dl>
 </dd></dl>
@@ -383,7 +413,7 @@ index</p>
 <li><p><strong>path</strong> – List/Tuple of key-values that are traversed in self. If no nodes exist at the keys, new nodes are
 created. Can also be specified as a string, that is split into a tuple using value_split. See get()</p></li>
 <li><p><strong>node_types</strong> – * Can be used to manually define if the nodes along path are supposed to be (l)ists or
-(d)icts. E.g. “dll” to create a dict at level 0, and lists at level 1 and 2. ” ” can also be used -
+(d)icts. E.g. “dll” to create a dict at level 1, and lists at level 2 and 3. ” ” can also be used -
 space doesn’t enforce a node-type like d or l. For ” “, existing nodes are traversed if possible,
 otherwise default_node_type is used to create new nodes. Default “”, interpreted as ” ” at each level.</p></li>
 <li><p><strong>list_insert</strong> – * Level at which a new node shall be inserted into the list instead of traversing the
@@ -400,6 +430,14 @@ either “d” or “l”, default “d”</p></li>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><p>self as a node if fagus is set, or a modified copy of self if copy is set</p>
 </dd>
+<dt class="field-odd">Raises</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ValueError</strong> – if it isn’t possible to parse an int-index from the provided key in a position where node-types
+    defines that the node shall be a list (if node-types is not l, the node will be replaced with a dict)</p></li>
+<li><p><strong>TypeError</strong> – if path is empty and the base node is not a list (can’t insert into dict, tuple or set) or the
+    base-node needs to be modified and isn’t modifiable (e.g. tuple or frozenset)</p></li>
+</ul>
+</dd>
 </dl>
 </dd></dl>
 
@@ -414,7 +452,7 @@ either “d” or “l”, default “d”</p></li>
 <li><p><strong>other</strong> – other object to check</p></li>
 <li><p><strong>path</strong> – check if the node at this position in self, is disjoint from other</p></li>
 <li><p><strong>value_split</strong> – * used to split path into a list if path is a str, default ” “</p></li>
-<li><p><strong>dict_</strong> – use keys, values or items for if value is a dict. Default keys</p></li>
+<li><p><strong>dict_</strong> – use (k)eys, (v)alues or (i)tems for if value is a dict. Default keys</p></li>
 </ul>
 </dd>
 </dl>
@@ -529,7 +567,7 @@ should just be updated with the contents of the objects instead of traversing an
 put into the base-object. Set this to True to prevent that and keep base and objects independent</p></li>
 <li><p><strong>value_split</strong> – * used to split path into a list if path is a str, default ” “</p></li>
 <li><p><strong>node_types</strong> – * Can be used to manually define if the nodes along path are supposed to be (l)ists or
-(d)icts. E.g. “dll” to create a dict at level 0, and lists at level 1 and 2. ” ” can also be used -
+(d)icts. E.g. “dll” to create a dict at level 1, and lists at level 2 and 3. ” ” can also be used -
 space doesn’t enforce a node-type like d or l. For ” “, existing nodes are traversed if possible,
 otherwise default_node_type is used to create new nodes. Default “”, interpreted as ” ” at each level.</p></li>
 <li><p><strong>list_insert</strong> – * Level at which a new node shall be inserted into the list instead of traversing the
@@ -540,6 +578,15 @@ either “d” or “l”, default “d”</p></li>
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><p>a reference to the modified base object, or a modified copy of the base object (see copy-parameter)</p>
+</dd>
+<dt class="field-odd">Raises</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ValueError</strong> – if it isn’t possible to parse an int-index from the provided key in a position where node-types
+    defines that the node shall be a list (if node-types is not l, the node will be replaced with a dict)</p></li>
+<li><p><strong>TypeError</strong> – if obj is not either a FagusIterator or a Collection. Also raised if you try to merge different
+    types of nodes at base-level, e.g. a dict can only be merged with another Mapping, and a list can only
+    be merged with another Iterable. ~ is also raised if a not modifiable base-node needs to be modified</p></li>
+</ul>
 </dd>
 </dl>
 </dd></dl>
@@ -564,7 +611,7 @@ recursively traverse self. Can also be specified as string which is split into a
 changes the object, but returns None (if ~ stays on, the object is replaced with None). Default True.
 If no value exists at path, the default value is always set at path (independent of ~)</p></li>
 <li><p><strong>node_types</strong> – * Can be used to manually define if the nodes along path are supposed to be (l)ists or
-(d)icts. E.g. “dll” to create a dict at level 0, and lists at level 1 and 2. ” ” can also be used -
+(d)icts. E.g. “dll” to create a dict at level 1, and lists at level 2 and 3. ” ” can also be used -
 space doesn’t enforce a node-type like d or l. For ” “, existing nodes are traversed if possible,
 otherwise default_node_type is used to create new nodes. Default “”, interpreted as ” ” at each level.</p></li>
 <li><p><strong>list_insert</strong> – * Level at which a new node shall be inserted into the list instead of traversing the
@@ -576,6 +623,13 @@ either “d” or “l”, default “d”</p></li>
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><p>the new value that was returned by the mod_function, or default if there was no value at path</p>
+</dd>
+<dt class="field-odd">Raises</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ValueError</strong> – if it isn’t possible to parse an int-index from the provided key in a position where node-types
+    defines that the node shall be a list (if node-types is not l, the node will be replaced with a dict)</p></li>
+<li><p><strong>TypeError</strong> – if the base-node needs to be modified and isn’t modifiable (e.g. tuple or frozenset)</p></li>
+</ul>
 </dd>
 </dl>
 </dd></dl>
@@ -605,6 +659,9 @@ If no value exists at path, the default value is always set at path (independent
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><p>the node at path where all the leaves matching filter_ are modified, or default if it didn’t exist</p>
 </dd>
+<dt class="field-odd">Raises</dt>
+<dd class="field-odd"><p><strong>TypeError</strong> – if the base-node needs to be modified and isn’t modifiable (e.g. tuple or frozenset)</p>
+</dd>
 </dl>
 </dd></dl>
 
@@ -624,6 +681,9 @@ If no value exists at path, the default value is always set at path (independent
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><p>value at path if it exists, or default if it doesn’t</p>
+</dd>
+<dt class="field-odd">Raises</dt>
+<dd class="field-odd"><p><strong>TypeError</strong> – if the base-node needs to be modified and isn’t modifiable (e.g. tuple or frozenset)</p>
 </dd>
 </dl>
 </dd></dl>
@@ -648,6 +708,11 @@ If no value exists at path, the default value is always set at path (independent
 </dd>
 </dl>
 <p>Returns: None</p>
+<dl class="field-list simple">
+<dt class="field-odd">Raises</dt>
+<dd class="field-odd"><p><strong>KeyError</strong> – if the value at path doesn’t exist</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
@@ -667,6 +732,9 @@ make changes to the returned nodes, but you don’t want to change self. Default
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><p>self as a node if fagus is set, or a modified copy of self if copy is set</p>
+</dd>
+<dt class="field-odd">Raises</dt>
+<dd class="field-odd"><p><strong>TypeError</strong> – if the base-node needs to be modified and isn’t modifiable (e.g. tuple or frozenset)</p>
 </dd>
 </dl>
 </dd></dl>
@@ -723,6 +791,13 @@ several arguments. See README for examples</p></li>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><p>a serializable object that only contains types allowed in json or yaml</p>
 </dd>
+<dt class="field-odd">Raises</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>TypeError</strong> – if base node is not a dict or list (serialize can’t fix that for the base node)</p></li>
+<li><p><strong>ValueError</strong> – if tuple_keys is not defined in mod_functions and a dict has tuples as keys</p></li>
+<li><p><strong>Exception</strong> – Can raise any exception if it occurs in one of the mod_functions</p></li>
+</ul>
+</dd>
 </dl>
 </dd></dl>
 
@@ -738,7 +813,7 @@ several arguments. See README for examples</p></li>
 <li><p><strong>path</strong> – List/Tuple of key-values that are traversed in self. If no nodes exist at the keys, new nodes are
 created. Can also be specified as a string, that is split into a tuple using value_split. See get()</p></li>
 <li><p><strong>node_types</strong> – * Can be used to manually define if the nodes along path are supposed to be (l)ists or
-(d)icts. E.g. “dll” to create a dict at level 0, and lists at level 1 and 2. ” ” can also be used -
+(d)icts. E.g. “dll” to create a dict at level 1, and lists at level 2 and 3. ” ” can also be used -
 space doesn’t enforce a node-type like d or l. For ” “, existing nodes are traversed if possible,
 otherwise default_node_type is used to create new nodes. Default “”, interpreted as ” ” at each level.</p></li>
 <li><p><strong>list_insert</strong> – * Level at which a new node shall be inserted into the list instead of traversing the
@@ -755,6 +830,13 @@ either “d” or “l”, default “d”</p></li>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><p>self as a node if fagus is set, or a modified copy of self if copy is set</p>
 </dd>
+<dt class="field-odd">Raises</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ValueError</strong> – if it isn’t possible to parse an int-index from the provided key in a position where node-types
+    defines that the node shall be a list (if node-types is not l, the node will be replaced with a dict)</p></li>
+<li><p><strong>TypeError</strong> – if the base-node needs to be modified and isn’t modifiable (e.g. tuple or frozenset)</p></li>
+</ul>
+</dd>
 </dl>
 </dd></dl>
 
@@ -769,7 +851,7 @@ either “d” or “l”, default “d”</p></li>
 <li><p><strong>default</strong> – * returned if path doesn’t exist in self</p></li>
 <li><p><strong>fagus</strong> – * return self as a Fagus-object if it is a node (tuple / list / dict), default False</p></li>
 <li><p><strong>node_types</strong> – * Can be used to manually define if the nodes along path are supposed to be (l)ists or
-(d)icts. E.g. “dll” to create a dict at level 0, and lists at level 1 and 2. ” ” can also be used -
+(d)icts. E.g. “dll” to create a dict at level 1, and lists at level 2 and 3. ” ” can also be used -
 space doesn’t enforce a node-type like d or l. For ” “, existing nodes are traversed if possible,
 otherwise default_node_type is used to create new nodes. Default “”, interpreted as ” ” at each level.</p></li>
 <li><p><strong>list_insert</strong> – * Level at which a new node shall be inserted into the list instead of traversing the
@@ -784,6 +866,13 @@ either “d” or “l”, default “d”</p></li>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
 <dd class="field-odd"><p>value at path if it exists, otherwise default is set at path and returned</p>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>ValueError</strong> – if it isn’t possible to parse an int-index from the provided key in a position where node-types
+    defines that the node shall be a list (if node-types is not l, the node will be replaced with a dict)</p></li>
+<li><p><strong>TypeError</strong> – if the base-node needs to be modified and isn’t modifiable (e.g. tuple or frozenset)</p></li>
+</ul>
 </dd>
 </dl>
 </dd></dl>
@@ -809,6 +898,9 @@ Default “”, meaning that the base object is split, see get() and README for 
 <dd class="field-even"><p>a tuple, where the first element is the nodes that pass the filter, and the second element is the nodes that
 don’t pass the filter</p>
 </dd>
+<dt class="field-odd">Raises</dt>
+<dd class="field-odd"><p><strong>TypeError</strong> – if the base-node needs to be modified and isn’t modifiable (e.g. tuple or frozenset)</p>
+</dd>
 </dl>
 </dd></dl>
 
@@ -826,7 +918,7 @@ values. If the node at path is a dict, and values also is a dict, the node-dict 
 <li><p><strong>path</strong> – List/Tuple of key-values that are traversed in self. If no nodes exist at the keys, new nodes are
 created. Can also be specified as a string, that is split into a tuple using value_split. See get()</p></li>
 <li><p><strong>node_types</strong> – * Can be used to manually define if the nodes along path are supposed to be (l)ists or
-(d)icts. E.g. “dll” to create a dict at level 0, and lists at level 1 and 2. ” ” can also be used -
+(d)icts. E.g. “dll” to create a dict at level 1, and lists at level 2 and 3. ” ” can also be used -
 space doesn’t enforce a node-type like d or l. For ” “, existing nodes are traversed if possible,
 otherwise default_node_type is used to create new nodes. Default “”, interpreted as ” ” at each level.</p></li>
 <li><p><strong>list_insert</strong> – * Level at which a new node shall be inserted into the list instead of traversing the
@@ -842,6 +934,14 @@ either “d” or “l”, default “d”</p></li>
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><p>self as a node if fagus is set, or a modified copy of self if copy is set</p>
+</dd>
+<dt class="field-odd">Raises</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ValueError</strong> – if it isn’t possible to parse an int-index from the provided key in a position where node-types
+    defines that the node shall be a list (if node-types is not l, the node will be replaced with a dict)</p></li>
+<li><p><strong>TypeError</strong> – if path is empty and the base node is not a set or dict (can’t update list) or the base-node
+    needs to be modified and isn’t modifiable (e.g. tuple or frozenset)</p></li>
+</ul>
 </dd>
 </dl>
 </dd></dl>

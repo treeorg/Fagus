@@ -4,5 +4,5 @@ __version__ = "1.0.0"
 
 from .fagus import Fagus
 from .iterators import FagusIterator
-from .filters import Fil, FCFil, VFil
+from .filters import Fil, CFil, VFil
 from .utils import Func

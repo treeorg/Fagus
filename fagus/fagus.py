@@ -34,7 +34,8 @@ class Fagus(MutableMapping, MutableSequence, MutableSet, metaclass=FagusMeta):
     to change a setting, change it at class-level - all objects in that file will inherit this setting. If you want to
     change the setting specifically for one object, change the setting at object-level. If you only want to change the
     setting for one single run of a function, put it as a function-parameter. More thorough examples of settings can be
-    found in README.md."""
+    found in README.md.
+    """
 
     def get(
         self: Collection,
@@ -175,6 +176,9 @@ class Fagus(MutableMapping, MutableSequence, MutableSet, metaclass=FagusMeta):
 
         Returns:
             the filtered object, starting at path
+
+        Raises:
+            TypeError: if the base-node needs to be modified and isn't modifiable (e.g. tuple or frozenset)
         """
         if isinstance(path, str):
             l_path = path.split(Fagus._opt(self, "value_split", value_split)) if path else []
@@ -223,7 +227,11 @@ class Fagus(MutableMapping, MutableSequence, MutableSet, metaclass=FagusMeta):
 
         Returns:
             a tuple, where the first element is the nodes that pass the filter, and the second element is the nodes that
-            don't pass the filter"""
+            don't pass the filter
+
+        Raises:
+            TypeError: if the base-node needs to be modified and isn't modifiable (e.g. tuple or frozenset)
+        """
         if isinstance(path, str):
             l_path = path.split(Fagus._opt(self, "value_split", value_split)) if path else []
         else:
@@ -267,7 +275,6 @@ class Fagus(MutableMapping, MutableSequence, MutableSet, metaclass=FagusMeta):
         Returns:
             the filtered node
         """
-
         if isinstance(node, Mapping):
             filter_in, filter_out, action, match_key = {}, {}, None, filter_.match if filter_ else None
         elif isinstance(node, Sequence):
@@ -326,7 +333,7 @@ class Fagus(MutableMapping, MutableSequence, MutableSet, metaclass=FagusMeta):
             path: List/Tuple of key-values that are traversed in self. If no nodes exist at the keys, new nodes are
                 created. Can also be specified as a string, that is split into a tuple using value_split. See get()
             node_types: \\* Can be used to manually define if the nodes along path are supposed to be (l)ists or
-                (d)icts. E.g. "dll" to create a dict at level 0, and lists at level 1 and 2. " " can also be used -
+                (d)icts. E.g. "dll" to create a dict at level 1, and lists at level 2 and 3. " " can also be used -
                 space doesn't enforce a node-type like d or l. For " ", existing nodes are traversed if possible,
                 otherwise default_node_type is used to create new nodes. Default "", interpreted as " " at each level.
             list_insert: \\* Level at which a new node shall be inserted into the list instead of traversing the
@@ -341,6 +348,11 @@ class Fagus(MutableMapping, MutableSequence, MutableSet, metaclass=FagusMeta):
 
         Returns:
             self as a node if fagus is set, or a modified copy of self if copy is set
+
+        Raises:
+            ValueError: if it isn't possible to parse an int-index from the provided key in a position where node-types
+                defines that the node shall be a list (if node-types is not l, the node will be replaced with a dict)
+            TypeError: if the base-node needs to be modified and isn't modifiable (e.g. tuple or frozenset)
         """
         return Fagus._build_node(
             self, value, path, "set", node_types, list_insert, value_split, fagus, if_, default_node_type, copy
@@ -369,7 +381,7 @@ class Fagus(MutableMapping, MutableSequence, MutableSet, metaclass=FagusMeta):
             path: List/Tuple of key-values that are traversed in self. If no nodes exist at the keys, new nodes are
                 created. Can also be specified as a string, that is split into a tuple using value_split. See get()
             node_types: \\* Can be used to manually define if the nodes along path are supposed to be (l)ists or
-                (d)icts. E.g. "dll" to create a dict at level 0, and lists at level 1 and 2. " " can also be used -
+                (d)icts. E.g. "dll" to create a dict at level 1, and lists at level 2 and 3. " " can also be used -
                 space doesn't enforce a node-type like d or l. For " ", existing nodes are traversed if possible,
                 otherwise default_node_type is used to create new nodes. Default "", interpreted as " " at each level.
             list_insert: \\* Level at which a new node shall be inserted into the list instead of traversing the
@@ -383,7 +395,14 @@ class Fagus(MutableMapping, MutableSequence, MutableSet, metaclass=FagusMeta):
             copy: if this is set, a copy of self is modified and then returned (thus self is not modified)
 
         Returns:
-            self as a node if fagus is set, or a modified copy of self if copy is set"""
+            self as a node if fagus is set, or a modified copy of self if copy is set
+
+        Raises:
+            ValueError: if it isn't possible to parse an int-index from the provided key in a position where node-types
+                defines that the node shall be a list (if node-types is not l, the node will be replaced with a dict)
+            TypeError: if path is empty and the base node is not a list (can't append to a dict, tuple or set) or the
+                base-node needs to be modified and isn't modifiable (e.g. tuple or frozenset)
+        """
         return Fagus._build_node(
             self, value, path, "append", node_types, list_insert, value_split, fagus, if_, default_node_type, copy
         )
@@ -412,7 +431,7 @@ class Fagus(MutableMapping, MutableSequence, MutableSet, metaclass=FagusMeta):
                 created. Can also be specified as a string, that is split into a tuple using value_split. See get()
 
             node_types: \\* Can be used to manually define if the nodes along path are supposed to be (l)ists or
-                (d)icts. E.g. "dll" to create a dict at level 0, and lists at level 1 and 2. " " can also be used -
+                (d)icts. E.g. "dll" to create a dict at level 1, and lists at level 2 and 3. " " can also be used -
                 space doesn't enforce a node-type like d or l. For " ", existing nodes are traversed if possible,
                 otherwise default_node_type is used to create new nodes. Default "", interpreted as " " at each level.
             list_insert: \\* Level at which a new node shall be inserted into the list instead of traversing the
@@ -426,8 +445,14 @@ class Fagus(MutableMapping, MutableSequence, MutableSet, metaclass=FagusMeta):
             copy: if this is set, a copy of self is modified and then returned (thus self is not modified)
 
         Returns:
-            self as a node if fagus is set, or a modified copy of self if copy is set"""
+            self as a node if fagus is set, or a modified copy of self if copy is set
 
+        Raises:
+            ValueError: if it isn't possible to parse an int-index from the provided key in a position where node-types
+                defines that the node shall be a list (if node-types is not l, the node will be replaced with a dict)
+            TypeError: if path is empty and the base node is not a list (can't extend a dict, tuple or set) or the
+                base-node needs to be modified and isn't modifiable (e.g. tuple or frozenset)
+        """
         return Fagus._build_node(
             self, values, path, "extend", node_types, list_insert, value_split, fagus, if_, default_node_type, copy
         )
@@ -458,7 +483,7 @@ class Fagus(MutableMapping, MutableSequence, MutableSet, metaclass=FagusMeta):
             path: List/Tuple of key-values that are traversed in self. If no nodes exist at the keys, new nodes are
                 created. Can also be specified as a string, that is split into a tuple using value_split. See get()
             node_types: \\* Can be used to manually define if the nodes along path are supposed to be (l)ists or
-                (d)icts. E.g. "dll" to create a dict at level 0, and lists at level 1 and 2. " " can also be used -
+                (d)icts. E.g. "dll" to create a dict at level 1, and lists at level 2 and 3. " " can also be used -
                 space doesn't enforce a node-type like d or l. For " ", existing nodes are traversed if possible,
                 otherwise default_node_type is used to create new nodes. Default "", interpreted as " " at each level.
             list_insert: \\* Level at which a new node shall be inserted into the list instead of traversing the
@@ -472,8 +497,14 @@ class Fagus(MutableMapping, MutableSequence, MutableSet, metaclass=FagusMeta):
             copy: if this is set, a copy of self is modified and then returned (thus self is not modified)
 
         Returns:
-            self as a node if fagus is set, or a modified copy of self if copy is set"""
+            self as a node if fagus is set, or a modified copy of self if copy is set
 
+        Raises:
+            ValueError: if it isn't possible to parse an int-index from the provided key in a position where node-types
+                defines that the node shall be a list (if node-types is not l, the node will be replaced with a dict)
+            TypeError: if path is empty and the base node is not a list (can't insert into dict, tuple or set) or the
+                base-node needs to be modified and isn't modifiable (e.g. tuple or frozenset)
+        """
         return Fagus._build_node(
             self,
             value,
@@ -512,7 +543,7 @@ class Fagus(MutableMapping, MutableSequence, MutableSet, metaclass=FagusMeta):
             path: List/Tuple of key-values that are traversed in self. If no nodes exist at the keys, new nodes are
                 created. Can also be specified as a string, that is split into a tuple using value_split. See get()
             node_types: \\* Can be used to manually define if the nodes along path are supposed to be (l)ists or
-                (d)icts. E.g. "dll" to create a dict at level 0, and lists at level 1 and 2. " " can also be used -
+                (d)icts. E.g. "dll" to create a dict at level 1, and lists at level 2 and 3. " " can also be used -
                 space doesn't enforce a node-type like d or l. For " ", existing nodes are traversed if possible,
                 otherwise default_node_type is used to create new nodes. Default "", interpreted as " " at each level.
             list_insert: \\* Level at which a new node shall be inserted into the list instead of traversing the
@@ -526,7 +557,14 @@ class Fagus(MutableMapping, MutableSequence, MutableSet, metaclass=FagusMeta):
             copy: if this is set, a copy of self is modified and then returned (thus self is not modified)
 
         Returns:
-            self as a node if fagus is set, or a modified copy of self if copy is set"""
+            self as a node if fagus is set, or a modified copy of self if copy is set
+
+        Raises:
+            ValueError: if it isn't possible to parse an int-index from the provided key in a position where node-types
+                defines that the node shall be a list (if node-types is not l, the node will be replaced with a dict)
+            TypeError: if path is empty and the base node is not a set (can't add to list or dict) or the base-node
+                needs to be modified and isn't modifiable (e.g. tuple or frozenset)
+        """
         return Fagus._build_node(
             self, value, path, "add", node_types, list_insert, value_split, fagus, if_, default_node_type, copy
         )
@@ -555,7 +593,7 @@ class Fagus(MutableMapping, MutableSequence, MutableSet, metaclass=FagusMeta):
             path: List/Tuple of key-values that are traversed in self. If no nodes exist at the keys, new nodes are
                 created. Can also be specified as a string, that is split into a tuple using value_split. See get()
             node_types: \\* Can be used to manually define if the nodes along path are supposed to be (l)ists or
-                (d)icts. E.g. "dll" to create a dict at level 0, and lists at level 1 and 2. " " can also be used -
+                (d)icts. E.g. "dll" to create a dict at level 1, and lists at level 2 and 3. " " can also be used -
                 space doesn't enforce a node-type like d or l. For " ", existing nodes are traversed if possible,
                 otherwise default_node_type is used to create new nodes. Default "", interpreted as " " at each level.
             list_insert: \\* Level at which a new node shall be inserted into the list instead of traversing the
@@ -569,7 +607,14 @@ class Fagus(MutableMapping, MutableSequence, MutableSet, metaclass=FagusMeta):
             copy: if this is set, a copy of self is modified and then returned (thus self is not modified)
 
         Returns:
-            self as a node if fagus is set, or a modified copy of self if copy is set"""
+            self as a node if fagus is set, or a modified copy of self if copy is set
+
+        Raises:
+            ValueError: if it isn't possible to parse an int-index from the provided key in a position where node-types
+                defines that the node shall be a list (if node-types is not l, the node will be replaced with a dict)
+            TypeError: if path is empty and the base node is not a set or dict (can't update list) or the base-node
+                needs to be modified and isn't modifiable (e.g. tuple or frozenset)
+        """
         return Fagus._build_node(
             self, values, path, "update", node_types, list_insert, value_split, fagus, if_, default_node_type, copy
         )
@@ -611,22 +656,6 @@ class Fagus(MutableMapping, MutableSequence, MutableSet, metaclass=FagusMeta):
             list_insert = Fagus._opt(self, "list_insert", list_insert)
             default_node_type = Fagus._opt(self, "default_node_type", default_node_type)
             nodes = [obj]
-            if (
-                isinstance(obj, MutableMapping)
-                and node_types[0:1] == "l"
-                or _is(obj, MutableSequence)
-                and (node_types[0:1] == "d" or next_index is _None)
-            ):
-                raise TypeError(
-                    f"Your base object is a {type(obj).__name__}. Due to limitations in how references "
-                    "work in Python, Fagus can't convert that base-object to a "
-                    f"{'list' if node_types[0:1] == 'l' else 'dict'}, which was requested %s."
-                    % (
-                        f"because {l_path[0]} is no numeric list-index"
-                        if _is(obj, MutableSequence) and not l_path[0].lstrip("-").isdigit()
-                        else f"by the first character in node_types being {node_types[0:1]}"
-                    )
-                )
             for i in range(len(l_path)):
                 is_list = _is(node, Sequence)
                 if is_list:
@@ -641,8 +670,8 @@ class Fagus(MutableMapping, MutableSequence, MutableSet, metaclass=FagusMeta):
                     next_index = _None
                 next_node = (
                     Sequence
-                    if node_types[i + 1 : i + 2] == "l"
-                    or not node_types[i + 1 : i + 2].strip()
+                    if node_types[i : i + 1] == "l"
+                    or not node_types[i : i + 1].strip()
                     and default_node_type == "l"
                     and next_index is not _None
                     else Mapping
@@ -684,7 +713,7 @@ class Fagus(MutableMapping, MutableSequence, MutableSet, metaclass=FagusMeta):
                             )
                             if next_node_type is _None or (
                                 next_node != next_node_type
-                                if node_types[i + 1 : i + 2].strip()
+                                if node_types[i : i + 1].strip()
                                 else next_node_type is Sequence and next_index is _None
                             ):
                                 if nodes:
@@ -706,7 +735,7 @@ class Fagus(MutableMapping, MutableSequence, MutableSet, metaclass=FagusMeta):
                         )
                         if next_node_type is _None or (
                             next_node != next_node_type
-                            if node_types[i + 1 : i + 2].strip()
+                            if node_types[i : i + 1].strip()
                             else next_node_type is Sequence and next_index is _None
                         ):
                             if nodes:
@@ -761,8 +790,8 @@ class Fagus(MutableMapping, MutableSequence, MutableSet, metaclass=FagusMeta):
                         node = set(node)
                     else:
                         node = {node}
-                elif isinstance(node, MutableMapping) and not isinstance(value, Mapping):
-                    raise ValueError(f"Can't update dict with value of type {type(value).__name__} not being a Mapping")
+                elif isinstance(node, MutableMapping) and not isinstance(value, Mapping):  # it makes no sense to
+                    return set(value)  # convert the existing node to a set if it's a Mapping, so just return set(value)
                 getattr(node, action)(value)
         else:
             raise ValueError(
@@ -787,7 +816,7 @@ class Fagus(MutableMapping, MutableSequence, MutableSet, metaclass=FagusMeta):
             default: \\* returned if path doesn't exist in self
             fagus: \\* return self as a Fagus-object if it is a node (tuple / list / dict), default False
             node_types: \\* Can be used to manually define if the nodes along path are supposed to be (l)ists or
-                (d)icts. E.g. "dll" to create a dict at level 0, and lists at level 1 and 2. " " can also be used -
+                (d)icts. E.g. "dll" to create a dict at level 1, and lists at level 2 and 3. " " can also be used -
                 space doesn't enforce a node-type like d or l. For " ", existing nodes are traversed if possible,
                 otherwise default_node_type is used to create new nodes. Default "", interpreted as " " at each level.
             list_insert: \\* Level at which a new node shall be inserted into the list instead of traversing the
@@ -800,6 +829,11 @@ class Fagus(MutableMapping, MutableSequence, MutableSet, metaclass=FagusMeta):
 
         Returns:
             value at path if it exists, otherwise default is set at path and returned
+
+        Raises:
+            ValueError: if it isn't possible to parse an int-index from the provided key in a position where node-types
+                defines that the node shall be a list (if node-types is not l, the node will be replaced with a dict)
+            TypeError: if the base-node needs to be modified and isn't modifiable (e.g. tuple or frozenset)
         """
         if isinstance(path, str):
             l_path = path.split(Fagus._opt(self, "value_split", value_split)) if path else []
@@ -851,7 +885,7 @@ class Fagus(MutableMapping, MutableSequence, MutableSet, metaclass=FagusMeta):
                 changes the object, but returns None (if ~ stays on, the object is replaced with None). Default True.
                 If no value exists at path, the default value is always set at path (independent of ~)
             node_types: \\* Can be used to manually define if the nodes along path are supposed to be (l)ists or
-                (d)icts. E.g. "dll" to create a dict at level 0, and lists at level 1 and 2. " " can also be used -
+                (d)icts. E.g. "dll" to create a dict at level 1, and lists at level 2 and 3. " " can also be used -
                 space doesn't enforce a node-type like d or l. For " ", existing nodes are traversed if possible,
                 otherwise default_node_type is used to create new nodes. Default "", interpreted as " " at each level.
             list_insert: \\* Level at which a new node shall be inserted into the list instead of traversing the
@@ -862,6 +896,11 @@ class Fagus(MutableMapping, MutableSequence, MutableSet, metaclass=FagusMeta):
 
         Returns:
             the new value that was returned by the mod_function, or default if there was no value at path
+
+        Raises:
+            ValueError: if it isn't possible to parse an int-index from the provided key in a position where node-types
+                defines that the node shall be a list (if node-types is not l, the node will be replaced with a dict)
+            TypeError: if the base-node needs to be modified and isn't modifiable (e.g. tuple or frozenset)
         """
         obj = self.obj if isinstance(self, Fagus) else self
         if isinstance(path, str):
@@ -924,6 +963,9 @@ class Fagus(MutableMapping, MutableSequence, MutableSet, metaclass=FagusMeta):
 
         Returns:
             the node at path where all the leaves matching filter\\_ are modified, or default if it didn't exist
+
+        Raises:
+            TypeError: if the base-node needs to be modified and isn't modifiable (e.g. tuple or frozenset)
         """
         base = Fagus.get(self, path, _None, False, copy, value_split)
         if base is _None or not _is(base, Collection) or not base:
@@ -986,7 +1028,13 @@ class Fagus(MutableMapping, MutableSequence, MutableSet, metaclass=FagusMeta):
             copy: Create a copy and make that copy serializable. Default is to modify self directly
 
         Returns:
-            a serializable object that only contains types allowed in json or yaml"""
+            a serializable object that only contains types allowed in json or yaml
+
+        Raises:
+            TypeError: if base node is not a dict or list (serialize can't fix that for the base node)
+            ValueError: if tuple_keys is not defined in mod_functions and a dict has tuples as keys
+            Exception: Can raise any exception if it occurs in one of the mod_functions
+        """
         if not isinstance(self.obj if isinstance(self, Fagus) else self, (dict, list)):
             raise TypeError(f"Can't modify base-object self having the immutable type {type(self).__name__}.")
         node = Fagus.get(self, path, fagus=False, value_split=value_split)
@@ -1076,7 +1124,7 @@ class Fagus(MutableMapping, MutableSequence, MutableSet, metaclass=FagusMeta):
                 put into the base-object. Set this to True to prevent that and keep base and objects independent
             value_split: \\* used to split path into a list if path is a str, default " "
             node_types: \\* Can be used to manually define if the nodes along path are supposed to be (l)ists or
-                (d)icts. E.g. "dll" to create a dict at level 0, and lists at level 1 and 2. " " can also be used -
+                (d)icts. E.g. "dll" to create a dict at level 1, and lists at level 2 and 3. " " can also be used -
                 space doesn't enforce a node-type like d or l. For " ", existing nodes are traversed if possible,
                 otherwise default_node_type is used to create new nodes. Default "", interpreted as " " at each level.
             list_insert: \\* Level at which a new node shall be inserted into the list instead of traversing the
@@ -1086,6 +1134,13 @@ class Fagus(MutableMapping, MutableSequence, MutableSet, metaclass=FagusMeta):
 
         Returns:
             a reference to the modified base object, or a modified copy of the base object (see copy-parameter)
+
+        Raises:
+            ValueError: if it isn't possible to parse an int-index from the provided key in a position where node-types
+                defines that the node shall be a list (if node-types is not l, the node will be replaced with a dict)
+            TypeError: if obj is not either a FagusIterator or a Collection. Also raised if you try to merge different
+                types of nodes at base-level, e.g. a dict can only be merged with another Mapping, and a list can only
+                be merged with another Iterable. ~ is also raised if a not modifiable base-node needs to be modified
         """
         if new_value_action[0:1] not in "ria":
             raise ValueError(
@@ -1215,6 +1270,9 @@ class Fagus(MutableMapping, MutableSequence, MutableSet, metaclass=FagusMeta):
 
         Returns:
             value at path if it exists, or default if it doesn't
+
+        Raises:
+            TypeError: if the base-node needs to be modified and isn't modifiable (e.g. tuple or frozenset)
         """
         if isinstance(path, str):
             l_path = path.split(Fagus._opt(self, "value_split", value_split)) if path else []
@@ -1263,6 +1321,9 @@ class Fagus(MutableMapping, MutableSequence, MutableSet, metaclass=FagusMeta):
             value_split: \\* used to split path into a list if path is a str, default " "
 
         Returns: None
+
+        Raises:
+            KeyError: if the value at path doesn't exist
         """
         if Fagus.pop(self, path, _None, value_split=value_split) is _None:
             raise KeyError(f"Couldn't remove {path}: Does not exist")
@@ -1339,7 +1400,8 @@ class Fagus(MutableMapping, MutableSequence, MutableSet, metaclass=FagusMeta):
                 changes to the returned nodes, but you don't want to change self. Default False
 
         Returns:
-            iterator of (key, value)-tuples in self, like dict.items()"""
+            iterator of (key, value)-tuples in self, like dict.items()
+        """
         node = Fagus.get(self, path, _None, False, copy, value_split)
         if isinstance(node, Mapping):
             items = node.items()
@@ -1372,6 +1434,9 @@ class Fagus(MutableMapping, MutableSequence, MutableSet, metaclass=FagusMeta):
 
         Returns:
             self as a node if fagus is set, or a modified copy of self if copy is set
+
+        Raises:
+            TypeError: if the base-node needs to be modified and isn't modifiable (e.g. tuple or frozenset)
         """
         obj = Fagus.__copy__(self) if copy else self
         if isinstance(path, str):
@@ -1412,7 +1477,8 @@ class Fagus(MutableMapping, MutableSequence, MutableSet, metaclass=FagusMeta):
 
         Return:
             the number of elements in the node at path. if there is no node at path, 0 is returned. If the element
-            at path is not a node, 1 is returned"""
+            at path is not a node, 1 is returned
+        """
         node = Fagus.get(self, path, _None, fagus=False, value_split=value_split)
         return len(node) if _is(node, Collection) else 0 if node is _None else 1
 
@@ -1480,16 +1546,16 @@ class Fagus(MutableMapping, MutableSequence, MutableSet, metaclass=FagusMeta):
             other: other object to check
             path: check if the node at this position in self, is disjoint from other
             value_split: \\* used to split path into a list if path is a str, default " "
-            dict_: use keys, values or items for if value is a dict. Default keys
+            dict_: use (k)eys, (v)alues or (i)tems for if value is a dict. Default keys
 
         Returns: whether the other iterable is disjoint from the value at path. If value is a dict, the keys are used.
             Checks if value is present in other if value isn't iterable. Returns True if there is no value at path.
         """
         node = Fagus.get(self, path, _None, False, False, value_split)
         if isinstance(node, Mapping):
-            if dict_ not in {"keys", "values", "items"}:
-                raise ValueError(f"dict_ attribute must bei either keys, values or items. You provided {dict_}")
-            return set(getattr(node, dict_)()).isdisjoint(other)
+            if not dict_ or dict_[0] not in ("k", "v", "i"):
+                raise ValueError(f"dict_ attribute must bei either (k)eys, (v)alues or (i)tems. You provided {dict_}")
+            return set(getattr(node, {"k": "keys", "v": "values", "i": "items"}[dict_[0]])()).isdisjoint(other)
         if isinstance(node, Set):
             return node.isdisjoint(other)
         return set(node).isdisjoint(other) if _is(node, Collection) else node not in other
@@ -1543,7 +1609,11 @@ class Fagus(MutableMapping, MutableSequence, MutableSet, metaclass=FagusMeta):
                 make changes to the returned nodes, but you don't want to change self. Default False
 
         Returns:
-            self as a node if fagus is set, or a modified copy of self if copy is set"""
+            self as a node if fagus is set, or a modified copy of self if copy is set
+
+        Raises:
+            TypeError: if the base-node needs to be modified and isn't modifiable (e.g. tuple or frozenset)
+        """
         obj = self.obj if isinstance(self, Fagus) else self
         if copy:
             obj = Fagus.__copy__(self)
@@ -1635,7 +1705,7 @@ class Fagus(MutableMapping, MutableSequence, MutableSet, metaclass=FagusMeta):
             list_insert: \\* Level at which a new node shall be inserted into the list instead of traversing the
                 existing node in the list at that index. See README
             node_types: \\* Can be used to manually define if the nodes along path are supposed to be (l)ists or
-                (d)icts. E.g. "dll" to create a dict at level 0, and lists at level 1 and 2. " " can also be used -
+                (d)icts. E.g. "dll" to create a dict at level 1, and lists at level 2 and 3. " " can also be used -
                 space doesn't enforce a node-type like d or l. For " ", existing nodes are traversed if possible,
                 otherwise default_node_type is used to create new nodes. Default "", interpreted as " " at each level.
 
@@ -1648,10 +1718,10 @@ class Fagus(MutableMapping, MutableSequence, MutableSet, metaclass=FagusMeta):
         try:
             for i in range(len(l_path) - int(parent)):
                 if isinstance(node, Sequence):
-                    if list_insert <= 0 or node_types[i : i + 1] == "d":
+                    if list_insert <= 0 or node_types[i - 1 : i] == "d":
                         return _None
                     l_path[i] = int(l_path[i])
-                elif node_types[i : i + 1] == "l":
+                elif node_types[i - 1 : i] == "l":
                     return _None
                 node = node[l_path[i]]
                 nodes.append(node)
@@ -1719,7 +1789,7 @@ class Fagus(MutableMapping, MutableSequence, MutableSet, metaclass=FagusMeta):
         mod_functions: Mapping = ...,
         copy: bool = False,
     ):
-        """Constructor for Fagus (Fagusbject), a wrapper-class for complex, nested objects of dicts and lists in Python
+        """Constructor for Fagus, a wrapper-class for complex, nested objects of dicts and lists in Python
 
         \\* means that the parameter is a Fagus-Setting, see Fagus-class-docstring for more information about settings
 
@@ -1727,7 +1797,7 @@ class Fagus(MutableMapping, MutableSequence, MutableSet, metaclass=FagusMeta):
             obj: object (like dict / list) to wrap Fagus around. If this is None, an empty node of the type
                 default_node_type will be used. Default None
             node_types: \\* Can be used to manually define if the nodes along path are supposed to be (l)ists or
-                (d)icts. E.g. "dll" to create a dict at level 0, and lists at level 1 and 2. " " can also be used -
+                (d)icts. E.g. "dll" to create a dict at level 1, and lists at level 2 and 3. " " can also be used -
                 space doesn't enforce a node-type like d or l. For " ", existing nodes are traversed if possible,
                 otherwise default_node_type is used to create new nodes. Default "", interpreted as " " at each level.
             list_insert: \\* Level at which a new node shall be inserted into the list instead of traversing the
@@ -1746,7 +1816,8 @@ class Fagus(MutableMapping, MutableSequence, MutableSet, metaclass=FagusMeta):
             mod_functions: \\* used in serialize() to convert non-serializable objects to serializable data types. See
                 serialize()
             copy: ~ creates a copy of the obj before Fagus is initialized. Makes sure that changes on this Fagus won't
-                modify obj itself. Default False"""
+                modify obj itself. Default False
+        """
         if obj is None:
             obj = [] if Fagus.default_node_type == "l" else {}
         if copy:

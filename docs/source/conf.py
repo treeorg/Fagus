@@ -61,4 +61,5 @@ suppress_warnings = ["myst.header"]
 
 # -- Extension configuration -------------------------------------------------
 strip_signature_backslash = True
+# autoclass_content = "both"
 myst_heading_anchors = 4

@@ -106,6 +106,9 @@ class KFil(FilBase):
                 regex, and in the latter case match these strings as regex patterns. E.g. re.match("a.*", b) will match
                 differently than "a.*" == b. In this case, "a.*" will be used as a regex-pattern. However
                 re.match("abc", b) will give the same result as "abc" == b, so here "abc" == b will be used.
+
+        Raises:
+            TypeError: if the filters are not stacked correctly / stacked in a way that doesn't make sense
         """
         super().__init__(*filter_args, inexclude=inexclude)
         self.args = list(self.args)
@@ -122,7 +125,7 @@ class KFil(FilBase):
                     elif isinstance(e, FilBase):
                         # Sort out CFil and VFil from args to extra_filters. Skip if Fil has a Fil as a child, or CFil
                         # has a CFil as a child
-                        if isinstance(self, FCFil) and isinstance(e, Fil):  # Alert if someone has put a
+                        if isinstance(self, CFil) and isinstance(e, Fil):  # Alert if someone has put a
                             raise TypeError(  # Fil into a CFil, as that makes no sense.
                                 "All subfilters of CFil must be either CFil or Fil."
                             )
@@ -135,17 +138,17 @@ class KFil(FilBase):
                                 self[i] = ...  # empty, put ... to give these filters something to match on
                     j += 1
             elif isinstance(arg, FilBase):
-                if isinstance(self, Fil) and isinstance(arg, (FCFil, VFil)):
+                if isinstance(self, Fil) and isinstance(arg, (CFil, VFil)):
                     self._set_extra_filter(i, arg)  # pop out extra-filter and replace it with ... so that
                     self[i] = ...  # it can match anything
                 else:
-                    raise ValueError(
-                        "You can put a CFil or VFil as a standalone arg (in no list) into a TFilter. "
-                        "It will then be treated as: <<Check this filter, and pass the whole node if the filter matches"
-                        ">>. In any other case it makes no sense to have a filter as a standalone argument in another."
+                    raise TypeError(
+                        "You can put a CFil or VFil as a standalone arg (in no list) into a Fil. It will then be "
+                        "treated as: <<Check this filter, and pass the whole node if the filter matches>>. In any "
+                        "other case it makes no sense to have a filter as a standalone argument in another."
                     )
 
-    def _set_extra_filter(self, index: int, filter_: Union["FCFil", VFil]):
+    def _set_extra_filter(self, index: int, filter_: Union["CFil", VFil]):
         """Removes VFil / CFil from args and puts it"""
         if not hasattr(self, "extra_filters"):
             self.extra_filters = {}
@@ -263,10 +266,27 @@ class Fil(KFil):
     pass
 
 
-class FCFil(KFil):
+class CFil(KFil):
     """CFil - can be used to select nodes based on values that shall not appear in the result. See README"""
 
     def __init__(self, *filter_args, inexclude: str = "", str_as_re: bool = False, invert: bool = False):
+        """Initializes KeyFilter and verifies the arguments passed to it
+
+        Args:
+            *filter_args: Each argument filters one key in the tree, the last argument filters the leaf-value. You can
+                put a list of values to match different values in the same filter. In this list, you can also specify
+                subfilters to match different grains differently.
+            inexclude: In some cases it's easier to specify that a filter shall match everything except b, rather than
+                match a. ~ can be used to specify for each argument if the filter shall include it (+) or exclude it
+                (-). Valid example: "++-+". If this parameter isn't specified, all args will be treated as (+).
+            str_as_re: If this is set to True, it will be evaluated for all str's if they'd match differently as a
+                regex, and in the latter case match these strings as regex patterns. E.g. re.match("a.*", b) will match
+                differently than "a.*" == b. In this case, "a.*" will be used as a regex-pattern. However
+                re.match("abc", b) will give the same result as "abc" == b, so here "abc" == b will be used.
+
+        Raises:
+            TypeError: if the filters are not stacked correctly, or stacked in a way that doesn't make sense
+        """
         self.invert = invert
         super().__init__(*filter_args, inexclude=inexclude, str_as_re=str_as_re)
 

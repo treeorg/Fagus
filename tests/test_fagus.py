@@ -4,7 +4,7 @@ import os.path
 import re
 import unittest
 from ipaddress import IPv6Address, IPv4Network, IPv6Network, ip_address
-from fagus import __version__, Fagus, Func, Fil, FCFil, VFil
+from fagus import __version__, Fagus, Func, Fil, CFil, VFil
 from datetime import datetime, date, time
 
 
@@ -149,7 +149,7 @@ class TestFagus(unittest.TestCase):
                     "data",
                     Fil(
                         ...,
-                        (FCFil("source", "id", lambda x: x > 300), "state"),
+                        (CFil("source", "id", lambda x: x > 300), "state"),
                     ),
                     select=-1,
                 )
@@ -191,10 +191,10 @@ class TestFagus(unittest.TestCase):
                     filter_=Fil(
                         ...,
                         (
-                            FCFil(
+                            CFil(
                                 (
                                     VFil(lambda x: len(x) == 3, lambda x: bool(x)),
-                                    FCFil("alias", "file-analyzer-domain"),
+                                    CFil("alias", "file-analyzer-domain"),
                                     "source",
                                 ),
                                 "id",
@@ -284,7 +284,7 @@ class TestFagus(unittest.TestCase):
                 {"sourceId": 5662, "roleId": 33, "firstSeen": 1548169200000, "lastSeen": 1552989600000},
             ],
             a.filter(
-                Fil(..., (FCFil("state", 3, invert=True), ".*(Seen|Id)"), str_as_re=True),
+                Fil(..., (CFil("state", 3, invert=True), ".*(Seen|Id)"), str_as_re=True),
                 "data",
                 copy=True,
             ),
@@ -296,10 +296,10 @@ class TestFagus(unittest.TestCase):
             filter_=Fil(
                 ...,
                 (
-                    FCFil(
+                    CFil(
                         (
                             VFil(lambda x: len(x) == 3, lambda x: bool(x)),
-                            FCFil("alias", "file-analyzer-domain"),
+                            CFil("alias", "file-analyzer-domain"),
                             "source",
                         ),
                         "id",
@@ -385,7 +385,7 @@ class TestFagus(unittest.TestCase):
         )
         with open(self.test_data_path) as fp:
             a = Fagus(json.load(fp))
-        in_, out = a.split(Fil(..., FCFil("state", 3)), path="data", copy=True, fagus=True)
+        in_, out = a.split(Fil(..., CFil("state", 3)), path="data", copy=True, fagus=True)
         self.assertIsInstance(in_, Fagus, "fagus is on, so in_ must be a Fagus")
         self.assertIsInstance(out, Fagus, "fagus is on, so out must be a Fagus")
         self.assertEqual({3}, set(in_.iter(filter_=Fil(..., "state"), select=-1)), "all items in in_ match the filter")
@@ -424,9 +424,7 @@ class TestFagus(unittest.TestCase):
         self.assertRaisesRegex(ValueError, "The only allowed characters in ", Fagus.set, a["1"], "f", "0", "pld")
         # Due to limitations on how references work in Python, the base-object can't be changed. So if the base-object
         # is a list, it can't be converted into a dict. This kind of changes are possible at the lower levels.
-        self.assertRaisesRegex(TypeError, "Your base object is a (.*|see comment)", Fagus.set, a, "f", "0", "lld")
-        # if the user defines that he wants a list, but it's not possible to parse numeric index from t_path raise error
-        self.assertRaisesRegex(ValueError, "Can't parse numeric list-index from", Fagus.set, a, "f", "1 f", "dl")
+        self.assertRaisesRegex(ValueError, "Can't parse numeric list-index from", Fagus.set, a, "f", "1 f", "l")
         a[("1", 1)] = "hei"
         b["1"][1] = "hei"
         self.assertEqual(b, a(), "Using __set_item__ to set a value")
@@ -435,7 +433,7 @@ class TestFagus(unittest.TestCase):
         b["a"][1]["b"] = 2
         self.assertEqual(a(), b, "Using another path separator and __setattr__")
         b["1"] = {"0": {"0": {"g": [9, 5]}}}
-        self.assertEqual(b, a.set({"g": [9, 5]}, "1øæ0øæ0", "ddd", value_split="øæ"), "Replace list with dict")
+        self.assertEqual(b, a.set({"g": [9, 5]}, "1øæ0øæ0", "dd", value_split="øæ"), "Replace list with dict")
         self.assertEqual([[["a"]]], Fagus.set([], "a", "1 1 1", default_node_type="l"), "Only create lists")
         a = Fagus(self.a, copy=True)
         b = copy.deepcopy(a())
@@ -459,7 +457,7 @@ class TestFagus(unittest.TestCase):
         self.assertNotEqual(a(), a.set(False, "1 1", copy=True), "The source object is not modified when copy is used")
         self.assertEqual(
             {"1": [{"b": [False]}, {"a": False, "1": (1,)}], "a": [[3, 4], {"b": 1}]},
-            a.set(False, "1 0 b 1", node_types="   l", copy=True),
+            a.set(False, "1 0 b 1", node_types="  l", copy=True),
             "space does not enforce node_types in path - dicts and lists are traversed as long as the keys allow it",
         )
         self.assertEqual(self.a, Fagus.set(a, "", "a", if_=bool), "If the condition is not met, a isn't modified")
@@ -570,14 +568,15 @@ class TestFagus(unittest.TestCase):
         b["k"] = {"a": 1}
         a.update({"a": 1}, "k")
         self.assertEqual(a(), b, "Updating dict at node that is not existing yet")
-        self.assertRaisesRegex(ValueError, "Can't update dict with value of type ", a.update, {"hans", "wu"}, "a 1")
+        b["a"][1] = {"hans", "wu"}
+        self.assertEqual(b, a.update({"hans", "wu"}, "a 1"), "Node is dict, but values is set -> set set(value)")
 
     def test_setdefault(self):
         a = Fagus(self.a, copy=True)
         b = copy.deepcopy(self.a)
         self.assertEqual(a.setdefault("a 0 0", 5), 3, "Setdefault returns existing value")
         self.assertEqual(a(), b, "SetDefault doesn't change if the value is already there")
-        self.assertEqual(a.setdefault("a 7 7", 5, node_types="dll"), 5, "SetDefault returns default value")
+        self.assertEqual(a.setdefault("a 7 7", 5, node_types="ll"), 5, "SetDefault returns default value")
         b["a"].append([5])
         self.assertEqual(a(), b, "SetDefault has added the value to the list")
 
@@ -931,7 +930,7 @@ class TestFagus(unittest.TestCase):
 
     def test_isdisjoint(self):
         self.assertFalse(Fagus.isdisjoint(self.a, {"a"}), "check dict keys (which is the default)")
-        self.assertRaisesRegex(ValueError, "dict_ attribute must bei either k", Fagus.isdisjoint, {}, {}, dict_="hansi")
+        self.assertRaisesRegex(ValueError, "dict_ attribute must bei either ", Fagus.isdisjoint, {}, {}, dict_="hansi")
         self.assertTrue(Fagus.isdisjoint({2: 1, 4: 3}, {2, 4}, dict_="values"), "check dict values")
         self.assertFalse(Fagus.isdisjoint({2: 1, 4: 3}, ((5, 6), (8, 9), (2, 1)), dict_="items"), "check dict items")
         self.assertTrue(Fagus.isdisjoint(self.a, {"a"}, "hubert"), "must be True if the path doesn't exist")
