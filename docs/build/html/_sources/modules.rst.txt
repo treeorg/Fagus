@@ -1,7 +1,7 @@
-TreeO
+Fagus
 =====
 
 .. toctree::
    :maxdepth: 4
 
-   treeo
+   fagus

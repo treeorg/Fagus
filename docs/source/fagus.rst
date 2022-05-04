@@ -1,7 +1,7 @@
-treeo package
+fagus package
 =============
 
-.. automodule:: treeo
+.. automodule:: fagus
    :members:
    :undoc-members:
    :show-inheritance:
@@ -12,7 +12,7 @@ Submodules
 .. toctree::
    :maxdepth: 4
 
-   treeo.filters
-   treeo.iterators
-   treeo.treeo
-   treeo.utils
+   fagus.fagus
+   fagus.filters
+   fagus.iterators
+   fagus.utils

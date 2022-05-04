@@ -1,4 +1,4 @@
-"""This module contains filter-classes used in TreeO"""
+"""This module contains filter-classes used in Fagus"""
 import re
 from collections.abc import Collection, MutableSequence, Mapping, Set, Sequence
 from typing import Union, Any, Tuple, Optional
@@ -8,11 +8,11 @@ from .utils import _None, _is
 _RE_PATTERN = getattr(re, "Pattern" if hasattr(re, "Pattern") else "_pattern_type")
 
 
-class TFilBase:
-    """TFilterBase - base-class for all filters used in TreeO, providing basic functions shared by all filters"""
+class FilBase:
+    """FilterBase - base-class for all filters used in Fagus, providing basic functions shared by all filters"""
 
     def __init__(self, *filter_args, inexclude: str = ""):
-        """Basic constructor for all filter-classes used in TreeO
+        """Basic constructor for all filter-classes used in Fagus
 
         Args:
             *filter_args: Each argument filters one key in the tree, the last argument filters the leaf-value. You can
@@ -43,12 +43,12 @@ class TFilBase:
         return self.inexclude[index : index + 1] != "-"
 
     def match_node(self, node: Collection, _=None) -> bool:
-        """This method is overridden by TCheckFilter and TValueFilter, and otherwise not in use"""
+        """This method is overridden by CheckFilter and ValueFilter, and otherwise not in use"""
         pass
 
 
-class TVFil(TFilBase):
-    """TValueFilter - This special type of filter can be used to inspect the entire node
+class VFil(FilBase):
+    """ValueFilter - This special type of filter can be used to inspect the entire node
 
     It can be used to e.g. select all the nodes that contain at least 10 elements. See README for an example"""
 
@@ -74,7 +74,7 @@ class TVFil(TFilBase):
         super().__init__(*filter_args, inexclude=inexclude)
 
     def match_node(self, node: Collection, _=None) -> bool:
-        """Verify that a node matches TValueFilter
+        """Verify that a node matches ValueFilter
 
         Args:
             node: node to check
@@ -89,11 +89,11 @@ class TVFil(TFilBase):
         return True
 
 
-class TKFil(TFilBase):
-    """TKeyFilter - Base class for filters in TreeO that inspect key-values to determine whether the filter matched"""
+class KFil(FilBase):
+    """KeyFilter - Base class for filters in Fagus that inspect key-values to determine whether the filter matched"""
 
     def __init__(self, *filter_args, inexclude: str = "", str_as_re: bool = False):
-        """Initializes TKeyFilter and verifies the arguments passed to it
+        """Initializes KeyFilter and verifies the arguments passed to it
 
         Args:
             *filter_args: Each argument filters one key in the tree, the last argument filters the leaf-value. You can
@@ -119,34 +119,34 @@ class TKFil(TFilBase):
                         if not isinstance(self[i], MutableSequence):
                             self[i] = list(arg)
                         self[i][j] = re.compile(e)
-                    elif isinstance(e, TFilBase):
-                        # Sort out TCheckFilter and TValueFilter from args to extra_filters. Skip if TFilter has a
-                        # TFilter as a child, or TCheckFilter has a TCheckFilter as a child
-                        if isinstance(self, TCFil) and isinstance(e, TFil):  # Alert if someone has put a
-                            raise TypeError(  # TFilter into a TCheckFilter, as that makes no sense.
-                                "All subfilters of TCheckFilter must be either TCheckFilter or TValueFilter."
+                    elif isinstance(e, FilBase):
+                        # Sort out CFil and VFil from args to extra_filters. Skip if Fil has a Fil as a child, or CFil
+                        # has a CFil as a child
+                        if isinstance(self, FCFil) and isinstance(e, Fil):  # Alert if someone has put a
+                            raise TypeError(  # Fil into a CFil, as that makes no sense.
+                                "All subfilters of CFil must be either CFil or Fil."
                             )
                         if not isinstance(self, e.__class__):  # Move
                             if not isinstance(self[i], MutableSequence):
                                 self[i] = list(arg)  # make self[i] a mutable list if necessary
                             self._set_extra_filter(i, self[i].pop(j))  # to be able to pop out the filter-arg
                             j -= 1
-                            if not self[i]:  # if there only were TCheck- and TValue-filters in the list, and it is now
+                            if not self[i]:  # if there only were C- and V-filters in the list, and it is now
                                 self[i] = ...  # empty, put ... to give these filters something to match on
                     j += 1
-            elif isinstance(arg, TFilBase):
-                if isinstance(self, TFil) and isinstance(arg, (TCFil, TVFil)):
+            elif isinstance(arg, FilBase):
+                if isinstance(self, Fil) and isinstance(arg, (FCFil, VFil)):
                     self._set_extra_filter(i, arg)  # pop out extra-filter and replace it with ... so that
                     self[i] = ...  # it can match anything
                 else:
                     raise ValueError(
-                        "You can put a TCheckFilter or TValueFilter as a standalone arg (in no list) into a TFilter. "
+                        "You can put a CFil or VFil as a standalone arg (in no list) into a TFilter. "
                         "It will then be treated as: <<Check this filter, and pass the whole node if the filter matches"
                         ">>. In any other case it makes no sense to have a filter as a standalone argument in another."
                     )
 
-    def _set_extra_filter(self, index: int, filter_: Union["TCFil", TVFil]):
-        """Removes TValueFilter / TCheckFilter from args and puts it"""
+    def _set_extra_filter(self, index: int, filter_: Union["FCFil", VFil]):
+        """Removes VFil / CFil from args and puts it"""
         if not hasattr(self, "extra_filters"):
             self.extra_filters = {}
         if index not in self.extra_filters:
@@ -157,7 +157,7 @@ class TKFil(TFilBase):
         """Get filter-argument at index
 
         Returns:
-            filter-argument at index, TreeO.__Empty__ if index isn't defined
+            filter-argument at index, _None if index isn't defined
         """
         try:
             return self.args[index]
@@ -168,7 +168,7 @@ class TKFil(TFilBase):
         """Set filter-argument at index. Throws IndexError if that index isn't defined"""
         self.args[key] = value
 
-    def match(self, value, index: int = 0, _=None) -> Tuple[bool, Optional["TKFil"], int]:
+    def match(self, value, index: int = 0, _=None) -> Tuple[bool, Optional["KFil"], int]:
         """match filter at index (matches recursively into subfilters if necessary)
 
         Args:
@@ -190,7 +190,7 @@ class TKFil(TFilBase):
         for e in filter_arg if _is(filter_arg, Collection, is_not=Set) else (filter_arg,):
             if e is ...:
                 return True, self, index + 1
-            if isinstance(e, TKFil):
+            if isinstance(e, KFil):
                 match, filter_, index_ = e.match(value, 0)  # recursion to correctly handle nested filters
             else:
                 if callable(e):
@@ -206,7 +206,7 @@ class TKFil(TFilBase):
                 return True, filter_, index_
         return False, self, index + 1
 
-    def match_list(self, value: int, index: int = 0, node_length: int = 0) -> Tuple[bool, Optional["TKFil"], int]:
+    def match_list(self, value: int, index: int = 0, node_length: int = 0) -> Tuple[bool, Optional["KFil"], int]:
         """match_list: same as match, but optimized to match list-indices (e. g. no regex-matching here)
 
         Args:
@@ -226,7 +226,7 @@ class TKFil(TFilBase):
         for e in filter_arg if _is(filter_arg, Collection, is_not=Set) else (filter_arg,):
             if e is ...:
                 return True, self, index + 1
-            if isinstance(e, TKFil):
+            if isinstance(e, KFil):
                 match, filter_, index_ = e.match_list(value, 0, node_length)
             else:
                 if callable(e):
@@ -241,7 +241,7 @@ class TKFil(TFilBase):
         return False, self, index + 1
 
     def match_extra_filters(self, node: Collection, index: int = 0) -> bool:
-        """Match extra filters on node (TCheckFilter and TValueFilter).
+        """Match extra filters on node (CFil and VFil).
 
         Args:
             node: node to be verified
@@ -257,21 +257,21 @@ class TKFil(TFilBase):
         return True
 
 
-class TFil(TKFil):
+class Fil(KFil):
     """TFilter - what matches this filter will actually be visible in the result. See README"""
 
     pass
 
 
-class TCFil(TKFil):
-    """TCheckFilter - can be used to select nodes based on values that shall not appear in the result. See README"""
+class FCFil(KFil):
+    """CFil - can be used to select nodes based on values that shall not appear in the result. See README"""
 
     def __init__(self, *filter_args, inexclude: str = "", str_as_re: bool = False, invert: bool = False):
         self.invert = invert
         super().__init__(*filter_args, inexclude=inexclude, str_as_re=str_as_re)
 
     def match_node(self, node: Collection, index: int = 0) -> bool:
-        """Recursive function to completely verify a node and its subnodes in TCheckFilter
+        """Recursive function to completely verify a node and its subnodes in CFil
 
         Args:
             node: node to check

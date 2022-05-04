@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Contributing to TreeO &mdash; TreeO 0.1.6 documentation</title>
+  <title>Contributing to Fagus &mdash; Fagus 1.0.0 documentation</title>
       <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="_static/wider_page.css" type="text/css" />
@@ -19,7 +19,7 @@
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="prev" title="TreeO" href="README.html" />
+    <link rel="prev" title="Fagus" href="README.html" />
 </head>
 
 <body class="wy-body-for-nav">
@@ -27,7 +27,7 @@
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search" >
-            <a href="index.html" class="icon icon-home"> TreeO
+            <a href="index.html" class="icon icon-home"> Fagus
           </a>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
@@ -39,11 +39,11 @@
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
 <ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="modules.html">TreeO</a></li>
+<li class="toctree-l1"><a class="reference internal" href="modules.html">Fagus</a></li>
 <li class="toctree-l1"><a class="reference internal" href="README.html">README</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">CONTRIBUTING</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#table-of-contents">Table of contents</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#treeo-principles">TreeO Principles</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#fagus-principles">Fagus Principles</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#how-can-i-contribute">How Can I Contribute?</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#reporting-bugs">Reporting Bugs</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#before-submitting-a-bug-report">Before Submitting A Bug Report</a></li>
@@ -57,14 +57,14 @@
 </li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="#developing-treeo">Developing TreeO</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#developing-fagus">Developing Fagus</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#software-dependencies-for-development">Software Dependencies For Development</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#code-styling-guidelines">Code Styling Guidelines</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#setting-up-a-local-treeo-developing-environment">Setting Up A Local TreeO Developing Environment</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#submitting-pull-requests-for-treeo">Submitting Pull Requests for TreeO</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#setting-up-a-local-fagus-developing-environment">Setting Up A Local Fagus Developing Environment</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#submitting-pull-requests-for-fagus">Submitting Pull Requests for Fagus</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#tests">Tests</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#committing-using-pre-commit-and-commitizen">Committing using pre-commit and commitizen</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#releasing-a-new-treeo-package-on-pypi">Releasing A New TreeO Package on PyPi</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#releasing-a-new-fagus-package-on-pypi">Releasing A New Fagus Package on PyPi</a></li>
 </ul>
 </li>
 </ul>
@@ -79,7 +79,7 @@
 
     <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-          <a href="index.html">TreeO</a>
+          <a href="index.html">Fagus</a>
       </nav>
 
       <div class="wy-nav-content">
@@ -87,7 +87,7 @@
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
       <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
-      <li>Contributing to TreeO</li>
+      <li>Contributing to Fagus</li>
       <li class="wy-breadcrumbs-aside">
             <a href="_sources/CONTRIBUTING.rst.txt" rel="nofollow"> View page source</a>
       </li>
@@ -97,34 +97,34 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
 
-  <section id="contributing-to-treeo">
-<h1>Contributing to TreeO<a class="headerlink" href="#contributing-to-treeo" title="Permalink to this headline"></a></h1>
-<p>:+1: :partying_face: First off, welcome and thank you for taking the time to contribute to TreeO! Any contribution, big or small, is welcome to make TreeO more useful such that more people can benefit from it. :+1: :partying_face:</p>
-<p>The following is a set of guidelines for contribution to TreeO, which is hosted by the <a class="reference external" href="https://github.com/treeorg">treeorg</a> organisation on GitHub. They are mostly guidelines, not rules. All of this can be discussed - use your best judgement, and feel free to propose changes to this document in a pull request.</p>
+  <section id="contributing-to-fagus">
+<h1>Contributing to Fagus<a class="headerlink" href="#contributing-to-fagus" title="Permalink to this headline"></a></h1>
+<p>:+1: :partying_face: First off, welcome and thank you for taking the time to contribute to Fagus! Any contribution, big or small, is welcome to make Fagus more useful such that more people can benefit from it. :+1: :partying_face:</p>
+<p>The following is a set of guidelines for contribution to Fagus, which is hosted by the <a class="reference external" href="https://github.com/fagusrg">fagusrg</a> organisation on GitHub. They are mostly guidelines, not rules. All of this can be discussed - use your best judgement, and feel free to propose changes to this document in a pull request.</p>
 <section id="table-of-contents">
 <h2>Table of contents<a class="headerlink" href="#table-of-contents" title="Permalink to this headline"></a></h2>
-<p><a class="reference internal" href="#treeo-principles"><span class="std std-doc">TreeO Principles</span></a></p>
+<p><a class="reference internal" href="#fagus-principles"><span class="std std-doc">Fagus Principles</span></a></p>
 <p><a class="reference internal" href="#how-can-i-contribute"><span class="std std-doc">How Can I Contribute?</span></a></p>
 <ul class="simple">
 <li><p><a class="reference internal" href="#reporting-bugs"><span class="std std-doc">Reporting Bugs</span></a></p></li>
 <li><p><a class="reference internal" href="#requesting-new-features"><span class="std std-doc">Requesting New Features</span></a></p></li>
 </ul>
-<p><a class="reference internal" href="#developing-treeo"><span class="std std-doc">Developing TreeO</span></a></p>
+<p><a class="reference internal" href="#developing-fagus"><span class="std std-doc">Developing Fagus</span></a></p>
 <ul class="simple">
 <li><p><a class="reference internal" href="#software-dependencies-for-development"><span class="std std-doc">Software Dependencies for Development</span></a></p></li>
 <li><p><a class="reference internal" href="#code-styling-guidelines"><span class="std std-doc">Code Styling Guidelines</span></a></p></li>
-<li><p><a class="reference internal" href="#setting-up-a-local-treeo-developing-environment"><span class="std std-doc">Setting Up A Local TreeO Developing Environment</span></a></p></li>
-<li><p><a class="reference internal" href="#submitting-pull-requests-for-treeo"><span class="std std-doc">Submitting Pull Requests For TreeO</span></a></p></li>
+<li><p><a class="reference internal" href="#setting-up-a-local-fagus-developing-environment"><span class="std std-doc">Setting Up A Local Fagus Developing Environment</span></a></p></li>
+<li><p><a class="reference internal" href="#submitting-pull-requests-for-fagus"><span class="std std-doc">Submitting Pull Requests For Fagus</span></a></p></li>
 </ul>
 </section>
-<section id="treeo-principles">
-<h2>TreeO Principles<a class="headerlink" href="#treeo-principles" title="Permalink to this headline"></a></h2>
+<section id="fagus-principles">
+<h2>Fagus Principles<a class="headerlink" href="#fagus-principles" title="Permalink to this headline"></a></h2>
 <ol class="arabic simple">
-<li><p><strong>No external dependencies</strong>: TreeO runs on native Python without 3rd party dependencies.</p></li>
+<li><p><strong>No external dependencies</strong>: Fagus runs on native Python without 3rd party dependencies.</p></li>
 <li><p><strong>Documented</strong>: All functions / modules / arguments / classes have docstrings.</p></li>
 <li><p><strong>Tested</strong>: All the functions shall have tests for as many edge cases as possible. It’s never possible to imagine all edge-cases, but if e.g. a bug is fixed which there is no test for, a new test case should be added to prevent the bug from being reintroduced.</p></li>
-<li><p><strong>Consistent</strong>: TreeO’s function arguments follow a common structure to be as consistent as possible.</p></li>
-<li><p><strong>Static and Instance</strong>: All functions in TreeO (except from __internals__) should be able to run static <code class="docutils literal notranslate"><span class="pre">TreeO.function(obj)</span></code> or at a TreeO-instance <code class="docutils literal notranslate"><span class="pre">obj</span> <span class="pre">=</span> <span class="pre">TreeO();</span> <span class="pre">obj.function()</span></code>.</p></li>
+<li><p><strong>Consistent</strong>: Fagus’s function arguments follow a common structure to be as consistent as possible.</p></li>
+<li><p><strong>Static and Instance</strong>: All functions in Fagus (except from __internals__) should be able to run static <code class="docutils literal notranslate"><span class="pre">Fagus.function(obj)</span></code> or at a Fagus-instance <code class="docutils literal notranslate"><span class="pre">obj</span> <span class="pre">=</span> <span class="pre">Fagus();</span> <span class="pre">obj.function()</span></code>.</p></li>
 <li><p><strong>Simple and efficient</strong>: If you have suggestions on how to make the code more efficient, feel free to submit.</p></li>
 </ol>
 </section>
@@ -132,12 +132,12 @@
 <h2>How Can I Contribute?<a class="headerlink" href="#how-can-i-contribute" title="Permalink to this headline"></a></h2>
 <section id="reporting-bugs">
 <h3>Reporting Bugs<a class="headerlink" href="#reporting-bugs" title="Permalink to this headline"></a></h3>
-<p>This section guides you through submitting a bug report for TreeO. Following these guidelines helps maintainers and the community understand your report :pencil:, reproduce the behavior :computer: :computer:, and find related reports :mag_right:.</p>
+<p>This section guides you through submitting a bug report for Fagus. Following these guidelines helps maintainers and the community understand your report :pencil:, reproduce the behavior :computer: :computer:, and find related reports :mag_right:.</p>
 <section id="before-submitting-a-bug-report">
 <h4>Before Submitting A Bug Report<a class="headerlink" href="#before-submitting-a-bug-report" title="Permalink to this headline"></a></h4>
 <ul class="simple">
-<li><p><strong>Check the <a class="reference external" href="https://github.com/treeorg/TreeO/discussions/categories/q-a">FAQ</a> and the <a class="reference external" href="https://github.com/treeorg/TreeO/discussions">discussions</a></strong> for a list of common questions and problems.</p></li>
-<li><p><strong>Check <a class="reference external" href="https://github.com/treeorg/TreeO/issues">issues</a> to see if your issue has already been reported</strong></p>
+<li><p><strong>Check the <a class="reference external" href="https://github.com/fagusrg/Fagus/discussions/categories/q-a">FAQ</a> and the <a class="reference external" href="https://github.com/fagusrg/Fagus/discussions">discussions</a></strong> for a list of common questions and problems.</p></li>
+<li><p><strong>Check <a class="reference external" href="https://github.com/fagusrg/Fagus/issues">issues</a> to see if your issue has already been reported</strong></p>
 <ul>
 <li><p>If it has been reported <strong>and the issue is still open</strong>, add a comment to the existing issue instead of opening a new one.</p></li>
 <li><p>If you find a <strong>Closed</strong> issue that seems like it is the same thing that you’re experiencing, open a new issue and include a link to the original issue in the body of your new one.</p></li>
@@ -147,17 +147,17 @@
 </section>
 <section id="how-do-i-submit-a-good-bug-report">
 <h4>How Do I Submit A (Good) Bug Report?<a class="headerlink" href="#how-do-i-submit-a-good-bug-report" title="Permalink to this headline"></a></h4>
-<p>Bugs are tracked as <a class="reference external" href="https://guides.github.com/features/issues/">GitHub issues</a>. When you are creating a bug report, please <a class="reference internal" href="#how-do-i-submit-a-good-bug-report"><span class="std std-doc">include as many details as possible (in particular test-data)</span></a>. Fill out <a class="reference external" href="https://github.com/treeorg/TreeO/issues/new?template=bug_report.md">the required template</a>, the information it asks for helps us resolve issues faster.</p>
+<p>Bugs are tracked as <a class="reference external" href="https://guides.github.com/features/issues/">GitHub issues</a>. When you are creating a bug report, please <a class="reference internal" href="#how-do-i-submit-a-good-bug-report"><span class="std std-doc">include as many details as possible (in particular test-data)</span></a>. Fill out <a class="reference external" href="https://github.com/fagusrg/Fagus/issues/new?template=bug_report.md">the required template</a>, the information it asks for helps us resolve issues faster.</p>
 </section>
 </section>
 <section id="requesting-new-features">
 <h3>Requesting New Features<a class="headerlink" href="#requesting-new-features" title="Permalink to this headline"></a></h3>
-<p>This section guides you through submitting an enhancement suggestion for TreeO, including completely new features and minor improvements to existing functionality. Following these guidelines helps maintainers and the community understand your suggestion :pencil: and find related suggestions :mag_right:.</p>
+<p>This section guides you through submitting an enhancement suggestion for Fagus, including completely new features and minor improvements to existing functionality. Following these guidelines helps maintainers and the community understand your suggestion :pencil: and find related suggestions :mag_right:.</p>
 <section id="before-submitting-a-feature-request">
 <h4>Before Submitting A Feature Request<a class="headerlink" href="#before-submitting-a-feature-request" title="Permalink to this headline"></a></h4>
 <ul class="simple">
-<li><p><strong>Check the <a class="reference external" href="https://github.com/treeorg/TreeO/discussions/categories/q-a">FAQ</a> and the <a class="reference external" href="https://github.com/treeorg/TreeO/discussions">discussions</a></strong> for a list of common questions and problems. Probably there already is a solution for your feature-request?</p></li>
-<li><p><strong>Check <a class="reference external" href="https://github.com/treeorg/TreeO/issues">issues</a> to see if your feature request has already been reported</strong></p>
+<li><p><strong>Check the <a class="reference external" href="https://github.com/fagusrg/Fagus/discussions/categories/q-a">FAQ</a> and the <a class="reference external" href="https://github.com/fagusrg/Fagus/discussions">discussions</a></strong> for a list of common questions and problems. Probably there already is a solution for your feature-request?</p></li>
+<li><p><strong>Check <a class="reference external" href="https://github.com/fagusrg/Fagus/issues">issues</a> to see if your feature request has already been reported</strong></p>
 <ul>
 <li><p>If it has been reported <strong>and the feature request is still open</strong>, add a comment to the existing issue instead of opening a new one. You can also give it a like to get it prioritized.</p></li>
 <li><p>If you find a <strong>Closed</strong> feature request that seems like it is the same thing that you would like to get added, you can create a new one and include a link to the old one. If many people would like to have a new feature it is more likely to get prioritized.</p></li>
@@ -167,21 +167,21 @@
 </section>
 <section id="how-do-i-submit-a-good-feature-request">
 <h4>How Do I Submit A (Good) Feature Request?<a class="headerlink" href="#how-do-i-submit-a-good-feature-request" title="Permalink to this headline"></a></h4>
-<p>Feature requests are tracked as <a class="reference external" href="https://guides.github.com/features/issues/">GitHub issues</a>. When you are creating a feature request, please <a class="reference internal" href="#how-do-i-submit-a-good-feature-request"><span class="std std-doc">include as many details as possible (in particular test-data)</span></a>. Fill out <a class="reference external" href="https://github.com/treeorg/TreeO/issues/new?template=feature_request.md">the required template</a>, the information it asks for helps us to better judge and understand your suggestion.</p>
+<p>Feature requests are tracked as <a class="reference external" href="https://guides.github.com/features/issues/">GitHub issues</a>. When you are creating a feature request, please <a class="reference internal" href="#how-do-i-submit-a-good-feature-request"><span class="std std-doc">include as many details as possible (in particular test-data)</span></a>. Fill out <a class="reference external" href="https://github.com/fagusrg/Fagus/issues/new?template=feature_request.md">the required template</a>, the information it asks for helps us to better judge and understand your suggestion.</p>
 </section>
 </section>
 </section>
-<section id="developing-treeo">
-<h2>Developing TreeO<a class="headerlink" href="#developing-treeo" title="Permalink to this headline"></a></h2>
-<p>This section shows you how you can set up a local environment to test and develop TreeO, and finally how you can make your contribution.</p>
+<section id="developing-fagus">
+<h2>Developing Fagus<a class="headerlink" href="#developing-fagus" title="Permalink to this headline"></a></h2>
+<p>This section shows you how you can set up a local environment to test and develop Fagus, and finally how you can make your contribution.</p>
 <section id="software-dependencies-for-development">
 <h3>Software Dependencies For Development<a class="headerlink" href="#software-dependencies-for-development" title="Permalink to this headline"></a></h3>
 <ul class="simple">
 <li><p><a class="reference external" href="https://www.python.org/">Python</a> (at least 3.6.2)</p></li>
-<li><p><a class="reference external" href="https://python-poetry.org">Poetry</a> for dependency management and deployment (creating packages for PyPi), instructions are found in <a class="reference internal" href="#setting-up-a-local-treeo-developing-environment"><span class="std std-doc">installation steps</span></a></p></li>
+<li><p><a class="reference external" href="https://python-poetry.org">Poetry</a> for dependency management and deployment (creating packages for PyPi), instructions are found in <a class="reference internal" href="#setting-up-a-local-fagus-developing-environment"><span class="std std-doc">installation steps</span></a></p></li>
 <li><p><a class="reference external" href="https://git-scm.com/">Git</a> to checkout this repo</p></li>
 <li><p>An IDE, I used <a class="reference external" href="https://www.jetbrains.com/pycharm/download/">Intellij PyCharm Community</a>. Not mandatory, but I found it handy to see how the data is modified in the debugger.</p></li>
-<li><p>TreeO itself has no external dependencies, but some packages are used to smoothen the development process. They are installed and set up through poetry, check <a class="reference external" href="https://github.com/treeorg/TreeO/blob/main/pyproject.toml">pyproject.toml</a> or <a class="reference internal" href="#code-styling-guidelines"><span class="std std-doc">Code Styling Rules</span></a> for a list.</p></li>
+<li><p>Fagus itself has no external dependencies, but some packages are used to smoothen the development process. They are installed and set up through poetry, check <a class="reference external" href="https://github.com/fagusrg/Fagus/blob/main/pyproject.toml">pyproject.toml</a> or <a class="reference internal" href="#code-styling-guidelines"><span class="std std-doc">Code Styling Rules</span></a> for a list.</p></li>
 </ul>
 </section>
 <section id="code-styling-guidelines">
@@ -193,34 +193,34 @@
 <li><p>The PEP-8-rules are verified through <a class="reference external" href="https://flake8.pycqa.org/en/latest/">flake8</a>. This tool only shows what is wrong - you’ll have to fix it yourself.</p></li>
 </ul>
 </li>
-<li><p><strong>Docstrings</strong>: All public functions in TreeO have docstrings following the <a class="reference external" href="https://google.github.io/styleguide/pyguide.html">Google Python Style Guide</a></p></li>
+<li><p><strong>Docstrings</strong>: All public functions in Fagus have docstrings following the <a class="reference external" href="https://google.github.io/styleguide/pyguide.html">Google Python Style Guide</a></p></li>
 <li><p><strong>Formatting commit-messages</strong>: <a class="reference external" href="https://commitizen-tools.github.io/commitizen/">commitizen</a> is used to make sure that commit-messages follow a common style</p></li>
 <li><p><strong>Pre-commit checks</strong>: <a class="reference external" href="https://pre-commit.com/">pre-commit</a> is used to ensure that the code changes have test-coverage, are formatted correctly etc. It runs black, flake8, unittests and a lot of other checks prior to accepting a commit.</p></li>
 </ul>
 </section>
-<section id="setting-up-a-local-treeo-developing-environment">
-<h3>Setting Up A Local TreeO Developing Environment<a class="headerlink" href="#setting-up-a-local-treeo-developing-environment" title="Permalink to this headline"></a></h3>
+<section id="setting-up-a-local-fagus-developing-environment">
+<h3>Setting Up A Local Fagus Developing Environment<a class="headerlink" href="#setting-up-a-local-fagus-developing-environment" title="Permalink to this headline"></a></h3>
 <ol class="arabic simple">
 <li><p>Install <a class="reference external" href="https://www.python.org/downloads/">Python</a> and <a class="reference external" href="https://git-scm.com/">Git</a></p></li>
-<li><p>Checkout the repository: <code class="docutils literal notranslate"><span class="pre">git</span> <span class="pre">checkout</span> <span class="pre">https://github.com/treeorg/TreeO.git;</span> <span class="pre">cd</span> <span class="pre">TreeO</span></code></p></li>
+<li><p>Checkout the repository: <code class="docutils literal notranslate"><span class="pre">git</span> <span class="pre">checkout</span> <span class="pre">https://github.com/fagusrg/Fagus.git;</span> <span class="pre">cd</span> <span class="pre">Fagus</span></code></p></li>
 <li><p>Instructions how to install poetry can be found <a class="reference external" href="https://python-poetry.org/docs/">here</a></p>
 <ul class="simple">
 <li><p>you might have to reopen your terminal after installing poetry (or run <code class="docutils literal notranslate"><span class="pre">source</span> <span class="pre">~/.bashrc</span></code> on Linux)</p></li>
 </ul>
 </li>
-<li><p>Run <code class="docutils literal notranslate"><span class="pre">poetry</span> <span class="pre">shell</span></code> to open a terminal that is set up with the development tools for TreeO.</p>
+<li><p>Run <code class="docutils literal notranslate"><span class="pre">poetry</span> <span class="pre">shell</span></code> to open a terminal that is set up with the development tools for Fagus.</p>
 <ul class="simple">
 <li><p>check if you can now run this command without getting errors: <code class="docutils literal notranslate"><span class="pre">poetry</span> <span class="pre">shell</span></code></p></li>
 <li><p>if the <code class="docutils literal notranslate"><span class="pre">poetry</span></code>-command is not found, you might have to add <code class="docutils literal notranslate"><span class="pre">eval</span> <span class="pre">&quot;$(pyenv</span> <span class="pre">init</span> <span class="pre">--path)&quot;</span></code> to your <code class="docutils literal notranslate"><span class="pre">.bashrc</span></code> (on Linux)</p></li>
-<li><p>if you have problems setting this up, just ask a [question](https://github. com/treeorg/TreeO/discussions/categories/q-a), we can later include the problem and the solution we found into this guide</p></li>
+<li><p>if you have problems setting this up, just ask a [question](https://github. com/fagusrg/Fagus/discussions/categories/q-a), we can later include the problem and the solution we found into this guide</p></li>
 </ul>
 </li>
 <li><p>Install the project and developing dependencies: <code class="docutils literal notranslate"><span class="pre">poetry</span> <span class="pre">install</span></code></p></li>
 <li><p>If you use an IDE, you can now open your project there. If it has a poetry mode, use that mode - <code class="docutils literal notranslate"><span class="pre">poetry</span> <span class="pre">shell</span></code> will then be executed automatically in the terminal of your IDE.</p></li>
 </ol>
 </section>
-<section id="submitting-pull-requests-for-treeo">
-<h3>Submitting Pull Requests for TreeO<a class="headerlink" href="#submitting-pull-requests-for-treeo" title="Permalink to this headline"></a></h3>
+<section id="submitting-pull-requests-for-fagus">
+<h3>Submitting Pull Requests for Fagus<a class="headerlink" href="#submitting-pull-requests-for-fagus" title="Permalink to this headline"></a></h3>
 <p>If it hasn’t run in your console yet, run <code class="docutils literal notranslate"><span class="pre">poetry</span> <span class="pre">shell</span></code> to get all the development dependencies and some new commands available in your console.</p>
 <section id="tests">
 <h4>Tests<a class="headerlink" href="#tests" title="Permalink to this headline"></a></h4>
@@ -244,8 +244,8 @@
 </li>
 </ol>
 </section>
-<section id="releasing-a-new-treeo-package-on-pypi">
-<h4>Releasing A New TreeO Package on PyPi<a class="headerlink" href="#releasing-a-new-treeo-package-on-pypi" title="Permalink to this headline"></a></h4>
+<section id="releasing-a-new-fagus-package-on-pypi">
+<h4>Releasing A New Fagus Package on PyPi<a class="headerlink" href="#releasing-a-new-fagus-package-on-pypi" title="Permalink to this headline"></a></h4>
 <ol class="arabic simple">
 <li><p>Run <code class="docutils literal notranslate"><span class="pre">poetry</span> <span class="pre">version</span> <span class="pre">&lt;major,</span> <span class="pre">minor</span> <span class="pre">or</span> <span class="pre">patch&gt;</span></code>to increment the version number in poetry.</p>
 <ul class="simple">
@@ -254,7 +254,7 @@
 <li><p><strong>Patch</strong>: Fixes bugs in a backwards compatible way</p></li>
 </ul>
 </li>
-<li><p>Run <code class="docutils literal notranslate"><span class="pre">sed</span> <span class="pre">-i</span> <span class="pre">&quot;s/__version__</span> <span class="pre">=</span> <span class="pre">.*\$/__version__</span> <span class="pre">=</span> <span class="pre">\&quot;$(poetry</span> <span class="pre">version</span> <span class="pre">-s)\&quot;/&quot;</span> <span class="pre">treeo/__init__.py</span></code> (only works on Linux / MacOS) to update the version number in the treeo-package. If you know the command to do this replacement in a windows shell, feel free to add it here.</p></li>
+<li><p>Run <code class="docutils literal notranslate"><span class="pre">sed</span> <span class="pre">-i</span> <span class="pre">&quot;s/__version__</span> <span class="pre">=</span> <span class="pre">.*\$/__version__</span> <span class="pre">=</span> <span class="pre">\&quot;$(poetry</span> <span class="pre">version</span> <span class="pre">-s)\&quot;/&quot;</span> <span class="pre">fagus/__init__.py</span></code> (only works on Linux / MacOS) to update the version number in the fagus-package. If you know the command to do this replacement in a windows shell, feel free to add it here.</p></li>
 </ol>
 </section>
 </section>
@@ -265,7 +265,7 @@
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="README.html" class="btn btn-neutral float-left" title="TreeO" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="README.html" class="btn btn-neutral float-left" title="Fagus" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
     </div>
 
   <hr/>

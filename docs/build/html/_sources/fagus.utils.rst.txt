@@ -1,7 +1,7 @@
-treeo.utils module
+fagus.utils module
 ==================
 
-.. automodule:: treeo.utils
+.. automodule:: fagus.utils
    :members:
    :undoc-members:
    :show-inheritance:

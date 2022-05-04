@@ -1,5 +1,3 @@
-from treeo import __version__
-
 # Configuration file for the Sphinx documentation builder.
 #
 # This file only contains a selection of the most common options. For a full
@@ -15,12 +13,12 @@ from treeo import __version__
 import os
 import sys
 
-sys.path.insert(0, os.path.abspath(".."))
-
+sys.path.insert(0, os.path.abspath("../.."))
+from fagus import __version__
 
 # -- Project information -----------------------------------------------------
 
-project = "TreeO"
+project = "Fagus"
 copyright = "2022, Lukas Neuenschwander"
 author = "Lukas Neuenschwander"
 

@@ -1,13 +1,13 @@
 [tool.poetry]
-name = "treeo"
+name = "fagus"
 description = "Library to easily create, edit and traverse nested objects of dicts and lists in Python"
-version = "0.1.6"
+version = "1.0.0"
 keywords = ["json", "yaml", "api", "dict", "list"]
 license = "ISC"
 authors = ["Lukas Neuenschwander <fjellvannet@gmail.com>"]
 maintainers = ["treeorg"]
-repository = "https://github.com/treeorg/TreeO"
-homepage = "https://github.com/treeorg/TreeO"
+repository = "https://github.com/treeorg/Fagus"
+homepage = "https://github.com/treeorg/Fagus"
 readme = "README.md"
 
 [tool.poetry.dependencies]
@@ -25,7 +25,7 @@ click = "^8.0.4"
 Sphinx = "^4.5.0"
 sphinx-rtd-theme = {version = "^1.0.0", python = "^3.7"}
 myst-parser = {version = "^0.17.2", python = "^3.7"}
-
+typing-extensions = "^4.1.1"
 
 [tool.black]
 line-length=120

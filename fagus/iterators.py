@@ -1,22 +1,22 @@
-"""This module contains iterator-classes that are used to iterate over TreeO-objects"""
+"""This module contains iterator-classes that are used to iterate over Fagus-objects"""
 from collections.abc import Collection, Sequence, Mapping, Iterable
 from typing import Union, TYPE_CHECKING
 
 from .utils import _is, END, _None, _filter_r, _copy_node, _copy_any
 
 if TYPE_CHECKING:
-    from filters import TFil
-    from treeo import TreeO
+    from filters import Fil
+    from fagus import Fagus
 
 
-class TFilteredIterator:
+class FilteredIterator:
     """Iterator class that gives keys and values for any Collection (use optimal_iterator() to initialize it)"""
 
     @staticmethod
     def optimal_iterator(
         obj: Collection,
         filter_value: bool = False,
-        filter_: "TFil" = None,
+        filter_: "Fil" = None,
         filter_index: int = 0,
     ):
         """This method returns the simplest possible Iterator to loop through a given object.
@@ -32,13 +32,13 @@ class TFilteredIterator:
             else:
                 return ((..., e) for e in obj)
         else:
-            return TFilteredIterator(obj, filter_value, filter_, filter_index)
+            return FilteredIterator(obj, filter_value, filter_, filter_index)
 
     def __init__(
         self,
         obj: Collection,
         filter_value: bool,
-        filter_: "TFil",
+        filter_: "Fil",
         filter_index: int = 0,
     ):
         self.filter_ = filter_
@@ -73,29 +73,29 @@ class TFilteredIterator:
             return k, v, filter_, index
 
 
-class TreeOIterator:
-    """Iterator-class for TreeO to facilitate the complex iteration with filtering etc. in the tree-object
+class FagusIterator:
+    """Iterator-class for Fagus to facilitate the complex iteration with filtering etc. in the tree-object
 
-    Internal - use TreeO.iter() to use this iterator on your object"""
+    Internal - use Fagus.iter() to use this iterator on your object"""
 
     def __init__(
         self,
-        obj: "TreeO",
+        obj: "Fagus",
         max_depth: int = END,
-        filter_: "TFil" = None,
-        treeo: bool = False,
+        filter_: "Fil" = None,
+        fagus: bool = False,
         iter_fill=_None,
         reduce: Union[int, Iterable] = None,
         iter_nodes: bool = False,
         copy: bool = False,
         filter_ends: bool = False,
     ):
-        """Internal function. Recursively iterates through TreeO-object
+        """Internal function. Recursively iterates through Fagus-object
 
-        Initiate this iterator through TreeO.iter(), there the parameters are discussed as well."""
+        Initiate this iterator through Fagus.iter(), there the parameters are discussed as well."""
         self.obj = obj
         self.max_depth = END if max_depth < 0 else max_depth
-        self.treeo = treeo
+        self.fagus = fagus
         self.iter_fill = iter_fill
         self.filter_ends = filter_ends
         self.copy = copy
@@ -110,8 +110,8 @@ class TreeOIterator:
             )
         self.reduce = reduce
         self.iter_nodes = iter_nodes
-        self.iter_keys = [obj if treeo else obj()]
-        self.iterators = [TFilteredIterator.optimal_iterator(obj(), filter_ends and not max_depth, filter_)]
+        self.iter_keys = [obj if fagus else obj()]
+        self.iterators = [FilteredIterator.optimal_iterator(obj(), filter_ends and not max_depth, filter_)]
         self.deepest_change = 0
 
     def __iter__(self):
@@ -126,14 +126,14 @@ class TreeOIterator:
                 except IndexError:
                     raise StopIteration
                 if len(self.iterators) - 1 < self.max_depth and v and _is(v, Collection):
-                    self.iter_keys.extend((k, self.obj.child(v) if self.treeo else v))
+                    self.iter_keys.extend((k, self.obj.child(v) if self.fagus else v))
                     self.iterators.append(
-                        TFilteredIterator.optimal_iterator(
+                        FilteredIterator.optimal_iterator(
                             v, self.filter_ends and len(self.iterators) - 2 < self.max_depth, *filter_
                         )
                     )
                 else:
-                    if self.treeo and _is(v, Collection):
+                    if self.fagus and _is(v, Collection):
                         v = self.obj.child(v)
                     iter_list = (
                         *(self.iter_keys if self.iter_nodes else self.iter_keys[1::2]),
@@ -160,7 +160,7 @@ class TreeOIterator:
 
     def skip(self, level: int, copy: bool = False) -> Collection:
         node = self.iter_keys[level * 2]
-        if isinstance(self.iterators[-1], TFilteredIterator):
+        if isinstance(self.iterators[-1], FilteredIterator):
             node = _filter_r(
                 node,
                 copy,

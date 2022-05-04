@@ -1,4 +1,4 @@
-"""This module contains classes and functions used across the TreeO-library that didn't fit in another module"""
+"""This module contains classes and functions used across the Fagus-library that didn't fit in another module"""
 import copy as cp
 import re
 import sys
@@ -8,23 +8,23 @@ from datetime import datetime, date, time
 from typing import Union, Optional, TYPE_CHECKING, Callable
 
 if TYPE_CHECKING:
-    from .filters import TFil
+    from .filters import Fil
 
 END = sys.maxsize
 
 
 class _None:
-    """Dummy type used internally in TFilter and TreeO to represent non-existing while allowing None as a value"""
+    """Dummy type used internally in TFilter and Fagus to represent non-existing while allowing None as a value"""
 
     pass
 
 
-class TreeOMeta(ABCMeta):
-    """Metaclass for TreeO-objects to facilitate settings at class-level"""
+class FagusMeta(ABCMeta):
+    """Metaclass for Fagus-objects to facilitate settings at class-level"""
 
     @staticmethod
     def __verify_option__(option_name: str, option):
-        """Verify TreeO-setting using the functions / types in __default_options__
+        """Verify Fagus-setting using the functions / types in __default_options__
 
         Args:
             option_name: name of the setting to verify
@@ -33,8 +33,8 @@ class TreeOMeta(ABCMeta):
         Returns:
             the option-value if it was valid (otherwise the function is left in an error)
         """
-        if option_name in TreeOMeta.__default_options__:
-            opt_cls = TreeOMeta.__default_options__[option_name]
+        if option_name in FagusMeta.__default_options__:
+            opt_cls = FagusMeta.__default_options__[option_name]
             if len(opt_cls) > 1 and not isinstance(option, opt_cls[1]):
                 raise TypeError(
                     f"Can't apply {option_name} because {option_name} needs to be a {opt_cls[1].__name__}, "
@@ -43,7 +43,7 @@ class TreeOMeta(ABCMeta):
             if len(opt_cls) > 3 and not opt_cls[2](option):
                 raise ValueError(opt_cls[3])
             return option
-        raise ValueError(f"The option named {option_name} is not defined in TreeO.")
+        raise ValueError(f"The option named {option_name} is not defined in Fagus.")
 
     __default_options__ = dict(
         default_node_type=(
@@ -87,16 +87,16 @@ class TreeOMeta(ABCMeta):
             'The only allowed characters in node_types are d (for dict) and l (for list). " " can also be used. '
             "In that case, existing nodes are used if possible, and default_node_type is used to create new nodes.",
         ),
-        treeo=(False, bool),
+        fagus=(False, bool),
         value_split=(" ", str, lambda x: bool(x), 'value_split can\'t be "", as a string can\'t be split by "".'),
     )
-    """Default values for all options used in TreeO"""
+    """Default values for all options used in Fagus"""
 
     no_node = (str, bytes, bytearray)
 
     def __new__(cls, name, bases, dct):
         node = super().__new__(cls, name, bases, dct)
-        for option_name, option in TreeOMeta.__default_options__.items():
+        for option_name, option in FagusMeta.__default_options__.items():
             setattr(cls, option_name, option[0])
         return node
 
@@ -106,25 +106,25 @@ class TreeOMeta(ABCMeta):
                 raise ValueError(
                     "no_node must be a tuple of types. These are not treated as nodes, default (str, bytes, bytearray)."
                 )
-            TreeOMeta.no_node = value
+            FagusMeta.no_node = value
         else:
-            super(TreeOMeta, cls).__setattr__(
+            super(FagusMeta, cls).__setattr__(
                 attr,
                 value
-                if hasattr(TreeOMeta, attr) or attr == "__abstractmethods__" or attr.startswith("_abc_")
-                else TreeOMeta.__verify_option__(attr, value),
+                if hasattr(FagusMeta, attr) or attr == "__abstractmethods__" or attr.startswith("_abc_")
+                else FagusMeta.__verify_option__(attr, value),
             )
 
     def __delattr__(cls, attr):
         if attr == "no_node":
-            TreeOMeta.no_node = (str, bytes, bytearray)
+            FagusMeta.no_node = (str, bytes, bytearray)
         elif hasattr(cls, attr):
-            super(TreeOMeta, cls).__delattr__(attr)
+            super(FagusMeta, cls).__delattr__(attr)
         else:
             raise AttributeError(attr)
 
 
-class TFunc:
+class Func:
     """This wrapper class allows you to run any function at places in the code that normally only accept lambdas"""
 
     def __init__(self, function_pointer: Callable, old_value_position: Union[int, str] = 1, *args, **kwargs):
@@ -164,7 +164,7 @@ class TFunc:
         return self.function_pointer(*self.args[: self.old_pos], old_value, *self.args[self.old_pos :], **self.kwargs)
 
 
-def _filter_r(node: Collection, copy: bool, filter_: Optional["TFil"], index: int = 0):
+def _filter_r(node: Collection, copy: bool, filter_: Optional["Fil"], index: int = 0):
     """Internal recursive method that facilitates filtering
 
     Args:
@@ -259,7 +259,7 @@ def _is(value, *args, is_not: Union[tuple, type] = None):
     Returns:
         whether the value is instance of one of the types in args (but not str, bytes or bytearray)"""
     if is_not is None:
-        return not isinstance(value, TreeOMeta.no_node) and isinstance(value, args)
+        return not isinstance(value, FagusMeta.no_node) and isinstance(value, args)
     if isinstance(is_not, type):
-        return not isinstance(value, TreeOMeta.no_node + (is_not,)) and isinstance(value, args)
-    return not isinstance(value, TreeOMeta.no_node + is_not) and isinstance(value, args)
+        return not isinstance(value, FagusMeta.no_node + (is_not,)) and isinstance(value, args)
+    return not isinstance(value, FagusMeta.no_node + is_not) and isinstance(value, args)

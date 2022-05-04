@@ -16,9 +16,9 @@ import click
 @click.option("-d", "--documentation", is_flag=True, help="Updates the sphinx documentation")
 @click.option("-p", "--pre-commit", is_flag=True, help="Runs pre-commit to make sure everything is formatted correctly")
 def main(version: str, build: bool, documentation: bool, pre_commit: bool):
-    if not os.getcwd().endswith("TreeO"):
+    if not os.getcwd().endswith("Fagus"):
         raise EnvironmentError(
-            f"{sys.argv[0]} must be run from the project directory (TreeO, where this script is placed)"
+            f"{sys.argv[0]} must be run from the project directory (Fagus, where this script is placed)"
         )
     if version:
         new_version = subprocess.run(f"poetry version {version}", shell=True, capture_output=True, text=True)
@@ -26,12 +26,12 @@ def main(version: str, build: bool, documentation: bool, pre_commit: bool):
             print(new_version.stderr, file=sys.stderr)
             exit(new_version.returncode)
         print(new_version.stdout.strip())
-        with open("treeo/__init__.py") as init_py:
-            lines = init_py.read().splitlines()
+        with open("fagus/__init__.py") as init_py:
+            lines = init_py.read().splitlines() + [""]
         for i, l in filter(lambda e: e[1].startswith("__version__"), enumerate(lines)):
             lines[i] = f'__version__ = "{new_version.stdout.split()[-1]}"'
             break
-        with open("treeo/__init__.py", "w") as init_py:
+        with open("fagus/__init__.py", "w") as init_py:
             init_py.write("\n".join(lines))
     if build:
         subprocess.run("poetry build", shell=True)

@@ -8,18 +8,18 @@ assignees: ''
 ---
 
 #### Prerequisites
-Do you want to ask a question? Are you looking for support? The TreeO message board is the best place for getting support: [discussions](https://github.com/envigreen/TreeO/discussions)
+Do you want to ask a question? Are you looking for support? The Fagus message board is the best place for getting support: [discussions](https://github.com/envigreen/Fagus/discussions)
 
 * [ ] Put an X between the brackets on this line if you have done all of the following:
-    * Checked the FAQs on the message board for common solutions: [FAQ](https://github.com/envigreen/TreeO/discussions/categories/q-a)
-    * Checked that your issue isn't already filed: [issues](https://github.com/envigreen/TreeO/issues)
+    * Checked the FAQs on the message board for common solutions: [FAQ](https://github.com/envigreen/Fagus/discussions/categories/q-a)
+    * Checked that your issue isn't already filed: [issues](https://github.com/envigreen/Fagus/issues)
 
 **Versions**
-<!-- What version of TreeO are you using? What version of python are you using? -->
+<!-- What version of Fagus are you using? What version of python are you using? -->
 | Software | Version |
 |----------|---------|
 | Python   | 3.8.10  |
-| TreeO    | 0.1.0   |
+| Fagus    | 0.1.0   |
 
 #### Description
 <!-- Description of the issue-->
@@ -30,9 +30,11 @@ Getting a value from a list inside a dict.
 Write Python code here that produces the error. Should be a minimal working example (MWE) including example data, see below for an example:
 
 ```python
-from treeo import TreeO
-a = TreeO({"a": 5, "b": [1, 2, 4]})
-res = a.b 1
+from fagus import Fagus
+
+a = Fagus({"a": 5, "b": [1, 2, 4]})
+res = a.b
+1
 ```
 
 #### Expected behavior / result:

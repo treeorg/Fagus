@@ -1,7 +1,7 @@
-treeo.filters module
+fagus.filters module
 ====================
 
-.. automodule:: treeo.filters
+.. automodule:: fagus.filters
    :members:
    :undoc-members:
    :show-inheritance:

@@ -1,7 +1,7 @@
-treeo.iterators module
+fagus.iterators module
 ======================
 
-.. automodule:: treeo.iterators
+.. automodule:: fagus.iterators
    :members:
    :undoc-members:
    :show-inheritance:
