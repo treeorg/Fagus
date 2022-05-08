@@ -1,12 +1,12 @@
 """This module contains iterator-classes that are used to iterate over Fagus-objects"""
 from collections.abc import Collection, Sequence, Mapping, Iterable
-from typing import Union, TYPE_CHECKING
+from typing import TYPE_CHECKING, Union
 
-from .utils import _is, END, _None, _filter_r, _copy_node, _copy_any
+from .utils import _filter_r, _None, INF, _copy_node, _copy_any, _is
 
 if TYPE_CHECKING:
-    from filters import Fil
-    from fagus import Fagus
+    from .filters import Fil
+    from .fagus import Fagus
 
 
 class FilteredIterator:
@@ -34,13 +34,7 @@ class FilteredIterator:
         else:
             return FilteredIterator(obj, filter_value, filter_, filter_index)
 
-    def __init__(
-        self,
-        obj: Collection,
-        filter_value: bool,
-        filter_: "Fil",
-        filter_index: int = 0,
-    ):
+    def __init__(self, obj: Collection, filter_value: bool, filter_: "Fil", filter_index: int = 0):
         self.filter_ = filter_
         self.filter_index = filter_index
         self.filter_value = filter_value
@@ -81,7 +75,7 @@ class FagusIterator:
     def __init__(
         self,
         obj: "Fagus",
-        max_depth: int = END,
+        max_depth: int = INF,
         filter_: "Fil" = None,
         fagus: bool = False,
         iter_fill=_None,
@@ -94,7 +88,7 @@ class FagusIterator:
 
         Initiate this iterator through Fagus.iter(), there the parameters are discussed as well."""
         self.obj = obj
-        self.max_depth = END if max_depth < 0 else max_depth
+        self.max_depth = INF if max_depth < 0 else max_depth
         self.fagus = fagus
         self.iter_fill = iter_fill
         self.filter_ends = filter_ends
@@ -129,7 +123,9 @@ class FagusIterator:
                     self.iter_keys.extend((k, self.obj.child(v) if self.fagus else v))
                     self.iterators.append(
                         FilteredIterator.optimal_iterator(
-                            v, self.filter_ends and len(self.iterators) - 2 < self.max_depth, *filter_
+                            v,
+                            self.filter_ends and len(self.iterators) - 2 < self.max_depth,
+                            *filter_,
                         )
                     )
                 else:
@@ -141,7 +137,7 @@ class FagusIterator:
                         _copy_any(v) if self.copy else v,
                         *(
                             (self.iter_fill,) * (self.max_depth - len(self.iterators) + 1)
-                            if self.iter_fill is not _None and self.max_depth < END
+                            if self.iter_fill is not _None and self.max_depth < INF
                             else ()
                         ),
                     )

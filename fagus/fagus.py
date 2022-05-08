@@ -1,3 +1,6 @@
+"""Base-module that contains the :obj:`~fagus.Fagus`-class"""
+
+
 import copy as cp
 from collections.abc import (
     Collection,
@@ -11,11 +14,20 @@ from collections.abc import (
     MutableSet,
     Container,
 )
+from datetime import datetime, date, time
 from typing import Union, Tuple, Any, Optional, List, Callable
 
-from .iterators import FagusIterator
-from .utils import FagusMeta, _None, END, _filter_r, _copy_node, _is, _copy_any
+from .utils import (
+    FagusMeta,
+    _None,
+    INF,
+    _filter_r,
+    _copy_node,
+    _is,
+    _copy_any,
+)
 from .filters import Fil
+from .iterators import FagusIterator
 
 
 class Fagus(MutableMapping, MutableSequence, MutableSet, metaclass=FagusMeta):
@@ -36,6 +48,63 @@ class Fagus(MutableMapping, MutableSequence, MutableSet, metaclass=FagusMeta):
     setting for one single run of a function, put it as a function-parameter. More thorough examples of settings can be
     found in README.md.
     """
+
+    def __init__(
+        self,
+        obj: Collection = None,
+        node_types: str = ...,
+        list_insert: int = ...,
+        value_split: str = ...,
+        fagus: bool = ...,
+        default_node_type: str = ...,
+        default=...,
+        if_=...,
+        iter_fill=...,
+        mod_functions: Mapping = ...,
+        copy: bool = False,
+    ):
+        """Constructor for Fagus, a wrapper-class for complex, nested objects of dicts and lists in Python
+
+        \\* means that the parameter is a Fagus-Setting, see Fagus-class-docstring for more information about settings
+
+        Args:
+            obj: object (like dict / list) to wrap Fagus around. If this is None, an empty node of the type
+                default_node_type will be used. Default None
+            node_types: \\* Can be used to manually define if the nodes along path are supposed to be (l)ists or
+                (d)icts. E.g. "dll" to create a dict at level 1, and lists at level 2 and 3. " " can also be used -
+                space doesn't enforce a node-type like d or l. For " ", existing nodes are traversed if possible,
+                otherwise default_node_type is used to create new nodes. Default "", interpreted as " " at each level.
+            list_insert: \\* Level at which a new node shall be inserted into the list instead of traversing the
+                existing node in the list at that index. See README
+            value_split: \\* used to split path into a list if path is a string, default " "
+            fagus: \\* this setting is used to determine whether nodes in the returned object should be returned as
+                Fagus-objects. This can be useful e.g. if you want to use Fagus in an iteration. Check the particular
+                function you want to use for a more thorough explanation of what this does in each case
+            default_node_type: \\* determines if new nodes by default should be created as (d)ict or (l)ist. Must be
+                either "d" or "l", default "d"
+            default: \\* ~ is used in get and other functions if a path doesn't exist
+            if_: \\* only set value if it meets the condition specified here, otherwise do nothing. The condition can be
+                a lambda, any value or a tuple of accepted values. Default _None (don't check value)
+            iter_fill: \\* Fill up tuples with iter_fill (can be any object, e.g. None) to ensure that all the tuples
+                iter() returns are exactly max_items long. See iter()
+            mod_functions: \\* used in serialize() to convert non-serializable objects to serializable data types. See
+                serialize()
+            copy: ~ creates a copy of the obj before Fagus is initialized. Makes sure that changes on this Fagus won't
+                modify obj itself. Default False
+        """
+        if obj is None:
+            obj = [] if Fagus.default_node_type == "l" else {}
+        if copy:
+            obj = Fagus.__copy__(obj)
+        if isinstance(obj, Fagus):
+            self.obj = obj()
+            self._options = None if obj._options is None else obj._options.copy()
+        else:
+            self.obj = obj
+            self._options = None
+        for kw, value in locals().copy().items():
+            if kw not in ("copy", "self", "obj") and value is not ...:
+                setattr(self, kw, value)
 
     def get(
         self: Collection,
@@ -92,7 +161,7 @@ class Fagus(MutableMapping, MutableSequence, MutableSet, metaclass=FagusMeta):
 
     def iter(
         self: Collection,
-        max_depth: int = END,
+        max_depth: int = INF,
         path: Any = "",
         filter_: Fil = None,
         fagus: bool = ...,
@@ -704,7 +773,7 @@ class Fagus(MutableMapping, MutableSequence, MutableSet, metaclass=FagusMeta):
                                 node = Fagus._ensure_mutable_node(nodes, l_path[: i + 1])
                                 nodes.clear()
                             node.insert(node_key, [] if next_node is Sequence else {})
-                            list_insert = END
+                            list_insert = INF
                         else:
                             next_node_type = (
                                 Mapping
@@ -811,6 +880,8 @@ class Fagus(MutableMapping, MutableSequence, MutableSet, metaclass=FagusMeta):
     ) -> Any:
         """Get value at path and return it. If there is no value at path, set default at path, and return default
 
+        \\* means that the parameter is a Fagus-Setting, see Fagus-class-docstring for more information about settings
+
         Args:
             path: position in self where default shall be set / from where value shall be fetched. See get() and README
             default: \\* returned if path doesn't exist in self
@@ -824,8 +895,6 @@ class Fagus(MutableMapping, MutableSequence, MutableSet, metaclass=FagusMeta):
             value_split: \\* used to split path into a list if path is a str, default " "
             default_node_type: \\* determines if new nodes by default should be created as (d)ict or (l)ist. Must be
                 either "d" or "l", default "d"
-
-        \\* means that the parameter is a Fagus-Setting, see Fagus-class-docstring for more information about settings
 
         Returns:
             value at path if it exists, otherwise default is set at path and returned
@@ -938,7 +1007,7 @@ class Fagus(MutableMapping, MutableSequence, MutableSet, metaclass=FagusMeta):
         path: Any = "",
         replace_value=True,
         default=...,
-        max_depth: int = END,
+        max_depth: int = INF,
         fagus: bool = ...,
         copy=False,
         value_split: str = ...,
@@ -994,7 +1063,7 @@ class Fagus(MutableMapping, MutableSequence, MutableSet, metaclass=FagusMeta):
 
     def serialize(
         self: Union[dict, list],
-        mod_functions: Mapping = ...,
+        mod_functions: Mapping = None,
         path: Any = "",
         value_split: str = ...,
         copy: bool = False,
@@ -1035,16 +1104,34 @@ class Fagus(MutableMapping, MutableSequence, MutableSet, metaclass=FagusMeta):
             ValueError: if tuple_keys is not defined in mod_functions and a dict has tuples as keys
             Exception: Can raise any exception if it occurs in one of the mod_functions
         """
-        if not isinstance(self.obj if isinstance(self, Fagus) else self, (dict, list)):
-            raise TypeError(f"Can't modify base-object self having the immutable type {type(self).__name__}.")
         node = Fagus.get(self, path, fagus=False, value_split=value_split)
+        if not isinstance(node, (dict, list)):
+            raise TypeError(f"Can't modify base-node having the immutable type {type(self).__name__}.")
         if copy:
             node = Fagus.__copy__(node)
+        if not (
+            mod_functions is None
+            or all(
+                k in ("default", "tuple_keys")
+                or all(isinstance(e, type) for e in (k if _is(k, Iterable) else (k,)))
+                and callable(v)
+                for k, v in mod_functions.items()
+            )
+        ):
+            raise ValueError(
+                "mod_functions must be a dict with types (or tuples of types) as keys and function pointers "
+                "(either lambda or wrapped in TFunc-nodeects) as values."
+            )
         return Fagus._serialize_r(
             node,
             {
-                **Fagus._opt(self, "mod_functions"),
-                **(FagusMeta.__verify_option__("mod_functions", {} if mod_functions is ... else mod_functions)),
+                **{
+                    datetime: lambda x: x.isoformat(" ", "seconds"),
+                    date: lambda x: x.isoformat(),
+                    time: lambda x: x.isoformat("seconds"),
+                    "default": lambda x: repr(x),
+                },
+                **({} if mod_functions is None else mod_functions),
             },
         )
 
@@ -1092,8 +1179,8 @@ class Fagus(MutableMapping, MutableSequence, MutableSet, metaclass=FagusMeta):
         obj: Union["FagusIterator", Collection],
         path: Any = "",
         new_value_action: str = "r",
-        extend_from: int = END,
-        update_from: int = END,
+        extend_from: int = INF,
+        update_from: int = INF,
         fagus: bool = ...,
         copy: bool = False,
         copy_obj: bool = False,
@@ -1503,8 +1590,8 @@ class Fagus(MutableMapping, MutableSequence, MutableSet, metaclass=FagusMeta):
 
         Returns:
             The first index of value if the node at path is a list, or the first key containing value if the node at
-                path is a dict. True if the node at path is a Set and contains value. If the element can't be found in
-                the node at path, or there is no Collection at path, None is returned (instead of a ValueError).
+            path is a dict. True if the node at path is a Set and contains value. If the element can't be found in the
+            node at path, or there is no Collection at path, None is returned (instead of a ValueError).
         """
         node = Fagus.get(self, path, None, False, False, value_split)
         if isinstance(node, Set):
@@ -1523,7 +1610,7 @@ class Fagus(MutableMapping, MutableSequence, MutableSet, metaclass=FagusMeta):
                 indices = []
                 try:
                     start = 0 if start is ... else start
-                    stop = END if stop is ... else (stop if stop >= 0 else len(node) + stop)
+                    stop = INF if stop is ... else (stop if stop >= 0 else len(node) + stop)
                     while start < stop:
                         indices.append(node.index(value, start, stop))
                         start = indices[-1] + 1
@@ -1696,7 +1783,7 @@ class Fagus(MutableMapping, MutableSequence, MutableSet, metaclass=FagusMeta):
         return node
 
     def _get_mutable_node(
-        self: Collection, l_path: MutableSequence, list_insert: int = END, node_types: str = "", parent: bool = True
+        self: Collection, l_path: MutableSequence, list_insert: int = INF, node_types: str = "", parent: bool = True
     ) -> Union[MutableMapping, MutableSequence, MutableSet, type(_None)]:
         """Internal function retrieving the parent_node, changing necessary nodes on the way to make it mutable
 
@@ -1775,69 +1862,24 @@ class Fagus(MutableMapping, MutableSequence, MutableSet, metaclass=FagusMeta):
         """Inherited from Set. Overridden to ensure that two equal Fagus's have equal hashes (ignoring settings)"""
         return hash(self.obj)
 
-    def __init__(
-        self,
-        obj: Collection = None,
-        node_types: str = ...,
-        list_insert: int = ...,
-        value_split: str = ...,
-        fagus: bool = ...,
-        default_node_type: str = ...,
-        default=...,
-        if_=...,
-        iter_fill=...,
-        mod_functions: Mapping = ...,
-        copy: bool = False,
-    ):
-        """Constructor for Fagus, a wrapper-class for complex, nested objects of dicts and lists in Python
-
-        \\* means that the parameter is a Fagus-Setting, see Fagus-class-docstring for more information about settings
-
-        Args:
-            obj: object (like dict / list) to wrap Fagus around. If this is None, an empty node of the type
-                default_node_type will be used. Default None
-            node_types: \\* Can be used to manually define if the nodes along path are supposed to be (l)ists or
-                (d)icts. E.g. "dll" to create a dict at level 1, and lists at level 2 and 3. " " can also be used -
-                space doesn't enforce a node-type like d or l. For " ", existing nodes are traversed if possible,
-                otherwise default_node_type is used to create new nodes. Default "", interpreted as " " at each level.
-            list_insert: \\* Level at which a new node shall be inserted into the list instead of traversing the
-                existing node in the list at that index. See README
-            value_split: \\* used to split path into a list if path is a string, default " "
-            fagus: \\* this setting is used to determine whether nodes in the returned object should be returned as
-                Fagus-objects. This can be useful e.g. if you want to use Fagus in an iteration. Check the particular
-                function you want to use for a more thorough explanation of what this does in each case
-            default_node_type: \\* determines if new nodes by default should be created as (d)ict or (l)ist. Must be
-                either "d" or "l", default "d"
-            default: \\* ~ is used in get and other functions if a path doesn't exist
-            if_: \\* only set value if it meets the condition specified here, otherwise do nothing. The condition can be
-                a lambda, any value or a tuple of accepted values. Default _None (don't check value)
-            iter_fill: \\* Fill up tuples with iter_fill (can be any object, e.g. None) to ensure that all the tuples
-                iter() returns are exactly max_items long. See iter()
-            mod_functions: \\* used in serialize() to convert non-serializable objects to serializable data types. See
-                serialize()
-            copy: ~ creates a copy of the obj before Fagus is initialized. Makes sure that changes on this Fagus won't
-                modify obj itself. Default False
-        """
-        if obj is None:
-            obj = [] if Fagus.default_node_type == "l" else {}
-        if copy:
-            obj = Fagus.__copy__(obj)
-        if isinstance(obj, Fagus):
-            self.obj = obj()
-            self._options = None if obj._options is None else obj._options.copy()
-        else:
-            self.obj = obj
-            self._options = None
-        for kw, value in locals().copy().items():
-            if kw not in ("copy", "self", "obj") and value is not ...:
-                setattr(self, kw, value)
-
     def __copy__(self: Collection, recursive=False):
         """Recursively creates a shallow-copy of self"""
         new_node = _copy_node(self.obj if isinstance(self, Fagus) else self, recursive)
         return Fagus.child(self, new_node) if isinstance(self, Fagus) else new_node
 
     def __call__(self):
+        """Returns the object Fagus is wrapped around
+        Example:
+            >>> from fagus import Fagus
+            >>> a = Fagus({"f": "q"})
+            >>> a
+            Fagus({'f': 'q'})
+            >>> a()
+            {'f': 'q'}
+
+        Returns:
+            the object Fagus is wrapped around
+        """
         return self.obj
 
     def __getattr__(self, attr):  # Enable dot-notation for getting items at a path

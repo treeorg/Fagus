@@ -3,9 +3,18 @@ import platform
 import os
 import sys
 import click
+import packaging.version
 
 
-@click.command()
+@click.group()
+def main():
+    if not os.getcwd().endswith("Fagus"):
+        raise EnvironmentError(
+            f"{sys.argv[0]} must be run from the project directory (Fagus, where this script is placed)"
+        )
+
+
+@main.command(help="version number, documentation, package")
 @click.option(
     "-v",
     "--version",
@@ -14,12 +23,13 @@ import click
 )
 @click.option("-b", "--build", is_flag=True, help="Builds the package wheel into dist")
 @click.option("-d", "--documentation", is_flag=True, help="Updates the sphinx documentation")
-@click.option("-p", "--pre-commit", is_flag=True, help="Runs pre-commit to make sure everything is formatted correctly")
-def main(version: str, build: bool, documentation: bool, pre_commit: bool):
-    if not os.getcwd().endswith("Fagus"):
-        raise EnvironmentError(
-            f"{sys.argv[0]} must be run from the project directory (Fagus, where this script is placed)"
-        )
+@click.option(
+    "-p",
+    "--pre-commit",
+    is_flag=True,
+    help="Runs pre-commit to make sure everything is formatted correctly",
+)
+def update(version: str, build: bool, documentation: bool, pre_commit: bool):
     if version:
         new_version = subprocess.run(f"poetry version {version}", shell=True, capture_output=True, text=True)
         if new_version.returncode:
@@ -36,11 +46,12 @@ def main(version: str, build: bool, documentation: bool, pre_commit: bool):
     if build:
         subprocess.run("poetry build", shell=True)
     if documentation:
-        if platform.python_version().split(".")[:2] < ["3", "7"]:
+        if packaging.version.parse(platform.python_version()) < packaging.version.parse("3.7"):
             raise EnvironmentError("Sphinx-documentation can't be built on Python < 3.7 (required by the RTD theme)")
         else:
             subprocess.run(
-                f"sphinx-apidoc -f --module-first --separate -o docs/source . tests {sys.argv[0]}", shell=True
+                f"sphinx-apidoc -f --module-first --separate -o docs/source . tests {sys.argv[0]}",
+                shell=True,
             )
             subprocess.run("make clean html", shell=True, cwd="docs")
     if pre_commit:

@@ -17,9 +17,14 @@ repos:
         stages: [commit-msg]
         language: python
         require_serial: true
-    -   id: tests
-        name: run tests
-        entry: python -m unittest discover
+    -   id: unittests
+        name: unittests
+        entry: python3 -m unittest discover
+        pass_filenames: false
+        language: python
+    -   id: doctests
+        name: doctests
+        entry: python3 -m tests.test_fagus doctest
         pass_filenames: false
         language: python
 -   repo: https://github.com/pre-commit/pre-commit-hooks

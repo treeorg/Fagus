@@ -31,7 +31,11 @@ release = __version__
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
-extensions = ["sphinx.ext.autodoc", "sphinx.ext.doctest", "sphinx.ext.napoleon", "myst_parser"]
+extensions = [
+    "sphinx.ext.autodoc",
+    "sphinx.ext.napoleon",
+    "myst_parser",
+]
 
 
 # Add any paths that contain templates here, relative to this directory.
@@ -62,4 +66,9 @@ suppress_warnings = ["myst.header"]
 # -- Extension configuration -------------------------------------------------
 strip_signature_backslash = True
 # autoclass_content = "both"
-myst_heading_anchors = 4
+myst_heading_anchors = 6
+myst_number_code_blocks = ["python"]
+autodoc_member_order = "bysource"
+autodoc_default_options = {
+    "special-members": True,
+}

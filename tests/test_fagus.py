@@ -1,15 +1,19 @@
+import argparse
 import copy
 import json
 import os.path
 import re
+import sys
 import unittest
+import doctest
+
 from ipaddress import IPv6Address, IPv4Network, IPv6Network, ip_address
-from fagus import __version__, Fagus, Func, Fil, CFil, VFil
+from pathlib import Path
+from types import ModuleType
+
+from fagus import Fagus, Fil, CFil, VFil
 from datetime import datetime, date, time
-
-
-def test_version():
-    assert __version__ == "0.1.0"
+import fagus
 
 
 class HashableDict(dict):
@@ -607,7 +611,7 @@ class TestFagus(unittest.TestCase):
             return sum([old_value, arg1, arg2, arg3, *kwargs.values()])
 
         b["1"][0][0] += 1 + 2 + 3 + 4 + 5
-        a.mod(Func(fancy_mod2, 1, 1, 2, 3, kwarg1=4, kwarg2=5), "1 0 0")
+        a.mod(lambda x: fancy_mod2(x, 1, 2, 3, kwarg1=4, kwarg2=5), "1 0 0")
         self.assertEqual(b, a(), "Complex function taking keyword-arguments and ordinary arguments")
 
     def test_mod_all(self):
@@ -635,7 +639,7 @@ class TestFagus(unittest.TestCase):
         a = Fagus(test_obj, copy=True)
         self.assertRaisesRegex(
             TypeError,
-            "Can't modify base-object self having the immutable type",
+            "Can't modify base-node having the immutable type",
             Fagus((1, 2, 3, [4, 5, 6], {6, 5})).serialize,
         )
         self.assertRaisesRegex(
@@ -693,9 +697,8 @@ class TestFagus(unittest.TestCase):
                 {
                     IPv6Address: lambda x: f"{x.compressed} {x.exploded}",
                     "default": lambda x: "global" if x.is_global else "local",
-                    (IPv4Network, IPv6Network): Func(
-                        fancy_network_mask,
-                        1,
+                    (IPv4Network, IPv6Network): lambda x: fancy_network_mask(
+                        x,
                         "The network %s with the netmask %s",
                         broadcast=" and the broadcast-address ",
                     ),
@@ -1026,26 +1029,76 @@ class TestFagus(unittest.TestCase):
         self.assertRaisesRegex(TypeError, "Unsupported operand types for", a.__imul__, "a")
         self.assertRaisesRegex(TypeError, "Unsupported operand types for", a.__rmul__, "a")
 
-    def test_tfunc(self):
-        def f(*args, **kwargs):
-            return args, kwargs
 
-        self.assertEqual(((987,), {}), Func(f)(987), "Default puts only old value as argument")
-        a = Func(f, 1, "hans", egil="snorkler")
-        self.assertEqual((("wurst", "hans"), {"egil": "snorkler"}), a("wurst"), "default argument old_value first")
-        a = Func(f, "kwarg", "henriette", klaus="wagner")
-        self.assertEqual((("henriette",), {"kwarg": 72, "klaus": "wagner"}), a(72), "old_value comes as kwarg")
-        a = Func(f, 2, "hans", "wurst", egil="snorkler")
-        self.assertEqual((("hans", 0, "wurst"), {"egil": "snorkler"}), a(0), "old_value in the middle")
-        a = Func(f, -2, "hans", "wurst", egil="snorkler")
-        self.assertEqual((("hans", 0, "wurst"), {"egil": "snorkler"}), a(0), "old_value in the middle, negative index")
-        a = Func(f, -1, "hans", "wurst", egil="snorkler")
-        self.assertEqual((("hans", "wurst", 6), {"egil": "snorkler"}), a(6), "old_value in the end")
-        a = Func(f, 599, "hans", "wurst")
-        self.assertEqual((("hans", "wurst", 6), {}), a(6), "too large index goes to the end")
-        a = Func(f, -599, "hans", "wurst")
-        self.assertEqual(((7, "hans", "wurst"), {}), a(7), "too large negative index goes first")
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-v", "--verbose", action="store_true", help="verbose output from the tests")
+    subparsers = parser.add_subparsers(dest="test")
+    doctest_parser = subparsers.add_parser("doctest", help="run doctests")
+    doctest_parser.add_argument(
+        "-t",
+        "--test-type",
+        choices=("modules", "files", "all"),
+        default="all",
+        help="whether to doctest .md-files, modules or both",
+    )
+    subparsers.add_parser("unittest", help="run unittests")
+    subparsers.add_parser("all", help="run unittests and doctests")
+    args = parser.parse_args()
+    failed = False
+    if args.test in ("all", "doctest"):
+        res = run_doctests(args.verbose, args.test_type if "test_type" in args else "all")
+        if not res:
+            failed = True
+        if args.test == "all":
+            print()
+    if args.test in ("all", "unittest"):
+        sys.argv.pop(1)
+        res = not (
+            unittest.TextTestRunner(verbosity=2 if args.verbose else 1)
+            .run(unittest.TestLoader().loadTestsFromTestCase(TestFagus))
+            .failures
+        )
+        if not res:
+            failed = True
+    exit(int(failed))
+
+
+def run_doctests(verbose: bool, test_type: str) -> bool:
+    fagus_dir = Path(__file__).parents[1]
+    tested = {}
+    if test_type in ("all", "modules"):
+        tested["modules"] = {}
+        modules_to_check = [fagus]
+        while modules_to_check:
+            mod = modules_to_check.pop(-1)
+            modules_to_check.extend(
+                subm
+                for subm in mod.__dict__.values()
+                if isinstance(subm, ModuleType) and str(fagus_dir) in str(subm) and subm not in tested["modules"]
+            )
+            res = not doctest.testmod(mod, verbose=verbose).failed
+            tested["modules"][mod.__name__] = res
+            if not res:
+                print()
+    if test_type in ("all", "files"):
+        tested["files"] = {}
+        test_runner = doctest.DocTestRunner(verbose=verbose)
+        test_parser = doctest.DocTestParser()
+        for dir_, file in ((dir_, file) for dir_, _, fls in os.walk(fagus_dir) for file in fls if file.endswith(".md")):
+            file_path = os.path.join(dir_, file)
+            with open(file_path) as f:
+                lines = tuple(
+                    line for lines in (("\n", li) if li == "```\n" else (li,) for li in f.readlines()) for line in lines
+                )
+            res = not test_runner.run(test_parser.get_doctest("".join(lines), {}, file_path, None, None)).failed
+            tested["files"][file] = res
+            if not res:
+                print()
+    res = all(sum(test_type.values()) == len(test_type) for test_type in tested.values())
+    print(f"Doctests ok for {' and '.join(f'{sum(v.values())}/{len(v)} {k}' for k, v in tested.items())}")
+    return res
 
 
 if __name__ == "__main__":
-    unittest.main()
+    main()

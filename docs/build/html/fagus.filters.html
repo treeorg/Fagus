@@ -87,41 +87,28 @@
 <span id="fagus-filters-module"></span><h1>fagus.filters module<a class="headerlink" href="#module-fagus.filters" title="Permalink to this headline"></a></h1>
 <p>This module contains filter-classes used in Fagus</p>
 <dl class="py class">
-<dt class="sig sig-object py" id="fagus.filters.CFil">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">fagus.filters.</span></span><span class="sig-name descname"><span class="pre">CFil</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">filter_args</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inexclude</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">str_as_re</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">invert</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#fagus.filters.CFil" title="Permalink to this definition"></a></dt>
-<dd><p>Bases: <a class="reference internal" href="#fagus.filters.KFil" title="fagus.filters.KFil"><code class="xref py py-class docutils literal notranslate"><span class="pre">fagus.filters.KFil</span></code></a></p>
-<p>CFil - can be used to select nodes based on values that shall not appear in the result. See README</p>
-<dl class="py method">
-<dt class="sig sig-object py" id="fagus.filters.CFil.match_node">
-<span class="sig-name descname"><span class="pre">match_node</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">node</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">collections.abc.Collection</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">index</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#fagus.filters.CFil.match_node" title="Permalink to this definition"></a></dt>
-<dd><p>Recursive function to completely verify a node and its subnodes in CFil</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>node</strong> – node to check</p></li>
-<li><p><strong>index</strong> – index in filter to check (filter is self)</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>bool whether the filter matched</p>
-</dd>
-</dl>
-</dd></dl>
-
-</dd></dl>
-
-<dl class="py class">
-<dt class="sig sig-object py" id="fagus.filters.Fil">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">fagus.filters.</span></span><span class="sig-name descname"><span class="pre">Fil</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">filter_args</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inexclude</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">str_as_re</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#fagus.filters.Fil" title="Permalink to this definition"></a></dt>
-<dd><p>Bases: <a class="reference internal" href="#fagus.filters.KFil" title="fagus.filters.KFil"><code class="xref py py-class docutils literal notranslate"><span class="pre">fagus.filters.KFil</span></code></a></p>
-<p>TFilter - what matches this filter will actually be visible in the result. See README</p>
-</dd></dl>
-
-<dl class="py class">
 <dt class="sig sig-object py" id="fagus.filters.FilBase">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">fagus.filters.</span></span><span class="sig-name descname"><span class="pre">FilBase</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">filter_args</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inexclude</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#fagus.filters.FilBase" title="Permalink to this definition"></a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>FilterBase - base-class for all filters used in Fagus, providing basic functions shared by all filters</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="fagus.filters.FilBase.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">filter_args</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inexclude</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#fagus.filters.FilBase.__init__" title="Permalink to this definition"></a></dt>
+<dd><p>Basic constructor for all filter-classes used in Fagus</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>*filter_args</strong> – Each argument filters one key in the tree, the last argument filters the leaf-value. You can
+put a list of values to match different values in the same filter. In this list, you can also specify
+subfilters to match different grains differently.</p></li>
+<li><p><strong>inexclude</strong> – In some cases it’s easier to specify that a filter shall match everything except b, rather than
+match a. ~ can be used to specify for each argument if the filter shall include it (+) or exclude it
+(-). Valid example: “++-+”. If this parameter isn’t specified, all args will be treated as (+).</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
 <dl class="py method">
 <dt class="sig sig-object py" id="fagus.filters.FilBase.included">
 <span class="sig-name descname"><span class="pre">included</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">index</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#fagus.filters.FilBase.included" title="Permalink to this definition"></a></dt>
@@ -146,6 +133,76 @@
 <dd><p>This method is overridden by CheckFilter and ValueFilter, and otherwise not in use</p>
 </dd></dl>
 
+<dl class="py attribute">
+<dt class="sig sig-object py" id="fagus.filters.FilBase.__dict__">
+<span class="sig-name descname"><span class="pre">__dict__</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">mappingproxy({'__module__':</span> <span class="pre">'fagus.filters',</span> <span class="pre">'__doc__':</span> <span class="pre">'FilterBase</span> <span class="pre">-</span> <span class="pre">base-class</span> <span class="pre">for</span> <span class="pre">all</span> <span class="pre">filters</span> <span class="pre">used</span> <span class="pre">in</span> <span class="pre">Fagus,</span> <span class="pre">providing</span> <span class="pre">basic</span> <span class="pre">functions</span> <span class="pre">shared</span> <span class="pre">by</span> <span class="pre">all</span> <span class="pre">filters',</span> <span class="pre">'__init__':</span> <span class="pre">&lt;function</span> <span class="pre">FilBase.__init__&gt;,</span> <span class="pre">'included':</span> <span class="pre">&lt;function</span> <span class="pre">FilBase.included&gt;,</span> <span class="pre">'match_node':</span> <span class="pre">&lt;function</span> <span class="pre">FilBase.match_node&gt;,</span> <span class="pre">'__dict__':</span> <span class="pre">&lt;attribute</span> <span class="pre">'__dict__'</span> <span class="pre">of</span> <span class="pre">'FilBase'</span> <span class="pre">objects&gt;,</span> <span class="pre">'__weakref__':</span> <span class="pre">&lt;attribute</span> <span class="pre">'__weakref__'</span> <span class="pre">of</span> <span class="pre">'FilBase'</span> <span class="pre">objects&gt;,</span> <span class="pre">'__annotations__':</span> <span class="pre">{}})</span></em><a class="headerlink" href="#fagus.filters.FilBase.__dict__" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="fagus.filters.FilBase.__module__">
+<span class="sig-name descname"><span class="pre">__module__</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'fagus.filters'</span></em><a class="headerlink" href="#fagus.filters.FilBase.__module__" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="fagus.filters.FilBase.__weakref__">
+<span class="sig-name descname"><span class="pre">__weakref__</span></span><a class="headerlink" href="#fagus.filters.FilBase.__weakref__" title="Permalink to this definition"></a></dt>
+<dd><p>list of weak references to the object (if defined)</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="fagus.filters.VFil">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">fagus.filters.</span></span><span class="sig-name descname"><span class="pre">VFil</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">filter_args</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inexclude</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">invert</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#fagus.filters.VFil" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#fagus.filters.FilBase" title="fagus.filters.FilBase"><code class="xref py py-class docutils literal notranslate"><span class="pre">fagus.filters.FilBase</span></code></a></p>
+<p>ValueFilter - This special type of filter can be used to inspect the entire node</p>
+<p>It can be used to e.g. select all the nodes that contain at least 10 elements. See README for an example</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="fagus.filters.VFil.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">filter_args</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inexclude</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">invert</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#fagus.filters.VFil.__init__" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>*filter_args</strong> – Each argument filters one key in the tree, the last argument filters the leaf-value. You can
+put a list of values to match different values in the same filter. In this list, you can also specify
+subfilters to match different grains differently.</p></li>
+<li><p><strong>inexclude</strong> – In some cases it’s easier to specify that a filter shall match everything except b, rather than
+match a. ~ can be used to specify for each argument if the filter shall include it (+) or exclude it
+(-). Valid example: “++-+”. If this parameter isn’t specified, all args will be treated as (+).</p></li>
+<li><p><strong>invert</strong> – Invert this whole filter to match if it doesn’t match. E.g. if you want to select all the nodes
+that don’t have a certain property.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="fagus.filters.VFil.match_node">
+<span class="sig-name descname"><span class="pre">match_node</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">node</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">collections.abc.Collection</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#fagus.filters.VFil.match_node" title="Permalink to this definition"></a></dt>
+<dd><p>Verify that a node matches ValueFilter</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>node</strong> – node to check</p></li>
+<li><p><strong>_</strong> – this argument is ignored</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>bool whether the filter matched</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="fagus.filters.VFil.__annotations__">
+<span class="sig-name descname"><span class="pre">__annotations__</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{}</span></em><a class="headerlink" href="#fagus.filters.VFil.__annotations__" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="fagus.filters.VFil.__module__">
+<span class="sig-name descname"><span class="pre">__module__</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'fagus.filters'</span></em><a class="headerlink" href="#fagus.filters.VFil.__module__" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
 </dd></dl>
 
 <dl class="py class">
@@ -153,6 +210,48 @@
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">fagus.filters.</span></span><span class="sig-name descname"><span class="pre">KFil</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">filter_args</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inexclude</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">str_as_re</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#fagus.filters.KFil" title="Permalink to this definition"></a></dt>
 <dd><p>Bases: <a class="reference internal" href="#fagus.filters.FilBase" title="fagus.filters.FilBase"><code class="xref py py-class docutils literal notranslate"><span class="pre">fagus.filters.FilBase</span></code></a></p>
 <p>KeyFilter - Base class for filters in Fagus that inspect key-values to determine whether the filter matched</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="fagus.filters.KFil.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">filter_args</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inexclude</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">str_as_re</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#fagus.filters.KFil.__init__" title="Permalink to this definition"></a></dt>
+<dd><p>Initializes KeyFilter and verifies the arguments passed to it</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>*filter_args</strong> – Each argument filters one key in the tree, the last argument filters the leaf-value. You can
+put a list of values to match different values in the same filter. In this list, you can also specify
+subfilters to match different grains differently.</p></li>
+<li><p><strong>inexclude</strong> – In some cases it’s easier to specify that a filter shall match everything except b, rather than
+match a. ~ can be used to specify for each argument if the filter shall include it (+) or exclude it
+(-). Valid example: “++-+”. If this parameter isn’t specified, all args will be treated as (+).</p></li>
+<li><p><strong>str_as_re</strong> – If this is set to True, it will be evaluated for all str’s if they’d match differently as a
+regex, and in the latter case match these strings as regex patterns. E.g. re.match(“a.*”, b) will match
+differently than “a.*” == b. In this case, “a.*” will be used as a regex-pattern. However
+re.match(“abc”, b) will give the same result as “abc” == b, so here “abc” == b will be used.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><p><strong>TypeError</strong> – if the filters are not stacked correctly / stacked in a way that doesn’t make sense</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="fagus.filters.KFil.__getitem__">
+<span class="sig-name descname"><span class="pre">__getitem__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">index</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Any</span></span></span><a class="headerlink" href="#fagus.filters.KFil.__getitem__" title="Permalink to this definition"></a></dt>
+<dd><p>Get filter-argument at index</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>filter-argument at index, _None if index isn’t defined</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="fagus.filters.KFil.__setitem__">
+<span class="sig-name descname"><span class="pre">__setitem__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">key</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#fagus.filters.KFil.__setitem__" title="Permalink to this definition"></a></dt>
+<dd><p>Set filter-argument at index. Throws IndexError if that index isn’t defined</p>
+</dd></dl>
+
 <dl class="py method">
 <dt class="sig sig-object py" id="fagus.filters.KFil.match">
 <span class="sig-name descname"><span class="pre">match</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">index</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">bool</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#fagus.filters.KFil" title="fagus.filters.KFil"><span class="pre">fagus.filters.KFil</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#fagus.filters.KFil.match" title="Permalink to this definition"></a></dt>
@@ -163,6 +262,28 @@
 <li><p><strong>value</strong> – the value to be matched against the filter</p></li>
 <li><p><strong>index</strong> – index of filter-argument to check</p></li>
 <li><p><strong>_</strong> – this argument is ignored</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><dl class="simple">
+<dt>whether the value matched the filter, the filter that matched (as it can be a subfilter), and the next index</dt><dd><p>in that (sub)filter</p>
+</dd>
+</dl>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="fagus.filters.KFil.match_list">
+<span class="sig-name descname"><span class="pre">match_list</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">index</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">node_length</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">bool</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#fagus.filters.KFil" title="fagus.filters.KFil"><span class="pre">fagus.filters.KFil</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#fagus.filters.KFil.match_list" title="Permalink to this definition"></a></dt>
+<dd><p>match_list: same as match, but optimized to match list-indices (e. g. no regex-matching here)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>value</strong> – the value to be matched against the filter</p></li>
+<li><p><strong>index</strong> – index of filter-argument to check</p></li>
+<li><p><strong>node_length</strong> – length of the list whose indices shall be verified</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
@@ -192,45 +313,74 @@
 </dl>
 </dd></dl>
 
-<dl class="py method">
-<dt class="sig sig-object py" id="fagus.filters.KFil.match_list">
-<span class="sig-name descname"><span class="pre">match_list</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">index</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">node_length</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">bool</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#fagus.filters.KFil" title="fagus.filters.KFil"><span class="pre">fagus.filters.KFil</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#fagus.filters.KFil.match_list" title="Permalink to this definition"></a></dt>
-<dd><p>match_list: same as match, but optimized to match list-indices (e. g. no regex-matching here)</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>value</strong> – the value to be matched against the filter</p></li>
-<li><p><strong>index</strong> – index of filter-argument to check</p></li>
-<li><p><strong>node_length</strong> – length of the list whose indices shall be verified</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p><dl class="simple">
-<dt>whether the value matched the filter, the filter that matched (as it can be a subfilter), and the next index</dt><dd><p>in that (sub)filter</p>
-</dd>
-</dl>
-</p>
-</dd>
-</dl>
-</dd></dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="fagus.filters.KFil.__annotations__">
+<span class="sig-name descname"><span class="pre">__annotations__</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{}</span></em><a class="headerlink" href="#fagus.filters.KFil.__annotations__" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="fagus.filters.KFil.__module__">
+<span class="sig-name descname"><span class="pre">__module__</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'fagus.filters'</span></em><a class="headerlink" href="#fagus.filters.KFil.__module__" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
 
 </dd></dl>
 
 <dl class="py class">
-<dt class="sig sig-object py" id="fagus.filters.VFil">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">fagus.filters.</span></span><span class="sig-name descname"><span class="pre">VFil</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">filter_args</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inexclude</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">invert</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#fagus.filters.VFil" title="Permalink to this definition"></a></dt>
-<dd><p>Bases: <a class="reference internal" href="#fagus.filters.FilBase" title="fagus.filters.FilBase"><code class="xref py py-class docutils literal notranslate"><span class="pre">fagus.filters.FilBase</span></code></a></p>
-<p>ValueFilter - This special type of filter can be used to inspect the entire node</p>
-<p>It can be used to e.g. select all the nodes that contain at least 10 elements. See README for an example</p>
+<dt class="sig sig-object py" id="fagus.filters.Fil">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">fagus.filters.</span></span><span class="sig-name descname"><span class="pre">Fil</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">filter_args</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inexclude</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">str_as_re</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#fagus.filters.Fil" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#fagus.filters.KFil" title="fagus.filters.KFil"><code class="xref py py-class docutils literal notranslate"><span class="pre">fagus.filters.KFil</span></code></a></p>
+<p>TFilter - what matches this filter will actually be visible in the result. See README</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="fagus.filters.Fil.__annotations__">
+<span class="sig-name descname"><span class="pre">__annotations__</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{}</span></em><a class="headerlink" href="#fagus.filters.Fil.__annotations__" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="fagus.filters.Fil.__module__">
+<span class="sig-name descname"><span class="pre">__module__</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'fagus.filters'</span></em><a class="headerlink" href="#fagus.filters.Fil.__module__" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="fagus.filters.CFil">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">fagus.filters.</span></span><span class="sig-name descname"><span class="pre">CFil</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">filter_args</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inexclude</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">str_as_re</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">invert</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#fagus.filters.CFil" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#fagus.filters.KFil" title="fagus.filters.KFil"><code class="xref py py-class docutils literal notranslate"><span class="pre">fagus.filters.KFil</span></code></a></p>
+<p>CFil - can be used to select nodes based on values that shall not appear in the result. See README</p>
 <dl class="py method">
-<dt class="sig sig-object py" id="fagus.filters.VFil.match_node">
-<span class="sig-name descname"><span class="pre">match_node</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">node</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">collections.abc.Collection</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#fagus.filters.VFil.match_node" title="Permalink to this definition"></a></dt>
-<dd><p>Verify that a node matches ValueFilter</p>
+<dt class="sig sig-object py" id="fagus.filters.CFil.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">filter_args</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inexclude</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">str_as_re</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">invert</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#fagus.filters.CFil.__init__" title="Permalink to this definition"></a></dt>
+<dd><p>Initializes KeyFilter and verifies the arguments passed to it</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>*filter_args</strong> – Each argument filters one key in the tree, the last argument filters the leaf-value. You can
+put a list of values to match different values in the same filter. In this list, you can also specify
+subfilters to match different grains differently.</p></li>
+<li><p><strong>inexclude</strong> – In some cases it’s easier to specify that a filter shall match everything except b, rather than
+match a. ~ can be used to specify for each argument if the filter shall include it (+) or exclude it
+(-). Valid example: “++-+”. If this parameter isn’t specified, all args will be treated as (+).</p></li>
+<li><p><strong>str_as_re</strong> – If this is set to True, it will be evaluated for all str’s if they’d match differently as a
+regex, and in the latter case match these strings as regex patterns. E.g. re.match(“a.*”, b) will match
+differently than “a.*” == b. In this case, “a.*” will be used as a regex-pattern. However
+re.match(“abc”, b) will give the same result as “abc” == b, so here “abc” == b will be used.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><p><strong>TypeError</strong> – if the filters are not stacked correctly, or stacked in a way that doesn’t make sense</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="fagus.filters.CFil.match_node">
+<span class="sig-name descname"><span class="pre">match_node</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">node</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">collections.abc.Collection</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">index</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#fagus.filters.CFil.match_node" title="Permalink to this definition"></a></dt>
+<dd><p>Recursive function to completely verify a node and its subnodes in CFil</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>node</strong> – node to check</p></li>
-<li><p><strong>_</strong> – this argument is ignored</p></li>
+<li><p><strong>index</strong> – index in filter to check (filter is self)</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
@@ -238,6 +388,16 @@
 </dd>
 </dl>
 </dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="fagus.filters.CFil.__annotations__">
+<span class="sig-name descname"><span class="pre">__annotations__</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{}</span></em><a class="headerlink" href="#fagus.filters.CFil.__annotations__" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="fagus.filters.CFil.__module__">
+<span class="sig-name descname"><span class="pre">__module__</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'fagus.filters'</span></em><a class="headerlink" href="#fagus.filters.CFil.__module__" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
 
 </dd></dl>
 
