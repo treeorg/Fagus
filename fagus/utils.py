@@ -24,14 +24,14 @@ class _None:
 
 
 class FagusMeta(ABCMeta):
-    """Metaclass for Fagus-objects to facilitate settings at class-level"""
+    """Metaclass for Fagus-objects to facilitate options at class-level"""
 
     @staticmethod
     def __verify_option__(option_name: str, option):
-        """Verify Fagus-setting using the functions / types in __default_options__
+        """Verify Fagus-option using the functions / types in __default_options__
 
         Args:
-            option_name: name of the setting to verify
+            option_name: name of the option to verify
             option: the value to be verified
 
         Returns:
@@ -42,7 +42,7 @@ class FagusMeta(ABCMeta):
             if len(opt_cls) > 1 and not isinstance(option, opt_cls[1]):
                 raise TypeError(
                     f"Can't apply {option_name} because {option_name} needs to be a {opt_cls[1].__name__}, "
-                    f"and you provided a {option.__class__.__name__}."
+                    f"got {option.__class__.__name__}."
                 )
             if len(opt_cls) > 3 and not opt_cls[2](option):
                 raise ValueError(opt_cls[3])
@@ -79,13 +79,29 @@ class FagusMeta(ABCMeta):
     )
     """Default values for all options used in Fagus"""
 
-    no_node = (str, bytes, bytearray)
+    no_node = (str, bytes, bytearray)  # if this is changed in class, change in __delattr__ as well
+    """Every type of Collection in no_node will not be treated as a node, but as a single value"""
 
-    def __new__(cls, name, bases, dct):
-        node = super().__new__(cls, name, bases, dct)
-        for option_name, option in FagusMeta.__default_options__.items():
-            setattr(cls, option_name, option[0])
-        return node
+    _cls_options = {}
+
+    def options(cls, options: dict = None, get_default_options: bool = False, reset: bool = False) -> dict:
+        """Function to set multiple Fagus-options in one line
+
+        Args:
+            options: dict with options that shall be set
+            get_default_options: return all options (include default-values). Default: only return options that are set
+            reset: if ~ is set, all options are reset before options is set
+
+        Returns:
+            a dict of options that are set, or all options if get_default_options is set
+        """
+        if reset:
+            cls._cls_options.clear()
+        if options:
+            cls._cls_options.update((k, cls.__verify_option__(k, v)) for k, v in options.items())
+        if get_default_options:
+            return {k: cls._cls_options.get(k, v[0]) for k, v in cls.__default_options__.items()}
+        return {k: cls._cls_options[k] for k in cls.__default_options__ if k in cls._cls_options}
 
     def __setattr__(cls, attr, value):
         if attr == "no_node":
@@ -94,21 +110,25 @@ class FagusMeta(ABCMeta):
                     "no_node must be a tuple of types. These are not treated as nodes, default (str, bytes, bytearray)."
                 )
             FagusMeta.no_node = value
+        elif attr in cls.__default_options__:
+            FagusMeta._cls_options[attr] = cls.__verify_option__(attr, value)
+        elif attr in ("__abstractmethods__", "__annotations__") or attr.startswith("_abc_"):
+            super(FagusMeta, cls).__setattr__(attr, value)
         else:
-            super(FagusMeta, cls).__setattr__(
-                attr,
-                value
-                if hasattr(FagusMeta, attr)
-                or attr in ("__abstractmethods__", "__annotations__")
-                or attr.startswith("_abc_")
-                else FagusMeta.__verify_option__(attr, value),
-            )
+            raise AttributeError(attr)
+
+    def __getattr__(cls, attr):
+        if attr in cls._cls_options:
+            return cls._cls_options[attr]
+        elif attr in cls.__default_options__:
+            return cls.__default_options__[attr][0]
+        return getattr(FagusMeta, attr)
 
     def __delattr__(cls, attr):
         if attr == "no_node":
             FagusMeta.no_node = (str, bytes, bytearray)
-        elif hasattr(cls, attr):
-            super(FagusMeta, cls).__delattr__(attr)
+        elif attr in cls._cls_options:
+            FagusMeta._cls_options.pop(attr)
         else:
             raise AttributeError(attr)
 
@@ -156,7 +176,7 @@ def _filter_r(node: Collection, copy: bool, filter_: Optional["Fil"], index: int
 def _copy_node(node: Collection, recursive: bool = False) -> Collection:
     """Recursive function that creates a recursive shallow copy of node.
 
-    This is needed as copy.copy() only creates a shallow copy at the base level, lower levels are just referenced.
+    This is needed as copy.copy() only creates a shallow copy at the root level, lower levels are just referenced.
 
     Args:
         node: node to be copied

@@ -275,12 +275,12 @@ class TestFagus(unittest.TestCase):
         self.assertEqual(
             {"responseCode": 200, "limit": 10000, "size": 10000},
             a.filter(Fil({"responseCode", "limit", "size"}), copy=True),
-            "Simplest ever filtering at base-level",
+            "Simplest ever filtering at root level",
         )
         self.assertEqual(
             dict(responseCode=200, limit=10000, messages=[], metaData={}, offset=0, count=0, size=10000),
             a.filter(Fil("data", inexclude="-"), copy=True),
-            "Using inexclude to turn around the filter and give everything except data at base-level",
+            "Using inexclude to turn around the filter and give everything except data at root level",
         )
         self.assertEqual(
             [
@@ -415,10 +415,10 @@ class TestFagus(unittest.TestCase):
             Fagus.set(a, False, "1 0 1"),
             "Correctly traversing dicts and lists with numeric indices when the node type is not given explicitly.",
         )
-        # verify that base object is writable for set
+        # verify that root node is writable for set
         self.assertRaisesRegex(
             TypeError,
-            "Can't modify base-object self having the immutable type",
+            "Can't modify root node self having the immutable type",
             Fagus.set,
             (((1, 0), 2), 3),
             7,
@@ -426,7 +426,7 @@ class TestFagus(unittest.TestCase):
         )
         # new nodes can only either be lists or dicts, expressed by l's and
         self.assertRaisesRegex(ValueError, "The only allowed characters in ", Fagus.set, a["1"], "f", "0", "pld")
-        # Due to limitations on how references work in Python, the base-object can't be changed. So if the base-object
+        # Due to limitations on how references work in Python, the root node can't be changed. So if the root node
         # is a list, it can't be converted into a dict. This kind of changes are possible at the lower levels.
         self.assertRaisesRegex(ValueError, "Can't parse numeric list-index from", Fagus.set, a, "f", "1 f", "l")
         a[("1", 1)] = "hei"
@@ -451,7 +451,7 @@ class TestFagus(unittest.TestCase):
         a.set("wurst", "1 -40 5")
         self.assertEqual(a(), b, "Add to list at beginning / end by using indexes higher than len / lower than - len")
         a = Fagus((((1, 0), 2), (3, 4, (5, (6, 7)), 8)))
-        self.assertRaisesRegex(TypeError, "Can't modify base-object self having the immutable typ", a.set, 5, "1 2 1 1")
+        self.assertRaisesRegex(TypeError, "Can't modify root node self having the immutable typ", a.set, 5, "1 2 1 1")
         a = Fagus(list(a))
         self.assertEqual([((1, 0), 2), [3, 4, [5, [6, 5]], 8]], a.set(5, "1 2 1 1"), "Converting right tuples to lists")
         a = Fagus((((1, 0), 2), [3, 4, (5, (6, 7)), 8]))
@@ -507,7 +507,7 @@ class TestFagus(unittest.TestCase):
         self.assertEqual(Fagus.extend(a, [5, 6], "1 0 0"), b, "Creating list from singleton value and appending to it")
         b["q"] = [6, 7]
         self.assertEqual(Fagus.extend(a, [6, 7], "q"), b, "Create new list for value at a path not existing before")
-        self.assertRaisesRegex(TypeError, "Can't extend value in base-dict", Fagus().extend, [3, 4])
+        self.assertRaisesRegex(TypeError, "Can't extend value in root dict", Fagus().extend, [3, 4])
 
     def test_insert(self):
         a = copy.deepcopy(self.a)
@@ -546,7 +546,7 @@ class TestFagus(unittest.TestCase):
         b["a"][1]["c"] = {5}
         a.add(5, "a 1 c")
         self.assertEqual(a(), b, "Creating new empty set at position where no value has been before")
-        self.assertEqual({5, 6}, Fagus({5}).add(6), "Adding to set that is the base-object")
+        self.assertEqual({5, 6}, Fagus({5}).add(6), "Adding to set that is the root node")
 
     def test_update(self):
         # update set
@@ -565,7 +565,7 @@ class TestFagus(unittest.TestCase):
         # update dict
         b.update({"hei": 1, "du": "wurst"})
         a.update({"hei": 1, "du": "wurst"})
-        self.assertEqual(a(), b, "Updating base dict")
+        self.assertEqual(a(), b, "Updating root dict")
         b["a"][1].update({"hei": 1, "du": "wurst"})
         a.update({"hei": 1, "du": "wurst"}, "a 1")
         self.assertEqual(a(), b, "Updating dict further inside the object")
@@ -639,7 +639,7 @@ class TestFagus(unittest.TestCase):
         a = Fagus(test_obj, copy=True)
         self.assertRaisesRegex(
             TypeError,
-            "Can't modify base-node having the immutable type",
+            "Can't modify root node self having the immutable type",
             Fagus((1, 2, 3, [4, 5, 6], {6, 5})).serialize,
         )
         self.assertRaisesRegex(
@@ -729,22 +729,22 @@ class TestFagus(unittest.TestCase):
         self.assertEqual(
             {"a": {"b": {"c": 5, "k": 1, "l": 2, "m": 3}, "t": 5}, "d": 4, "u": {"v": {"w": "x"}}},
             Fagus.merge(b, c, copy=True),
-            "Merging only dicts in default settings, where a value that exists in both places is replaced",
+            "Merging only dicts in default options, where a value that exists in both places is replaced",
         )
         self.assertEqual(
             {"a": {"b": {"c": 5, "k": 1, "l": 2, "m": 3}, "t": 5}, "d": "e", "u": {"v": {"w": "x"}}},
             Fagus.merge(b, c, copy=True, new_value_action="i"),
-            "Merging only dicts in default settings, where a value that exists in both objs is kept as it was",
+            "Merging only dicts in default options, where a value that exists in both objs is kept as it was",
         )
         self.assertEqual(
             {"a": {"b": {"c": [5, 5], "k": 1, "l": 2, "m": 3}, "t": 5}, "d": ["e", 4, "e"], "u": {"v": {"w": "x"}}},
             Fagus.merge(Fagus.merge(b, c, copy=True, new_value_action="a"), b, copy=True, new_value_action="a"),
-            "Merging only dicts in default settings, where old and new value existing in both places are put in a list",
+            "Merging only dicts in default options, where old and new value existing in both places are put in a list",
         )
         self.assertEqual(
             {"a": {"b": {"k": 1, "l": 2, "m": 3}, "t": 5}, "d": 4, "u": {"v": {"w": "x"}}},
             Fagus.merge(b, c, copy=True, update_from=1),
-            "Merging only dicts in default settings, with simple dict update isf full path traversal from level 1",
+            "Merging only dicts in default options, with simple dict update isf full path traversal from level 1",
         )
         self.assertEqual(
             {"1": [[1, True, "a", ["f", {"a", "q"}]], {"a": False, "1": [1]}], "a": [[3, 4], {"b": 1}]},
@@ -816,10 +816,10 @@ class TestFagus(unittest.TestCase):
         self.assertIsNone(a.pop("8"), "When pop fails because the Key didn't exist in the node, default is returned")
         b["1"][0][2][1].remove("a")
         self.assertEqual("a", a.pop("1 0 2 1 a"), "Correctly popping from set (internally calling remove)")
-        self.assertEqual(b.pop("a"), a.pop("a"), "Correctly popping from dict at base-level")
+        self.assertEqual(b.pop("a"), a.pop("a"), "Correctly popping from dict at root level")
         self.assertEqual(a(), b, "Pop has correctly modified the object")
         a = Fagus((((1, 0), 2), (3, 4, (5, (6, 7)), 8)))
-        self.assertRaisesRegex(TypeError, "Can't modify base-object self having the immutable type", a.pop, "1 2 1 1")
+        self.assertRaisesRegex(TypeError, "Can't modify root node self having the immutable type", a.pop, "1 2 1 1")
         a = Fagus(list(a))
         self.assertEqual(7, a.pop("1 2 1 1"), "Correctly popping when all tuples on the way must be converted to lists")
         self.assertEqual([((1, 0), 2), [3, 4, [5, [6]], 8]], a(), "The tuples were correctly converted to lists")
@@ -852,7 +852,7 @@ class TestFagus(unittest.TestCase):
         self.assertEqual(a(), b, "Remove did not modify the object as path doesn't exist, and didn't throw an error")
 
     def test_keys(self):
-        self.assertEqual(("1", "a"), tuple(Fagus.keys(self.a)), "Getting dict-keys from base dict")
+        self.assertEqual(("1", "a"), tuple(Fagus.keys(self.a)), "Getting dict-keys from root dict")
         self.assertIsInstance(Fagus.keys(self.a, "a 1"), type({}.keys()), "Dicts (also inside the node) give dict_keys")
         self.assertIsInstance(Fagus.keys(self.a, "1"), range, "A list returns a range")
         self.assertEqual((0, 1), tuple(Fagus.keys(self.a, "1")), "A list returns numeric indexes")
@@ -862,7 +862,7 @@ class TestFagus(unittest.TestCase):
     def test_values(self):
         with open(self.test_data_path) as fp:
             a = Fagus(json.load(fp))
-        self.assertEqual(tuple(a.values()), tuple(a.values()), "The same dict-values if the base node is a dict")
+        self.assertEqual(tuple(a.values()), tuple(a.values()), "The same dict-values if the root node is a dict")
         b = [
             9922401,
             1385016682000,
@@ -888,7 +888,7 @@ class TestFagus(unittest.TestCase):
         self.assertIsInstance(Fagus.items(self.a, "1"), enumerate, "List gives enumerate-obj")
         self.assertTrue(all(isinstance(v, Fagus) for _, v in Fagus.items(self.a, fagus=True)), "fagus ok")
         self.assertEqual({(..., "a"), (..., "q")}, set(Fagus.items(self.a, "1 0 3 1")), "(..., e) for elements set")
-        self.assertEqual(tuple(Fagus.iter(self.a, 0)), tuple(Fagus.items(self.a)), "items at base = iter at base")
+        self.assertEqual(tuple(Fagus.iter(self.a, 0)), tuple(Fagus.items(self.a)), "items at root = iter at root")
 
     def test_index(self):
         self.assertIsNone(Fagus.index(self.a, 1, path="hallo"), "Return None if there is no node at path")
@@ -907,7 +907,7 @@ class TestFagus(unittest.TestCase):
         self.assertEqual(6, [2, 5, 6, 5, 4, 3, 5, 1].index(5, -2, -1), "For reference to see if it is called right")
 
     def test_clear(self):
-        self.assertEqual({}, Fagus.clear(self.a, copy=True), "Emptying at base level gives an empty dict")
+        self.assertEqual({}, Fagus.clear(self.a, copy=True), "Emptying at root level gives an empty dict")
         self.assertEqual({"1": [], "a": [[3, 4], {"b": 1}]}, Fagus.clear(self.a, "1", copy=True), "clear a list inside")
         self.assertEqual(
             {"1": [[1, True, "a", []], {"a": False, "1": (1,)}], "a": [[3, 4], {"b": 1}]},
@@ -957,10 +957,10 @@ class TestFagus(unittest.TestCase):
         self.assertEqual((3, 2, 1), tuple(reversed(Fagus((1, 2, 3)))), "Testing if __reversed__ also works")
 
     def test_reverse(self):
-        self.assertRaisesRegex(TypeError, "Cannot reverse base node of type", Fagus.reverse, set())
-        self.assertRaisesRegex(TypeError, "Cannot reverse base node of type", Fagus.reverse, self.a["1"][0][3])
+        self.assertRaisesRegex(TypeError, "Cannot reverse root node of type", Fagus.reverse, set())
+        self.assertRaisesRegex(TypeError, "Cannot reverse root node of type", Fagus.reverse, self.a["1"][0][3])
         self.assertRaisesRegex(TypeError, "Cannot reverse node of type", Fagus.reverse, self.a, "1 0 3 1", copy=True)
-        self.assertEqual({"a": self.a["a"], "1": self.a["1"]}, Fagus.reverse(self.a, copy=True), "Reversing base dict")
+        self.assertEqual({"a": self.a["a"], "1": self.a["1"]}, Fagus.reverse(self.a, copy=True), "Reversing root dict")
         a = Fagus(self.a, copy=True)
         b = Fagus.copy(self.a)
         b["1"][0].reverse()
@@ -968,7 +968,7 @@ class TestFagus(unittest.TestCase):
         b["1"][0][0] = list(reversed(b["1"][0][0]))
         self.assertEqual(b, a.reverse("1 0 0"), "Reversing tuple (which converts it to a list)")
         b["1"].reverse()
-        self.assertEqual(b["1"], Fagus.reverse(a["1"]), "Reversing base list")
+        self.assertEqual(b["1"], Fagus.reverse(a["1"]), "Reversing root list")
         a = {"a": {"b": 1, "c": {"f": 4, "g": 3}}, "d": 3}
         self.assertEqual(a, Fagus.reverse(Fagus.reverse(a, "a"), "a"), "Double reversing a dict inside a tree")
         b = Fagus.copy(a)
@@ -978,17 +978,17 @@ class TestFagus(unittest.TestCase):
     def test_child(self):
         a = Fagus(self.a, fagus=True, value_split="_")
         b = a.child({"1": 9, 3: 11})
-        self.assertEqual(a._options, b._options, "a child has the same settings as its parent")
+        self.assertEqual(a._options, b._options, "a child has the same options as its parent")
 
     def test_copy(self):
         a = copy.deepcopy(self.a)
         b = Fagus(a, copy=True)
         self.assertEqual(a, b(), "Shallow-copy is actually equal to the original object if it isn't changed")
         b.pop("a")
-        self.assertNotEqual(a, b(), "Can pop at base-level without affecting the original object")
+        self.assertNotEqual(a, b(), "Can pop at root level without affecting the original object")
         b = Fagus(a, copy=True)
         b["f"] = 2
-        self.assertNotEqual(a, b(), "Can add at base-level without affecting the original object")
+        self.assertNotEqual(a, b(), "Can add at root level without affecting the original object")
         b = Fagus(a).copy()
         b["1 0 0"] = 100
         self.assertNotEqual(a, b(), "Can change node deeply in the original object without affecting original object")
@@ -1000,15 +1000,15 @@ class TestFagus(unittest.TestCase):
         a = Fagus({"a": 9, "c": [1, 2, False]}, value_split="_", fagus=True)
         b = eval(repr(a))
         self.assertEqual(a, b, "Able to create equivalent obj from repr")
-        self.assertEqual(a._options, b._options, "Able to create equivalent obj from repr, even with settings")
+        self.assertEqual(a._options, b._options, "Able to create equivalent obj from repr, even with options")
 
     # tests for the + and +=-operators are in test_merge, test_add tests the add-function
 
     def test_sub(self):
         a = Fagus(self.a, copy=True)
-        self.assertEqual({"a": [[3, 4], {"b": 1}]}, a - {"1"}, "Removing keys from base-dict")
+        self.assertEqual({"a": [[3, 4], {"b": 1}]}, a - {"1"}, "Removing keys from root dict")
         a.fagus = True
-        self.assertEqual(Fagus({"a": [[3, 4], {"b": 1}]}), a - "1", "Removing key from base-dict, with fagus")
+        self.assertEqual(Fagus({"a": [[3, 4], {"b": 1}]}), a - "1", "Removing key from root dict, with fagus")
         self.assertEqual(self.a, a(), "a was not modified by these operations")
         b = Fagus(a["1 0"], copy=True)
         b -= [1, "a"]
@@ -1029,6 +1029,58 @@ class TestFagus(unittest.TestCase):
         self.assertRaisesRegex(TypeError, "Unsupported operand types for", a.__imul__, "a")
         self.assertRaisesRegex(TypeError, "Unsupported operand types for", a.__rmul__, "a")
 
+    def test_options(self):
+        a = Fagus()
+        Fagus.default = 6
+        self.assertEqual({"default": 6}, Fagus._cls_options, "It works to set an option at class level")
+        a.default = 3
+        self.assertEqual(6, Fagus.default, "Setting the setting at object-level has not overridden the cls-setting")
+        self.assertEqual({"default": 3}, a._options, "The option was set for a")
+        self.assertEqual(
+            {"default": 6, "default_node_type": "l", "if_": (3, 4, 11)},
+            Fagus.options({"default_node_type": "l", "if_": (3, 4, 11)}),
+            "Setting options in Fagus using the options-function",
+        )
+        self.assertEqual({"default": 6, "default_node_type": "l", "if_": (3, 4, 11)}, Fagus._cls_options, "cls-opt ok")
+        self.assertEqual({"default": 3, "default_node_type": "l", "if_": (3, 4, 11)}, a.options(), "cls-opts also on a")
+        self.assertEqual({"default": 3, "default_node_type": "l", "if_": (3, 4, 11)}, a.options(), "cls-opts also on a")
+        self.assertEqual(
+            {"default": 3, "default_node_type": "l", "if_": (2, 7), "node_types": "d  ld"},
+            a.options({"if_": (2, 7), "node_types": "d  ld"}),
+            "Options have been overriden where they should, and not overridden where they shouldn't",
+        )
+        default_options = {k: v[0] for k, v in Fagus.__default_options__.items()}
+        self.assertEqual(
+            {**default_options, "default": 3, "default_node_type": "l", "if_": (2, 7), "node_types": "d  ld"},
+            a.options(get_default_options=True),
+            "It's also possible to get all options that apply to this instance now",
+        )
+        self.assertEqual(
+            {**default_options, "default": 6, "default_node_type": "l", "if_": (3, 4, 11)},
+            Fagus.options(get_default_options=True),
+            "It's also possible to get all options that currently apply to Fagus",
+        )
+        self.assertEqual((2, 7), a.if_, "if_ has been correctly overridden and is accessible in a")
+        self.assertEqual((3, 4, 11), Fagus.if_, "if_ has not been touched in Fagus itself")
+        self.assertEqual(
+            {"default": 6, "default_node_type": "l", "if_": (3, 4, 11)},
+            a.options(reset=True),
+            "It has worked to reset the settings for the object",
+        )
+        self.assertEqual(
+            {"default": 6, "default_node_type": "l", "if_": (3, 4, 11)}, Fagus._cls_options, "no change in Fagus"
+        )
+        a.fagus = True
+        self.assertEqual(
+            {"iter_fill": True}, Fagus.options({"iter_fill": True}, reset=True), "Reset and set Fagus options"
+        )
+        self.assertEqual({"fagus": True, "iter_fill": True}, a.options(), "same a-opts despite Fagus reset")
+        self.assertRaisesRegex(
+            TypeError, "Can't apply value_split because value_split needs to be a str", a.options, {"value_split": 9}
+        )
+        self.assertRaisesRegex(ValueError, "The only allowed characters in node", Fagus.options, {"node_types": "fpg"})
+        self.assertEqual({}, Fagus.options(reset=True), "All options have been removed at class level and not replaced")
+
 
 def main():
     parser = argparse.ArgumentParser()
@@ -1046,14 +1098,15 @@ def main():
     subparsers.add_parser("all", help="run unittests and doctests")
     args = parser.parse_args()
     failed = False
-    if args.test in ("all", "doctest"):
+    if args.test in ("all", "doctest", None):
         res = run_doctests(args.verbose, args.test_type if "test_type" in args else "all")
         if not res:
             failed = True
         if args.test == "all":
             print()
-    if args.test in ("all", "unittest"):
-        sys.argv.pop(1)
+    if args.test in ("all", "unittest", None):
+        if len(sys.argv) > 1:
+            sys.argv.pop(1)
         res = not (
             unittest.TextTestRunner(verbosity=2 if args.verbose else 1)
             .run(unittest.TestLoader().loadTestsFromTestCase(TestFagus))

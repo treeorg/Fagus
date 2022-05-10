@@ -50,7 +50,16 @@
 <li class="toctree-l4"><a class="reference internal" href="#default">default</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#default-node-type">default_node_type</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#if">if_</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#value-split">value_split</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#iter-fill">iter_fill</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#iter-nodes">iter_nodes</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#work-in-progress">WORK IN PROGRESS</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#value-split">value_split</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#iterating-over-nested-objects">Iterating over nested objects</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#skipping-nodes-in-iteration">Skipping nodes in iteration.</a></li>
 </ul>
 </li>
 </ul>
@@ -87,6 +96,7 @@
   <section id="fagus">
 <h1>Fagus<a class="headerlink" href="#fagus" title="Permalink to this headline"></a></h1>
 <p><code class="docutils literal notranslate"><span class="pre">Fagus</span></code> is a Python-library that makes it easier to work with nested dicts and lists. It allows you to traverse and edit these tree-objects with simple function-calls that handle the most common errors and exceptions internally. The name fagus is actually the latin name for the genus of beech-trees.</p>
+<p><em><strong>This documentation is still Work in Progress</strong></em></p>
 <section id="basic-principles">
 <h2>Basic principles<a class="headerlink" href="#basic-principles" title="Permalink to this headline"></a></h2>
 <section id="introduction-what-it-solves">
@@ -155,7 +165,7 @@
 <li><p><strong>Square bracket notation</strong>: On <code class="docutils literal notranslate"><span class="pre">Fagus</span></code>-instances, the square-bracket notation can be used for easier access of data if no further customization is needed. Line 3 is equivalent to <code class="docutils literal notranslate"><span class="pre">a.set(6,</span> <span class="pre">&quot;x</span> <span class="pre">y</span> <span class="pre">z&quot;)</span></code>. It can be used for getting, setting and deleting items (line 6).</p></li>
 <li><p><strong>Dot notation</strong>: The dot-notation is activated for setting, getting and deleting items as well (line 4). It can be used to access <code class="docutils literal notranslate"><span class="pre">str</span></code>-keys in <code class="docutils literal notranslate"><span class="pre">dict</span></code>s and <code class="docutils literal notranslate"><span class="pre">list</span></code>-indices, the index must then be preceded with an underscore due to Python naming limitations (<code class="docutils literal notranslate"><span class="pre">a._4</span></code>). This can be further customized using <a class="reference internal" href="#value-split"><span class="std std-doc"><code class="docutils literal notranslate"><span class="pre">value_split</span></code></span></a></p></li>
 </ul>
-<p><code class="docutils literal notranslate"><span class="pre">Fagus</span></code> is a wrapper-class around a tree of <code class="docutils literal notranslate"><span class="pre">dict</span></code>- or <code class="docutils literal notranslate"><span class="pre">list</span></code>-objects. To get back the base-object inside the instance, use <code class="docutils literal notranslate"><span class="pre">()</span></code> to call the object – this is shown in line 7.</p>
+<p><code class="docutils literal notranslate"><span class="pre">Fagus</span></code> is a wrapper-class around a tree of <code class="docutils literal notranslate"><span class="pre">dict</span></code>- or <code class="docutils literal notranslate"><span class="pre">list</span></code>-objects. To get back the root-object inside the instance, use <code class="docutils literal notranslate"><span class="pre">()</span></code> to call the object – this is shown in line 7.</p>
 </section>
 <section id="fagus-settings">
 <h3>Fagus settings<a class="headerlink" href="#fagus-settings" title="Permalink to this headline"></a></h3>
@@ -188,7 +198,8 @@
 <span class="linenos">17</span><span class="go">&#39;arg&#39;</span>
 </pre></div>
 </div>
-<p>All <code class="docutils literal notranslate"><span class="pre">Fagus</span></code>-settings at level two can be set in the constructor of <code class="docutils literal notranslate"><span class="pre">Fagus</span></code>, so they don’t have to be set one by one like in line 8. Some <code class="docutils literal notranslate"><span class="pre">Fagus</span></code>-functions return child-<code class="docutils literal notranslate"><span class="pre">Fagus</span></code>-objects in their result. These child-objects inherit the settings at level two from their parent.</p>
+<p>All <code class="docutils literal notranslate"><span class="pre">Fagus</span></code>-settings at level two can be set in the constructor of <code class="docutils literal notranslate"><span class="pre">Fagus</span></code>, so they don’t have to be set one by one like in line 8. You can also use <code class="docutils literal notranslate"><span class="pre">options()</span></code> on an instance or on the <code class="docutils literal notranslate"><span class="pre">Fagus</span></code>-class to set several options in one line, or get all the options that apply to an instance.</p>
+<p>Some <code class="docutils literal notranslate"><span class="pre">Fagus</span></code>-functions return child-<code class="docutils literal notranslate"><span class="pre">Fagus</span></code>-objects in their result. These child-objects inherit the settings at level two from their parent.</p>
 <p>The remaining part of this section explains the settings one by one.</p>
 <section id="default">
 <h4>default<a class="headerlink" href="#default" title="Permalink to this headline"></a></h4>
@@ -208,11 +219,11 @@
 <p>Can be either <code class="docutils literal notranslate"><span class="pre">&quot;d&quot;</span></code> for <code class="docutils literal notranslate"><span class="pre">dict</span></code> or <code class="docutils literal notranslate"><span class="pre">&quot;l&quot;</span></code> for <code class="docutils literal notranslate"><span class="pre">list</span></code>. A new node of this type is created if it’s not specified clearly what other type that node shall have. It is used e.g. when Fagus is instanciated with an empty constructor:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="linenos">1</span><span class="gp">&gt;&gt;&gt; </span><span class="n">Fagus</span><span class="o">.</span><span class="n">default_node_type</span> <span class="o">=</span> <span class="s2">&quot;l&quot;</span>
 <span class="linenos">2</span><span class="gp">&gt;&gt;&gt; </span><span class="n">a</span> <span class="o">=</span> <span class="n">Fagus</span><span class="p">()</span>
-<span class="linenos">3</span><span class="gp">&gt;&gt;&gt; </span><span class="n">a</span><span class="p">()</span>  <span class="c1"># the base-object of a is an empty list as this was set in line 2</span>
+<span class="linenos">3</span><span class="gp">&gt;&gt;&gt; </span><span class="n">a</span><span class="p">()</span>  <span class="c1"># the root node of a is an empty list as this was set in line 2</span>
 <span class="linenos">4</span><span class="go">[]</span>
 <span class="linenos">5</span><span class="gp">&gt;&gt;&gt; </span><span class="k">del</span> <span class="n">Fagus</span><span class="o">.</span><span class="n">default_node_type</span>
 <span class="linenos">6</span><span class="gp">&gt;&gt;&gt; </span><span class="n">b</span> <span class="o">=</span> <span class="n">Fagus</span><span class="p">()</span>
-<span class="linenos">7</span><span class="gp">&gt;&gt;&gt; </span><span class="n">b</span><span class="p">()</span>  <span class="c1"># the base-object of b is a dict (default for default_node_type)</span>
+<span class="linenos">7</span><span class="gp">&gt;&gt;&gt; </span><span class="n">b</span><span class="p">()</span>  <span class="c1"># the root node of b is a dict (default for default_node_type)</span>
 <span class="linenos">8</span><span class="go">{}</span>
 </pre></div>
 </div>
@@ -224,28 +235,79 @@
 <li><p><strong>Type</strong>: Any</p></li>
 </ul>
 <p>This setting can be used to verify values before they’re inserted into the <code class="docutils literal notranslate"><span class="pre">Fagus</span></code>-object. Generating configuration-files, default values can often be omitted whereas special settings shall be included, <code class="docutils literal notranslate"><span class="pre">if_</span></code> can be used to do this without an extra if-statement.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="linenos">1</span><span class="gp">&gt;&gt;&gt; </span><span class="n">a</span> <span class="o">=</span> <span class="n">Fagus</span><span class="p">(</span><span class="n">if_</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>  <span class="c1"># the only allowed value for set is now True</span>
-<span class="linenos">2</span><span class="gp">&gt;&gt;&gt; </span><span class="n">a</span><span class="o">.</span><span class="n">v1</span> <span class="o">=</span> <span class="kc">True</span>
-<span class="linenos">3</span><span class="gp">&gt;&gt;&gt; </span><span class="n">a</span><span class="p">()</span>  <span class="c1"># v1 was set, because it was True (as requested in line 1)</span>
-<span class="linenos">4</span><span class="go">{&#39;v1&#39;: True}</span>
-<span class="linenos">5</span><span class="gp">&gt;&gt;&gt; </span><span class="n">a</span><span class="o">.</span><span class="n">v2</span> <span class="o">=</span> <span class="kc">None</span>
-<span class="linenos">6</span><span class="gp">&gt;&gt;&gt; </span><span class="n">a</span><span class="p">()</span>  <span class="c1"># note that v2 has not been set as it was not True</span>
-<span class="linenos">7</span><span class="go">{&#39;v1&#39;: True}</span>
-<span class="linenos">8</span><span class="gp">&gt;&gt;&gt; </span><span class="n">a</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="mi">6</span><span class="p">,</span> <span class="s2">&quot;v2&quot;</span><span class="p">,</span> <span class="n">if_</span><span class="o">=</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">))</span>  <span class="c1"># 6 was set as it was in (4, 5, 6)</span>
-<span class="linenos">9</span><span class="go">{&#39;v1&#39;: True, &#39;v2&#39;: 6}</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="linenos"> 1</span><span class="gp">&gt;&gt;&gt; </span><span class="n">a</span> <span class="o">=</span> <span class="n">Fagus</span><span class="p">(</span><span class="n">if_</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>  <span class="c1"># the only allowed value for set is now True</span>
+<span class="linenos"> 2</span><span class="gp">&gt;&gt;&gt; </span><span class="n">a</span><span class="o">.</span><span class="n">v1</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="linenos"> 3</span><span class="gp">&gt;&gt;&gt; </span><span class="n">a</span><span class="p">()</span>  <span class="c1"># v1 was set, because it was True (as requested in line 1)</span>
+<span class="linenos"> 4</span><span class="go">{&#39;v1&#39;: True}</span>
+<span class="linenos"> 5</span><span class="gp">&gt;&gt;&gt; </span><span class="n">a</span><span class="o">.</span><span class="n">v2</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="linenos"> 6</span><span class="gp">&gt;&gt;&gt; </span><span class="n">a</span><span class="p">()</span>  <span class="c1"># note that v2 has not been set as it was not True</span>
+<span class="linenos"> 7</span><span class="go">{&#39;v1&#39;: True}</span>
+<span class="linenos"> 8</span><span class="gp">&gt;&gt;&gt; </span><span class="n">a</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="mi">6</span><span class="p">,</span> <span class="s2">&quot;v2&quot;</span><span class="p">,</span> <span class="n">if_</span><span class="o">=</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">))</span>  <span class="c1"># 6 was set as it was in (4, 5, 6)</span>
+<span class="linenos"> 9</span><span class="go">{&#39;v1&#39;: True, &#39;v2&#39;: 6}</span>
+<span class="linenos">10</span><span class="gp">&gt;&gt;&gt; </span><span class="n">a</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="s2">&quot;v3&quot;</span><span class="p">,</span> <span class="n">if_</span><span class="o">=</span><span class="nb">bool</span><span class="p">)</span>  <span class="c1"># v3 is not set because bool(&quot;&quot;) is False</span>
+<span class="linenos">11</span><span class="go">{&#39;v1&#39;: True, &#39;v2&#39;: 6}</span>
 </pre></div>
 </div>
 <p>Possible ways to specify <code class="docutils literal notranslate"><span class="pre">if_</span></code>:</p>
 <ul class="simple">
 <li><p><strong>Single value</strong>: This is shown in line 1 – the only values that can now be set is <code class="docutils literal notranslate"><span class="pre">True</span></code>, anything else is not accepted.</p></li>
-<li><p><strong>List of values</strong>: You can also specify any <code class="docutils literal notranslate"><span class="pre">Iterable</span></code> (e.g. a <code class="docutils literal notranslate"><span class="pre">list</span></code>) with multiple values – the values that can be set must be one of the values in the <code class="docutils literal notranslate"><span class="pre">list</span></code>.</p></li>
+<li><p><strong>List of values</strong>: You can also specify any <code class="docutils literal notranslate"><span class="pre">Iterable</span></code> (e.g. a <code class="docutils literal notranslate"><span class="pre">list</span></code>) with multiple values – the values that can be set must be one of the values in the <code class="docutils literal notranslate"><span class="pre">list</span></code> (line 8).</p></li>
+<li><p><strong>Callable</strong>: You can also pass a callable object or a function (lambda) – the result of that call determines whether the value is set (line 10).</p></li>
 </ul>
 </section>
-<hr class="docutils" />
+<section id="iter-fill">
+<h4>iter_fill<a class="headerlink" href="#iter-fill" title="Permalink to this headline"></a></h4>
+<ul class="simple">
+<li><p><strong>Default</strong>: <code class="docutils literal notranslate"><span class="pre">_None</span></code>, meaning that <code class="docutils literal notranslate"><span class="pre">iter_fill</span></code> is inactive</p></li>
+<li><p><strong>Type</strong>: Any</p></li>
+</ul>
+<p>This option is used to get a constant number of items in the iterator while iterating over a <code class="docutils literal notranslate"><span class="pre">Fagus</span></code>-object, see <a class="reference internal" href="#iterating-over-nested-objects"><span class="std std-doc">here</span></a> for more about iteration in <code class="docutils literal notranslate"><span class="pre">Fagus</span></code>. The example below shows what happens by default when iterating over a <code class="docutils literal notranslate"><span class="pre">Fagus</span></code>-object where the leaf-nodes are at different depths:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="linenos"> 1</span><span class="gp">&gt;&gt;&gt; </span><span class="n">a</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">Fagus</span><span class="o">.</span><span class="n">iter</span><span class="p">({</span><span class="s2">&quot;a&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;b&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">},</span> <span class="s2">&quot;c&quot;</span><span class="p">:</span> <span class="mi">4</span><span class="p">},</span> <span class="mi">1</span><span class="p">))</span>
+<span class="linenos"> 2</span><span class="gp">&gt;&gt;&gt; </span><span class="n">a</span>
+<span class="linenos"> 3</span><span class="go">[(&#39;a&#39;, &#39;b&#39;, 2), (&#39;c&#39;, 4)]</span>
+<span class="linenos"> 4</span><span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span> <span class="ow">in</span> <span class="n">a</span><span class="p">:</span>
+<span class="linenos"> 5</span><span class="gp">... </span>    <span class="nb">print</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span><span class="p">)</span>
+<span class="linenos"> 6</span><span class="gt">Traceback (most recent call last):</span>
+<span class="linenos"> 7</span><span class="c">...</span>
+<span class="linenos"> 8</span><span class="gr">ValueError</span>: <span class="n">not enough values to unpack (expected 3, got 2)</span>
+<span class="linenos"> 9</span><span class="gp">&gt;&gt;&gt; </span><span class="n">a</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">Fagus</span><span class="o">.</span><span class="n">iter</span><span class="p">({</span><span class="s2">&quot;a&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;b&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">},</span> <span class="s2">&quot;c&quot;</span><span class="p">:</span> <span class="mi">4</span><span class="p">},</span> <span class="mi">1</span><span class="p">,</span> <span class="n">iter_fill</span><span class="o">=</span><span class="kc">None</span><span class="p">))</span>
+<span class="linenos">10</span><span class="gp">&gt;&gt;&gt; </span><span class="n">a</span>
+<span class="linenos">11</span><span class="go">[(&#39;a&#39;, &#39;b&#39;, 2), (&#39;c&#39;, 4, None)]</span>
+<span class="linenos">12</span><span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span> <span class="ow">in</span> <span class="n">a</span><span class="p">:</span>
+<span class="linenos">13</span><span class="gp">... </span>    <span class="nb">print</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span><span class="p">)</span>
+<span class="linenos">14</span><span class="go">a b 2</span>
+<span class="linenos">15</span><span class="go">c 4 None</span>
+</pre></div>
+</div>
+<p>In line 3, we see that the first tuple has three items, and the second only two. When this is run in a loop that always expects three values to unpack, it fails (line 4-8). That problem is solved in line 9 by using <code class="docutils literal notranslate"><span class="pre">iter_fill</span></code>, which fills up the shorter tuples with the value that was specified for <code class="docutils literal notranslate"><span class="pre">iter_fill</span></code>, here <code class="docutils literal notranslate"><span class="pre">None</span></code>. With that in place, the loop in line 12-15 runs through without raising an error. Note that <code class="docutils literal notranslate"><span class="pre">max_depth</span></code> has to be specified for <code class="docutils literal notranslate"><span class="pre">Fagus</span></code> to know how many items to fill up to.</p>
+</section>
+<section id="iter-nodes">
+<h4>iter_nodes<a class="headerlink" href="#iter-nodes" title="Permalink to this headline"></a></h4>
+<ul class="simple">
+<li><p><strong>Default</strong>: <code class="docutils literal notranslate"><span class="pre">False</span></code></p></li>
+<li><p><strong>Type</strong>: <code class="docutils literal notranslate"><span class="pre">bool</span></code></p></li>
+</ul>
+<p>This option is used to get references to the traversed nodes while iterating on a <code class="docutils literal notranslate"><span class="pre">Fagus</span></code>-object, see <a class="reference internal" href="#iterating-over-nested-objects"><span class="std std-doc">here</span></a> for more about iteration in <code class="docutils literal notranslate"><span class="pre">Fagus</span></code>. Below is an example of what this means:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="linenos">1</span><span class="gp">&gt;&gt;&gt; </span><span class="nb">list</span><span class="p">(</span><span class="n">Fagus</span><span class="o">.</span><span class="n">iter</span><span class="p">({</span><span class="s2">&quot;a&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;b&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">},</span> <span class="s2">&quot;c&quot;</span><span class="p">:</span> <span class="mi">4</span><span class="p">},</span> <span class="mi">1</span><span class="p">))</span>
+<span class="linenos">2</span><span class="go">[(&#39;a&#39;, &#39;b&#39;, 2), (&#39;c&#39;, 4)]</span>
+<span class="linenos">3</span><span class="gp">&gt;&gt;&gt; </span><span class="nb">list</span><span class="p">(</span><span class="n">Fagus</span><span class="o">.</span><span class="n">iter</span><span class="p">({</span><span class="s2">&quot;a&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;b&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">},</span> <span class="s2">&quot;c&quot;</span><span class="p">:</span> <span class="mi">4</span><span class="p">},</span> <span class="n">iter_nodes</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
+<span class="linenos">4</span><span class="go">[({&#39;a&#39;: {&#39;b&#39;: 2}, &#39;c&#39;: 4}, &#39;a&#39;, {&#39;b&#39;: 2}, &#39;b&#39;, 2), ({&#39;a&#39;: {&#39;b&#39;: 2}, &#39;c&#39;: 4}, &#39;c&#39;, 4)]</span>
+</pre></div>
+</div>
+<p>As you can see, the node itself is included as the first element in both tuples. In the first tuple, we also find the subnode <code class="docutils literal notranslate"><span class="pre">{&quot;b&quot;:</span> <span class="pre">2}</span></code> as the third element. In line 2, the tuples are filled after this scheme: <code class="docutils literal notranslate"><span class="pre">key1,</span> <span class="pre">key2,</span> <span class="pre">key3,</span> <span class="pre">...,</span> <span class="pre">value</span></code>. In line 4, we additionally get the nodes, so it is <code class="docutils literal notranslate"><span class="pre">root-node,</span> <span class="pre">key1,</span> <span class="pre">node,</span> <span class="pre">key2,</span> <span class="pre">node2,</span> <span class="pre">key3,</span> <span class="pre">...,</span> <span class="pre">value</span></code>.</p>
+<p>Sometimes in loops it can be helpful to actually have access to the whole node containing other relevant information. This can be especially useful combined with <a class="reference internal" href="#skipping-nodes-in-iteration"><span class="std std-doc"><code class="docutils literal notranslate"><span class="pre">skip()</span></code></span></a>.</p>
+</section>
+</section>
+</section>
+<section id="work-in-progress">
+<h2>WORK IN PROGRESS<a class="headerlink" href="#work-in-progress" title="Permalink to this headline"></a></h2>
 <section id="value-split">
-<h4>value_split<a class="headerlink" href="#value-split" title="Permalink to this headline"></a></h4>
-<p>In the example above, <code class="docutils literal notranslate"><span class="pre">Fagus</span></code> first fetches the element at index one in the outer list, which is a dict. The key 6 in that dict contains another list, from which the element at index 2 is fetched.
-In the example above, <code class="docutils literal notranslate"><span class="pre">Fagus</span></code> first fetches the element at index one in the outer list, which is a dict. The key 6 in that dict contains another list, from which the element at index 2 is fetched.</p>
+<h3>value_split<a class="headerlink" href="#value-split" title="Permalink to this headline"></a></h3>
+</section>
+<section id="iterating-over-nested-objects">
+<h3>Iterating over nested objects<a class="headerlink" href="#iterating-over-nested-objects" title="Permalink to this headline"></a></h3>
+<section id="skipping-nodes-in-iteration">
+<h4>Skipping nodes in iteration.<a class="headerlink" href="#skipping-nodes-in-iteration" title="Permalink to this headline"></a></h4>
 </section>
 </section>
 </section>

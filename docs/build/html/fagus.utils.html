@@ -88,17 +88,17 @@
 <p>This module contains classes and functions used across the Fagus-library that didn’t fit in another module</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="fagus.utils.FagusMeta">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">fagus.utils.</span></span><span class="sig-name descname"><span class="pre">FagusMeta</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bases</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dct</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#fagus.utils.FagusMeta" title="Permalink to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">fagus.utils.</span></span><span class="sig-name descname"><span class="pre">FagusMeta</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bases</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">namespace</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#fagus.utils.FagusMeta" title="Permalink to this definition"></a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">abc.ABCMeta</span></code></p>
-<p>Metaclass for Fagus-objects to facilitate settings at class-level</p>
+<p>Metaclass for Fagus-objects to facilitate options at class-level</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="fagus.utils.FagusMeta.__verify_option__">
 <em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">__verify_option__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">option_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">option</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#fagus.utils.FagusMeta.__verify_option__" title="Permalink to this definition"></a></dt>
-<dd><p>Verify Fagus-setting using the functions / types in __default_options__</p>
+<dd><p>Verify Fagus-option using the functions / types in __default_options__</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>option_name</strong> – name of the setting to verify</p></li>
+<li><p><strong>option_name</strong> – name of the option to verify</p></li>
 <li><p><strong>option</strong> – the value to be verified</p></li>
 </ul>
 </dd>
@@ -117,12 +117,26 @@
 <dl class="py attribute">
 <dt class="sig sig-object py" id="fagus.utils.FagusMeta.no_node">
 <span class="sig-name descname"><span class="pre">no_node</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">(&lt;class</span> <span class="pre">'str'&gt;,</span> <span class="pre">&lt;class</span> <span class="pre">'bytes'&gt;,</span> <span class="pre">&lt;class</span> <span class="pre">'bytearray'&gt;)</span></em><a class="headerlink" href="#fagus.utils.FagusMeta.no_node" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
+<dd><p>Every type of Collection in no_node will not be treated as a node, but as a single value</p>
+</dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="fagus.utils.FagusMeta.__new__">
-<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">__new__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cls</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bases</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dct</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#fagus.utils.FagusMeta.__new__" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
+<dt class="sig sig-object py" id="fagus.utils.FagusMeta.options">
+<span class="sig-name descname"><span class="pre">options</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">options</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">dict</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">get_default_options</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reset</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span></span></span><a class="headerlink" href="#fagus.utils.FagusMeta.options" title="Permalink to this definition"></a></dt>
+<dd><p>Function to set multiple Fagus-options in one line</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>options</strong> – dict with options that shall be set</p></li>
+<li><p><strong>get_default_options</strong> – return all options (include default-values). Default: only return options that are set</p></li>
+<li><p><strong>reset</strong> – if ~ is set, all options are reset before options is set</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>a dict of options that are set, or all options if get_default_options is set</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="fagus.utils.FagusMeta.__setattr__">
@@ -131,66 +145,19 @@
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="fagus.utils.FagusMeta.__getattr__">
+<span class="sig-name descname"><span class="pre">__getattr__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">attr</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#fagus.utils.FagusMeta.__getattr__" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="fagus.utils.FagusMeta.__delattr__">
 <span class="sig-name descname"><span class="pre">__delattr__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">attr</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#fagus.utils.FagusMeta.__delattr__" title="Permalink to this definition"></a></dt>
 <dd><p>Implement delattr(self, name).</p>
 </dd></dl>
 
 <dl class="py attribute">
-<dt class="sig sig-object py" id="fagus.utils.FagusMeta.__annotations__">
-<span class="sig-name descname"><span class="pre">__annotations__</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{}</span></em><a class="headerlink" href="#fagus.utils.FagusMeta.__annotations__" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
 <dt class="sig sig-object py" id="fagus.utils.FagusMeta.__module__">
 <span class="sig-name descname"><span class="pre">__module__</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'fagus.utils'</span></em><a class="headerlink" href="#fagus.utils.FagusMeta.__module__" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="fagus.utils.FagusMeta.default">
-<span class="sig-name descname"><span class="pre">default</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#fagus.utils.FagusMeta.default" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="fagus.utils.FagusMeta.default_node_type">
-<span class="sig-name descname"><span class="pre">default_node_type</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'d'</span></em><a class="headerlink" href="#fagus.utils.FagusMeta.default_node_type" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="fagus.utils.FagusMeta.fagus">
-<span class="sig-name descname"><span class="pre">fagus</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">False</span></em><a class="headerlink" href="#fagus.utils.FagusMeta.fagus" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="fagus.utils.FagusMeta.if_">
-<span class="sig-name descname"><span class="pre">if_</span></span><a class="headerlink" href="#fagus.utils.FagusMeta.if_" title="Permalink to this definition"></a></dt>
-<dd><p>alias of <code class="xref py py-class docutils literal notranslate"><span class="pre">fagus.utils._None</span></code></p>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="fagus.utils.FagusMeta.iter_fill">
-<span class="sig-name descname"><span class="pre">iter_fill</span></span><a class="headerlink" href="#fagus.utils.FagusMeta.iter_fill" title="Permalink to this definition"></a></dt>
-<dd><p>alias of <code class="xref py py-class docutils literal notranslate"><span class="pre">fagus.utils._None</span></code></p>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="fagus.utils.FagusMeta.iter_nodes">
-<span class="sig-name descname"><span class="pre">iter_nodes</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">False</span></em><a class="headerlink" href="#fagus.utils.FagusMeta.iter_nodes" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="fagus.utils.FagusMeta.list_insert">
-<span class="sig-name descname"><span class="pre">list_insert</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">9223372036854775807</span></em><a class="headerlink" href="#fagus.utils.FagusMeta.list_insert" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="fagus.utils.FagusMeta.node_types">
-<span class="sig-name descname"><span class="pre">node_types</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">''</span></em><a class="headerlink" href="#fagus.utils.FagusMeta.node_types" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="fagus.utils.FagusMeta.value_split">
-<span class="sig-name descname"><span class="pre">value_split</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'</span> <span class="pre">'</span></em><a class="headerlink" href="#fagus.utils.FagusMeta.value_split" title="Permalink to this definition"></a></dt>
 <dd></dd></dl>
 
 </dd></dl>

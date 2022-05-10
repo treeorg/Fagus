@@ -49,11 +49,17 @@ def update(version: str, build: bool, documentation: bool, pre_commit: bool):
         if packaging.version.parse(platform.python_version()) < packaging.version.parse("3.7"):
             raise EnvironmentError("Sphinx-documentation can't be built on Python < 3.7 (required by the RTD theme)")
         else:
-            subprocess.run(
-                f"sphinx-apidoc -f --module-first --separate -o docs/source . tests {sys.argv[0]}",
-                shell=True,
-            )
-            subprocess.run("make clean html", shell=True, cwd="docs")
+            with open("fagus/fagus.py", "r+") as f:
+                fagus_py = f.read()  # __options has to be renamed to options to get the doc right (at runtime this
+                f.seek(0)  # same rename is done in __init__)
+                f.write(fagus_py.replace("def __options(", "def options(  "))  # two fewer chars - add spaces to end
+                subprocess.run(
+                    f"sphinx-apidoc -f --module-first --separate -o docs/source . tests {sys.argv[0]}",
+                    shell=True,
+                )
+                subprocess.run("make clean html", shell=True, cwd="docs")
+                f.seek(0)
+                f.write(fagus_py)  # put the unchanged file back
     if pre_commit:
         subprocess.run("git add -A; pre-commit run; git add -A", shell=True)
 
