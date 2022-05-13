@@ -23,7 +23,7 @@ KeyError: 'b3'
 The problem is that the consecutive square brackets fail if one of the nodes doesn't exist. There are ways around, like writing `a.get("a1", {}).get("b3", {}).get("c2")` or surrounding each of these statements with `try-except`, but both are hard to maintain and verbose. Below you can see how `Fagus` can help to resolve this:
 ```python
 >>> from fagus import Fagus
->>> print(Fagus.get(a, ("a1", "b3", "c2")))  # prints None, as this key doesn't exist in a
+>>> print(Fagus.get(a, ("a1", "b3", "c2")))  # None, as this key doesn't exist in a
 None
 ```
 As you can see, now only one function call is needed to fetch the value from `a`. If one of the keys doesn't exist, a default value is returned. In this case no default value was specified, so `None` is returned.
@@ -72,42 +72,42 @@ While it's not necessary to instantiate `Fagus`, there are some neat shortcuts t
 
 `Fagus` is a wrapper-class around a tree of `dict`- or `list`-objects. To get back the root-object inside the instance, use `()` to call the object -- this is shown in line 7.
 
-### Fagus settings
-There are several parameters used across many functions in `Fagus` which steer the behaviour of that function. Often, similar behaviour is intended across a whole application or parts of it, and this is where settings come in handy allowing to only specify these parameters once.
+### Fagus options
+There are several parameters used across many functions in `Fagus` which steer the behaviour of that function. Often, similar behaviour is intended across a whole application or parts of it, and this is where options come in handy allowing to only specify these parameters once.
 
-One example of a `Fagus`-setting is [`default`](#default). This setting contains the value that is returned e.g. in `get()` if a `path` doesn't exist, see [Introduction](#introduction----what-it-solves), code block two for an example.
+One example of a `Fagus`-option is [`default`](#default). This option contains the value that is returned e.g. in `get()` if a `path` doesn't exist, see [Introduction](#introduction----what-it-solves), code block two for an example.
 
-**The four levels of `Fagus`-settings**:
-1. **Argument**: The highest level - if a setting is specified directly as an argument to a function, that value takes precedence over all other levels.
-2. **Instance**: If a setting is set for an instance, it will apply to all function calls at that instance where level one has not been specified.
-3. **Class**: If a setting is set at class level (i.e. `Fagus.setting`), it applies to all function calls and all instances where level one and two of that setting aren't defined. Settings at this level apply for the whole file `Fagus` has been imported in.
-4. **Default**: If no other level is specified, the hardcoded default for that setting is used.
+**The four levels of `Fagus`-options**:
+1. **Argument**: The highest level - if an option is specified directly as an argument to a function, that value takes precedence over all other levels.
+2. **Instance**: If an option is set for an instance, it will apply to all function calls at that instance where level one has not been specified.
+3. **Class**: If an option is set at class level (i.e. `Fagus.option`), it applies to all function calls and all instances where level one and two of that option aren't defined. Options at this level apply for the whole file `Fagus` has been imported in.
+4. **Default**: If no other level is specified, the hardcoded default for that option is used.
 
 Below is an example of how the different levels take precedence over one another:
 ```python
 >>> a = Fagus({"a": 1})
->>> print(a.get("b"))  # b does not exist in a - by default default is None
+>>> print(a.get("b"))  # b does not exist in a - default is None by default
 None
 >>> Fagus.default = "class"  # Overriding default at class level
 >>> a.get("b")  # now 'class' is returned, as None was overridden
 'class'
->>> a.default = 'instance'  # setting the default-setting at instance level
+>>> a.default = 'instance'  # setting the default option at instance level
 >>> a.get("b")  # for a default is set to 'instance' -- return 'instance'
 'instance'
 >>> b = Fagus({"a": 1})
 >>> b.get("b")  # for b, line 7 doesn't apply -- line 5 still applies
 'class'
->>> del Fagus.default  # deleting a setting resets it to its default
+>>> del Fagus.default  # deleting an option resets it to its default
 >>> print(b.get("b"))  # for default, the default is None
 None
->>> a.get("b", default='arg')  # passing a setting as argument always wins
+>>> a.get("b", default='arg')  # passing an option as a parameter always wins
 'arg'
 ```
-All `Fagus`-settings at level two can be set in the constructor of `Fagus`, so they don't have to be set one by one like in line 8. You can also use `options()` on an instance or on the `Fagus`-class to set several options in one line, or get all the options that apply to an instance.
+All `Fagus`-options at level two can be set in the constructor of `Fagus`, so they don't have to be set one by one like in line 8. You can also use `options()` on an instance or on the `Fagus`-class to set several options in one line, or get all the options that apply to an instance.
 
-Some `Fagus`-functions return child-`Fagus`-objects in their result. These child-objects inherit the settings at level two from their parent.
+Some `Fagus`-functions return child-`Fagus`-objects in their result. These child-objects inherit the options at level two from their parent.
 
-The remaining part of this section explains the settings one by one.
+The remaining part of this section explains the options one by one.
 
 #### default
 * **Default**: `None`
@@ -136,7 +136,7 @@ Can be either `"d"` for `dict` or `"l"` for `list`. A new node of this type is c
 * **Default**: `_None`, meaning that the value is not checked
 * **Type**: Any
 
-This setting can be used to verify values before they're inserted into the `Fagus`-object. Generating configuration-files, default values can often be omitted whereas special settings shall be included, `if_` can be used to do this without an extra if-statement.
+This option can be used to verify values before they're inserted into the `Fagus`-object. Generating configuration-files, default values can often be omitted whereas special settings shall be included, `if_` can be used to do this without an extra if-statement.
 ```python
 >>> a = Fagus(if_=True)  # the only allowed value for set is now True
 >>> a.v1 = True
@@ -199,5 +199,3 @@ Sometimes in loops it can be helpful to actually have access to the whole node c
 ### Iterating over nested objects
 
 #### Skipping nodes in iteration.
-
-## WORK IN PROGRESS

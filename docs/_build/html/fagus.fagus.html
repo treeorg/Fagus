@@ -1,0 +1,1275 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>fagus.fagus module &mdash; Fagus 1.0.1 documentation</title>
+      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="_static/wider_page.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="fagus.filters module" href="fagus.filters.html" />
+    <link rel="prev" title="fagus package" href="fagus.html" />
+</head>
+
+<body class="wy-body-for-nav">
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="index.html" class="icon icon-home"> Fagus
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="LICENSE.html">ISC License</a></li>
+<li class="toctree-l1"><a class="reference internal" href="README.html">README</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="fagus.html">fagus package</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="fagus.html#submodules">Submodules</a><ul class="current">
+<li class="toctree-l3 current"><a class="current reference internal" href="#">fagus.fagus module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="fagus.filters.html">fagus.filters module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="fagus.iterators.html">fagus.iterators module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="fagus.utils.html">fagus.utils module</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="CHANGELOG.html">CHANGELOG</a></li>
+<li class="toctree-l1"><a class="reference internal" href="CONTRIBUTING.html">CONTRIBUTING</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Fagus</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="fagus.html">fagus package</a> &raquo;</li>
+      <li>fagus.fagus module</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/fagus.fagus.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+
+  <section id="module-fagus.fagus">
+<span id="fagus-fagus-module"></span><h1>fagus.fagus module<a class="headerlink" href="#module-fagus.fagus" title="Permalink to this headline"></a></h1>
+<p>Base-module that contains the <code class="xref py py-obj docutils literal notranslate"><span class="pre">Fagus</span></code>-class</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="fagus.fagus.Fagus">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">fagus.fagus.</span></span><span class="sig-name descname"><span class="pre">Fagus</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">root</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">collections.abc.Collection</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">node_types</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">Ellipsis</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">list_insert</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">Ellipsis</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">value_split</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">Ellipsis</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fagus</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">Ellipsis</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">default_node_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">Ellipsis</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">default</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">Ellipsis</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">if_</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">Ellipsis</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">iter_fill</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">Ellipsis</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mod_functions</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">collections.abc.Mapping</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">Ellipsis</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">copy</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#fagus.fagus.Fagus" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">collections.abc.MutableMapping</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">collections.abc.MutableSequence</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">collections.abc.MutableSet</span></code></p>
+<p>Fagus is a wrapper-class for complex, nested objects of dicts and lists in Python</p>
+<p>Fagus can be used as an object by instantiating it, but it’s also possible to use all methods statically without
+even an object, so that a = {}; Fagus.set(a, “top med”, 1) and a = Fagus({}); a.set(1, “top med”) do the same.</p>
+<p>The root node is always modified directly. If you don’t want to change the root node, all the functions where it
+makes sense support to rather modify a copy, and return that modified copy using the copy-parameter.</p>
+<p>Several parameters used in functions in Fagus work as options so that you don’t have to specify them each time you
+run a function. In the docstrings, these options are marked with a *, e.g. the fagus parameter is an option.
+Options can be specified at three levels with increasing precedence: at class-level (Fagus.fagus = True), at
+object-level (a = Fagus(), a.fagus = True) and in each function-call (a.get(“b”, fagus=True)). If you generally want
+to change an option, change it at class-level - all objects in that file will inherit this option. If you want to
+change the option specifically for one object, change the option at object-level. If you only want to change the
+option for one single run of a function, put it as a function-parameter. More thorough examples of options can be
+found in README.md.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="fagus.fagus.Fagus.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">root</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">collections.abc.Collection</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">node_types</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">Ellipsis</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">list_insert</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">Ellipsis</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">value_split</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">Ellipsis</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fagus</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">Ellipsis</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">default_node_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">Ellipsis</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">default</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">Ellipsis</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">if_</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">Ellipsis</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">iter_fill</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">Ellipsis</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mod_functions</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">collections.abc.Mapping</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">Ellipsis</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">copy</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#fagus.fagus.Fagus.__init__" title="Permalink to this definition"></a></dt>
+<dd><p>Constructor for Fagus, a wrapper-class for complex, nested objects of dicts and lists in Python</p>
+<p>* means that the parameter is a Fagus-Setting, see Fagus-class-docstring for more information about options</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>root</strong> – object (like dict / list) to wrap Fagus around. If this is None, an empty node of the type
+default_node_type will be used. Default None</p></li>
+<li><p><strong>node_types</strong> – * Can be used to manually define if the nodes along path are supposed to be (l)ists or
+(d)icts. E.g. “dll” to create a dict at level 1, and lists at level 2 and 3. ” ” can also be used -
+space doesn’t enforce a node-type like d or l. For ” “, existing nodes are traversed if possible,
+otherwise default_node_type is used to create new nodes. Default “”, interpreted as ” ” at each level.</p></li>
+<li><p><strong>list_insert</strong> – * Level at which a new node shall be inserted into the list instead of traversing the
+existing node in the list at that index. See README</p></li>
+<li><p><strong>value_split</strong> – * used to split path into a list if path is a string, default ” “</p></li>
+<li><p><strong>fagus</strong> – * this option is used to determine whether nodes in the returned object should be returned as
+Fagus-objects. This can be useful e.g. if you want to use Fagus in an iteration. Check the particular
+function you want to use for a more thorough explanation of what this does in each case</p></li>
+<li><p><strong>default_node_type</strong> – * determines if new nodes by default should be created as (d)ict or (l)ist. Must be
+either “d” or “l”, default “d”</p></li>
+<li><p><strong>default</strong> – * ~ is used in get and other functions if a path doesn’t exist</p></li>
+<li><p><strong>if_</strong> – * only set value if it meets the condition specified here, otherwise do nothing. The condition can be
+a lambda, any value or a tuple of accepted values. Default _None (don’t check value)</p></li>
+<li><p><strong>iter_fill</strong> – * Fill up tuples with iter_fill (can be any object, e.g. None) to ensure that all the tuples
+iter() returns are exactly max_items long. See iter()</p></li>
+<li><p><strong>copy</strong> – ~ creates a copy of the root node before Fagus is initialized. Makes sure that changes on this Fagus
+won’t modify the root node that was passed here itself. Default False</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="fagus.fagus.Fagus.get">
+<span class="sig-name descname"><span class="pre">get</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">default</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">Ellipsis</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fagus</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">Ellipsis</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">copy</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">value_split</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">Ellipsis</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Any</span></span></span><a class="headerlink" href="#fagus.fagus.Fagus.get" title="Permalink to this definition"></a></dt>
+<dd><p>Retrieves value at path. If the value doesn’t exist, default is returned.</p>
+<p>To get “hello” from x = Fagus({“a”: [“b”, {“c”: “d”}], e: [“f”, “g”]}), you can use x[(“a”, 1, “c”)]. The tuple
+(“a”, 1, “c”) is the path-parameter that is used to traverse x. At first, the list at “a” is picked in the
+top-most dict, and then the 2nd element {“c”: “d”} is picked from that list. Then, “d” is picked from {“c”: “d”}
+and returned. The path-parameter can be a tuple or list, the keys must be either integers for lists, or any
+hashable objects for dicts. For convenience, the keys can also be put in a single string separated by
+value_split (default ” “), so a[“a 1 c”] also returns “d”.</p>
+<p>* means that the parameter is a Fagus-Setting, see Fagus-class-docstring for more information about options</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>path</strong> – List/Tuple of key-values to recursively traverse self. Can also be specified as string, that is split
+into a tuple using value_split</p></li>
+<li><p><strong>default</strong> – * returned if path doesn’t exist in self</p></li>
+<li><p><strong>fagus</strong> – * returns a Fagus-object if the value at path is a list or dict</p></li>
+<li><p><strong>copy</strong> – Option to return a copy of the returned value. The default behaviour is that if there are subnodes
+(dicts, lists) in the returned values, and you make changes to these nodes, these changes will also be
+applied in the root node from which values() was called. If you want the returned values to be
+independent, use copy to get a shallow copy of the returned value</p></li>
+<li><p><strong>value_split</strong> – * used to split path into a list if path is a str, default ” “</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>the value if the path exists, or default if it doesn’t exist</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="fagus.fagus.Fagus.iter">
+<span class="sig-name descname"><span class="pre">iter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">max_depth</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">9223372036854775807</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filter_</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="fagus.filters.html#fagus.filters.Fil" title="fagus.filters.Fil"><span class="pre">fagus.filters.Fil</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fagus</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">Ellipsis</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">iter_fill</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">Ellipsis</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">select</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">collections.abc.Iterable</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">copy</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">iter_nodes</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">Ellipsis</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filter_ends</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">value_split</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">Ellipsis</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="fagus.iterators.html#fagus.iterators.FagusIterator" title="fagus.iterators.FagusIterator"><span class="pre">fagus.iterators.FagusIterator</span></a></span></span><a class="headerlink" href="#fagus.fagus.Fagus.iter" title="Permalink to this definition"></a></dt>
+<dd><p>Recursively iterate through Fagus-object, starting at path</p>
+<p>* means that the parameter is a Fagus-Setting, see Fagus-class-docstring for more information about options</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>max_depth</strong> – Can be used to limit how deep the iteration goes. Example: a = {“a”: [“b”, [“c”, “d”]], “e”: “f”}
+If max_depth is sys.max_size, all the nodes are traversed: [(“a”, “b”, “c”), (“a”, “b”, “d”]),
+(“e”, “f”)]. If max_depth is 1, iter returns [(“a”, “b”, [“c”, “d”]), (“e”, “f”)], so [“c”, “d”] is not
+iterated through but returned as a node. If max_depth is 0, iter returns [(“a”, [“b”, [“c”, “d”]]),
+(“e”, “f”)], effectively the same as dict.items(). Default sys.maxitems (iterate as deeply as possible)
+A negative number (e.g. -1) is treated as sys.maxitems.</p></li>
+<li><p><strong>path</strong> – Start iterating at path. Internally calls get(path), and iterates on the node get returns. See get()</p></li>
+<li><p><strong>filter_</strong> – Only iterate over specific nodes defined using TFilter (see README.md and TFilter for more info)</p></li>
+<li><p><strong>fagus</strong> – * If the leaf in the tuple is a dict or list, return it as a Fagus-object. This option has no
+effect if max_items is sys.maxitems.</p></li>
+<li><p><strong>iter_fill</strong> – * Fill up tuples with iter_fill (can be any object, e.g. None) to ensure that all the tuples
+iter() returns are exactly max_items long. This can be useful if you want to unpack the keys / leaves
+from the tuples in a loop, which fails if the count of items in the tuples varies. This option has no
+effect if max_items is -1. The default value is …, meaning that the tuples are not filled, and the
+length of the tuples can vary. See README.md for a more thorough example.</p></li>
+<li><p><strong>select</strong> – Extract only some specified values from the tuples. E.g. if ~ is -1, only the leaf-values are
+returned. ~ can also be a list of indices. Default None (don’t reduce the tuples)</p></li>
+<li><p><strong>copy</strong> – Iterate on a shallow-copy to make sure that you can edit root node without disturbing the iteration</p></li>
+<li><p><strong>iter_nodes</strong> – * includes the traversed nodes into the resulting tuples, order is then:
+node1, key1, node2, key2, …, leaf_value</p></li>
+<li><p><strong>filter_ends</strong> – Affects the end dict/list that is returned if max_items is used. Normally, filters are not
+applied on that end node. If you would like to get the end node filtered too, set this to True. If this
+is set to True, the last nodes will always be copies (if unfiltered they are references)</p></li>
+<li><p><strong>value_split</strong> – * used to split path into a list if path is a str, default ” “</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>FagusIterator with one tuple for each leaf-node, containing the keys of the parent-nodes until the leaf</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="fagus.fagus.Fagus.filter">
+<span class="sig-name descname"><span class="pre">filter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filter_</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="fagus.filters.html#fagus.filters.Fil" title="fagus.filters.Fil"><span class="pre">fagus.filters.Fil</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fagus</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">Ellipsis</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">copy</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">default</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">Ellipsis</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">value_split</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">Ellipsis</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">collections.abc.Collection</span></span></span><a class="headerlink" href="#fagus.fagus.Fagus.filter" title="Permalink to this definition"></a></dt>
+<dd><p>Filters self, only keeping the nodes that pass the filter</p>
+<p>* means that the parameter is a Fagus-Setting, see Fagus-class-docstring for more information about options</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>filter_</strong> – TFilter-object in which the filtering-criteria are specified</p></li>
+<li><p><strong>path</strong> – at this point in self, the filtering will start (apply filter_ relatively from this point).
+Default “”, meaning that the root node is filtered, see get() and README for examples</p></li>
+<li><p><strong>fagus</strong> – * return the filtered self as Fagus-object (default is just to return the filtered node)</p></li>
+<li><p><strong>copy</strong> – Create a copy and filter on that copy. Default is to modify the self directly</p></li>
+<li><p><strong>default</strong> – * returned if path doesn’t exist in self, or the value at path can’t be filtered</p></li>
+<li><p><strong>value_split</strong> – * used to split path into a list if path is a str, default ” “</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>the filtered object, starting at path</p>
+</dd>
+<dt class="field-odd">Raises</dt>
+<dd class="field-odd"><p><strong>TypeError</strong> – if the root node needs to be modified and isn’t modifiable (e.g. tuple or frozenset)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="fagus.fagus.Fagus.split">
+<span class="sig-name descname"><span class="pre">split</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filter_</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="fagus.filters.html#fagus.filters.Fil" title="fagus.filters.Fil"><span class="pre">fagus.filters.Fil</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fagus</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">Ellipsis</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">copy</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">default</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">Ellipsis</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">value_split</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">Ellipsis</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">collections.abc.Collection</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">collections.abc.Collection</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">Any</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#fagus.fagus.Fagus.split" title="Permalink to this definition"></a></dt>
+<dd><p>Splits self into nodes that pass the filter, and nodes that don’t pass the filter</p>
+<p>* means that the parameter is a Fagus-Setting, see Fagus-class-docstring for more information about options</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>filter_</strong> – TFilter-object in which the filtering-criteria are specified</p></li>
+<li><p><strong>path</strong> – at this position in self, the splitting will start (apply filter_ relatively from this point).
+Default “”, meaning that the root node is split, see get() and README for examples</p></li>
+<li><p><strong>fagus</strong> – * return the filtered self as Fagus-object (default is just to return the filtered node)</p></li>
+<li><p><strong>copy</strong> – Create a copy and filter on that copy. Default is to modify the object directly</p></li>
+<li><p><strong>default</strong> – * returned if path doesn’t exist in self, or the</p></li>
+<li><p><strong>value_split</strong> – * used to split path into a list if path is a str, default ” “</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>a tuple, where the first element is the nodes that pass the filter, and the second element is the nodes that
+don’t pass the filter</p>
+</dd>
+<dt class="field-odd">Raises</dt>
+<dd class="field-odd"><p><strong>TypeError</strong> – if the root node needs to be modified and isn’t modifiable (e.g. tuple or frozenset)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="fagus.fagus.Fagus.set">
+<span class="sig-name descname"><span class="pre">set</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">collections.abc.Iterable</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">node_types</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">Ellipsis</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">list_insert</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">Ellipsis</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">value_split</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">Ellipsis</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fagus</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">Ellipsis</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">if_</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">Ellipsis</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">default_node_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">Ellipsis</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">copy</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">collections.abc.Collection</span></span></span><a class="headerlink" href="#fagus.fagus.Fagus.set" title="Permalink to this definition"></a></dt>
+<dd><p>Create (if they don’t already exist) all sub-nodes in path, and finally set value at leaf-node</p>
+<p>* means that the parameter is a Fagus-Setting, see Fagus-class-docstring for more information about options</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>value</strong> – ~ is placed at path, after creating new nodes if necessary. An existing value at path is overwritten</p></li>
+<li><p><strong>path</strong> – List/Tuple of key-values that are traversed in self. If no nodes exist at the keys, new nodes are
+created. Can also be specified as a string, that is split into a tuple using value_split. See get()</p></li>
+<li><p><strong>node_types</strong> – * Can be used to manually define if the nodes along path are supposed to be (l)ists or
+(d)icts. E.g. “dll” to create a dict at level 1, and lists at level 2 and 3. ” ” can also be used -
+space doesn’t enforce a node-type like d or l. For ” “, existing nodes are traversed if possible,
+otherwise default_node_type is used to create new nodes. Default “”, interpreted as ” ” at each level.</p></li>
+<li><p><strong>list_insert</strong> – * Level at which a new node shall be inserted into the list instead of traversing the
+existing node in the list at that index. See README</p></li>
+<li><p><strong>value_split</strong> – * used to split path into a list if path is a string, default ” “</p></li>
+<li><p><strong>fagus</strong> – * return self as a Fagus-object if it is a node (tuple / list / dict), default False</p></li>
+<li><p><strong>if_</strong> – * only set value if it meets the condition specified here, otherwise do nothing. The condition can be
+a lambda, any value or a tuple of accepted values. Default _None (don’t check value)</p></li>
+<li><p><strong>default_node_type</strong> – * determines if new nodes by default should be created as (d)ict or (l)ist. Must be
+either “d” or “l”, default “d”</p></li>
+<li><p><strong>copy</strong> – if this is set, a copy of self is modified and then returned (thus self is not modified)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>self as a node if fagus is set, or a modified copy of self if copy is set</p>
+</dd>
+<dt class="field-odd">Raises</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ValueError</strong> – if it isn’t possible to parse an int-index from the provided key in a position where node-types
+    defines that the node shall be a list (if node-types is not l, the node will be replaced with a dict)</p></li>
+<li><p><strong>TypeError</strong> – if the root node needs to be modified and isn’t modifiable (e.g. tuple or frozenset)</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="fagus.fagus.Fagus.append">
+<span class="sig-name descname"><span class="pre">append</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">node_types</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">Ellipsis</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">list_insert</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">Ellipsis</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">value_split</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">Ellipsis</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fagus</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">Ellipsis</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">if_</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">Ellipsis</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">default_node_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">Ellipsis</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">copy</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">collections.abc.Collection</span></span></span><a class="headerlink" href="#fagus.fagus.Fagus.append" title="Permalink to this definition"></a></dt>
+<dd><p>Create (if they don’t already exist) all sub-nodes in path, and finally append value to a list at leaf-node</p>
+<p>If the leaf-node is a set, tuple or other value it is converted to a list. Then the new value is appended.</p>
+<p>* means that the parameter is a Fagus-Setting, see Fagus-class-docstring for more information about options</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>value</strong> – ~ is appended to list at path, after creating new nodes along path as necessary</p></li>
+<li><p><strong>path</strong> – List/Tuple of key-values that are traversed in self. If no nodes exist at the keys, new nodes are
+created. Can also be specified as a string, that is split into a tuple using value_split. See get()</p></li>
+<li><p><strong>node_types</strong> – * Can be used to manually define if the nodes along path are supposed to be (l)ists or
+(d)icts. E.g. “dll” to create a dict at level 1, and lists at level 2 and 3. ” ” can also be used -
+space doesn’t enforce a node-type like d or l. For ” “, existing nodes are traversed if possible,
+otherwise default_node_type is used to create new nodes. Default “”, interpreted as ” ” at each level.</p></li>
+<li><p><strong>list_insert</strong> – * Level at which a new node shall be inserted into the list instead of traversing the
+existing node in the list at that index. See README</p></li>
+<li><p><strong>value_split</strong> – * used to split path into a list if path is a string, default ” “</p></li>
+<li><p><strong>fagus</strong> – * return self as a Fagus-object if it is a node (tuple / list / dict), default False</p></li>
+<li><p><strong>if_</strong> – * only append value if it meets the condition specified here, otherwise do nothing. The condition can
+be a lambda, any value or a tuple of accepted values. Default _None (don’t check value)</p></li>
+<li><p><strong>default_node_type</strong> – * determines if new nodes by default should be created as (d)ict or (l)ist. Must be
+either “d” or “l”, default “d”</p></li>
+<li><p><strong>copy</strong> – if this is set, a copy of self is modified and then returned (thus self is not modified)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>self as a node if fagus is set, or a modified copy of self if copy is set</p>
+</dd>
+<dt class="field-odd">Raises</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ValueError</strong> – if it isn’t possible to parse an int-index from the provided key in a position where node-types
+    defines that the node shall be a list (if node-types is not l, the node will be replaced with a dict)</p></li>
+<li><p><strong>TypeError</strong> – if path is empty and the root node is not a list (can’t append to a dict, tuple or set) or the
+    root node needs to be modified and isn’t modifiable (e.g. tuple or frozenset)</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="fagus.fagus.Fagus.extend">
+<span class="sig-name descname"><span class="pre">extend</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">values</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">collections.abc.Iterable</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">node_types</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">Ellipsis</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">list_insert</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">Ellipsis</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">value_split</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">Ellipsis</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fagus</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">Ellipsis</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">if_</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">Ellipsis</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">default_node_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">Ellipsis</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">copy</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">collections.abc.Collection</span></span></span><a class="headerlink" href="#fagus.fagus.Fagus.extend" title="Permalink to this definition"></a></dt>
+<dd><p>Create (if they don’t already exist) all sub-nodes in path. Then extend list at leaf-node with the new values</p>
+<p>If the leaf-node is a set, tuple or other value it is converted to a list, which is extended with the new values</p>
+<p>* means that the parameter is a Fagus-Setting, see Fagus-class-docstring for more information about options</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>values</strong> – the list at path is extended with ~, after creating new nodes along path as necessary</p></li>
+<li><p><strong>path</strong> – List/Tuple of key-values that are traversed in self. If no nodes exist at the keys, new nodes are
+created. Can also be specified as a string, that is split into a tuple using value_split. See get()</p></li>
+<li><p><strong>node_types</strong> – * Can be used to manually define if the nodes along path are supposed to be (l)ists or
+(d)icts. E.g. “dll” to create a dict at level 1, and lists at level 2 and 3. ” ” can also be used -
+space doesn’t enforce a node-type like d or l. For ” “, existing nodes are traversed if possible,
+otherwise default_node_type is used to create new nodes. Default “”, interpreted as ” ” at each level.</p></li>
+<li><p><strong>list_insert</strong> – * Level at which a new node shall be inserted into the list instead of traversing the
+existing node in the list at that index. See README</p></li>
+<li><p><strong>value_split</strong> – * used to split path into a list if path is a string, default ” “</p></li>
+<li><p><strong>fagus</strong> – * return self as a Fagus-object if it is a node (tuple / list / dict), default False</p></li>
+<li><p><strong>if_</strong> – * only extend with values if they meet the condition specified here, otherwise do nothing. The
+condition can be a lambda, any value or a tuple of accepted values. Default _None (don’t check values)</p></li>
+<li><p><strong>default_node_type</strong> – * determines if new nodes by default should be created as (d)ict or (l)ist. Must be
+either “d” or “l”, default “d”</p></li>
+<li><p><strong>copy</strong> – if this is set, a copy of self is modified and then returned (thus self is not modified)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>self as a node if fagus is set, or a modified copy of self if copy is set</p>
+</dd>
+<dt class="field-odd">Raises</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ValueError</strong> – if it isn’t possible to parse an int-index from the provided key in a position where node-types
+    defines that the node shall be a list (if node-types is not l, the node will be replaced with a dict)</p></li>
+<li><p><strong>TypeError</strong> – if path is empty and the root node is not a list (can’t extend a dict, tuple or set) or the
+    root node needs to be modified and isn’t modifiable (e.g. tuple or frozenset)</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="fagus.fagus.Fagus.insert">
+<span class="sig-name descname"><span class="pre">insert</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">index</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">value</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">node_types</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">Ellipsis</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">list_insert</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">Ellipsis</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">value_split</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">Ellipsis</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fagus</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">Ellipsis</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">if_</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">Ellipsis</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">default_node_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">Ellipsis</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">copy</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">collections.abc.Collection</span></span></span><a class="headerlink" href="#fagus.fagus.Fagus.insert" title="Permalink to this definition"></a></dt>
+<dd><p>Create (if they don’t already exist) all sub-nodes in path. Insert new value at index in list at leaf-node</p>
+<p>If the leaf-node is a set, tuple or other value it is converted to a list, in which the new value is inserted at
+index</p>
+<p>* means that the parameter is a Fagus-Setting, see Fagus-class-docstring for more information about options</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>index</strong> – ~ at which the value shall be inserted in the list at path</p></li>
+<li><p><strong>value</strong> – ~ is inserted at index into list at path, after creating new nodes along path as necessary</p></li>
+<li><p><strong>path</strong> – List/Tuple of key-values that are traversed in self. If no nodes exist at the keys, new nodes are
+created. Can also be specified as a string, that is split into a tuple using value_split. See get()</p></li>
+<li><p><strong>node_types</strong> – * Can be used to manually define if the nodes along path are supposed to be (l)ists or
+(d)icts. E.g. “dll” to create a dict at level 1, and lists at level 2 and 3. ” ” can also be used -
+space doesn’t enforce a node-type like d or l. For ” “, existing nodes are traversed if possible,
+otherwise default_node_type is used to create new nodes. Default “”, interpreted as ” ” at each level.</p></li>
+<li><p><strong>list_insert</strong> – * Level at which a new node shall be inserted into the list instead of traversing the
+existing node in the list at that index. See README</p></li>
+<li><p><strong>value_split</strong> – * used to split path into a list if path is a string, default ” “</p></li>
+<li><p><strong>fagus</strong> – * return self as a Fagus-object if it is a node (tuple / list / dict), default False</p></li>
+<li><p><strong>if_</strong> – * only insert value if it meets the condition specified here, otherwise do nothing. The condition can
+be a lambda, any value or a tuple of accepted values. Default _None (don’t check value)</p></li>
+<li><p><strong>default_node_type</strong> – * determines if new nodes by default should be created as (d)ict or (l)ist. Must be
+either “d” or “l”, default “d”</p></li>
+<li><p><strong>copy</strong> – if this is set, a copy of self is modified and then returned (thus self is not modified)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>self as a node if fagus is set, or a modified copy of self if copy is set</p>
+</dd>
+<dt class="field-odd">Raises</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ValueError</strong> – if it isn’t possible to parse an int-index from the provided key in a position where node-types
+    defines that the node shall be a list (if node-types is not l, the node will be replaced with a dict)</p></li>
+<li><p><strong>TypeError</strong> – if path is empty and the root node is not a list (can’t insert into dict, tuple or set) or the
+    root node needs to be modified and isn’t modifiable (e.g. tuple or frozenset)</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="fagus.fagus.Fagus.add">
+<span class="sig-name descname"><span class="pre">add</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">node_types</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">Ellipsis</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">list_insert</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">Ellipsis</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">value_split</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">Ellipsis</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fagus</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">Ellipsis</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">if_</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">Ellipsis</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">default_node_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">Ellipsis</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">copy</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">collections.abc.Collection</span></span></span><a class="headerlink" href="#fagus.fagus.Fagus.add" title="Permalink to this definition"></a></dt>
+<dd><p>Create (if they don’t already exist) all sub-nodes in path, and finally add new value to set at leaf-node</p>
+<p>If the leaf-node is a list, tuple or other value it is converted to a set, to which the new value is added</p>
+<p>* means that the parameter is a Fagus-Setting, see Fagus-class-docstring for more information about options</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>value</strong> – ~ is added to set at path, after creating new nodes along path as necessary</p></li>
+<li><p><strong>path</strong> – List/Tuple of key-values that are traversed in self. If no nodes exist at the keys, new nodes are
+created. Can also be specified as a string, that is split into a tuple using value_split. See get()</p></li>
+<li><p><strong>node_types</strong> – * Can be used to manually define if the nodes along path are supposed to be (l)ists or
+(d)icts. E.g. “dll” to create a dict at level 1, and lists at level 2 and 3. ” ” can also be used -
+space doesn’t enforce a node-type like d or l. For ” “, existing nodes are traversed if possible,
+otherwise default_node_type is used to create new nodes. Default “”, interpreted as ” ” at each level.</p></li>
+<li><p><strong>list_insert</strong> – * Level at which a new node shall be inserted into the list instead of traversing the
+existing node in the list at that index. See README</p></li>
+<li><p><strong>value_split</strong> – * used to split path into a list if path is a string, default ” “</p></li>
+<li><p><strong>fagus</strong> – * return self as a Fagus-object if it is a node (tuple / list / dict), default False</p></li>
+<li><p><strong>if_</strong> – * only add value if it meets the condition specified here, otherwise do nothing. The condition can be
+a lambda, any value or a tuple of accepted values. Default _None (don’t check value)</p></li>
+<li><p><strong>default_node_type</strong> – * determines if new nodes by default should be created as (d)ict or (l)ist. Must be
+either “d” or “l”, default “d”</p></li>
+<li><p><strong>copy</strong> – if this is set, a copy of self is modified and then returned (thus self is not modified)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>self as a node if fagus is set, or a modified copy of self if copy is set</p>
+</dd>
+<dt class="field-odd">Raises</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ValueError</strong> – if it isn’t possible to parse an int-index from the provided key in a position where node-types
+    defines that the node shall be a list (if node-types is not l, the node will be replaced with a dict)</p></li>
+<li><p><strong>TypeError</strong> – if path is empty and the root node is not a set (can’t add to list or dict) or the root node
+    needs to be modified and isn’t modifiable (e.g. tuple or frozenset)</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="fagus.fagus.Fagus.update">
+<span class="sig-name descname"><span class="pre">update</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">values</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">collections.abc.Iterable</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">node_types</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">Ellipsis</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">list_insert</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">Ellipsis</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">value_split</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">Ellipsis</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fagus</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">Ellipsis</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">if_</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">Ellipsis</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">default_node_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">Ellipsis</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">copy</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">collections.abc.Collection</span></span></span><a class="headerlink" href="#fagus.fagus.Fagus.update" title="Permalink to this definition"></a></dt>
+<dd><p>Create (if they don’t already exist) all sub-nodes in path, then update set at leaf-node with new values</p>
+<p>If the leaf-node is a list, tuple or other value it is converted to a set. That set is then updated with the new
+values. If the node at path is a dict, and values also is a dict, the node-dict is updated with the new values.</p>
+<p>* means that the parameter is a Fagus-Setting, see Fagus-class-docstring for more information about options</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>values</strong> – the set/dict at path is updated with ~, after creating new nodes along path as necessary</p></li>
+<li><p><strong>path</strong> – List/Tuple of key-values that are traversed in self. If no nodes exist at the keys, new nodes are
+created. Can also be specified as a string, that is split into a tuple using value_split. See get()</p></li>
+<li><p><strong>node_types</strong> – * Can be used to manually define if the nodes along path are supposed to be (l)ists or
+(d)icts. E.g. “dll” to create a dict at level 1, and lists at level 2 and 3. ” ” can also be used -
+space doesn’t enforce a node-type like d or l. For ” “, existing nodes are traversed if possible,
+otherwise default_node_type is used to create new nodes. Default “”, interpreted as ” ” at each level.</p></li>
+<li><p><strong>list_insert</strong> – * Level at which a new node shall be inserted into the list instead of traversing the
+existing node in the list at that index. See README</p></li>
+<li><p><strong>value_split</strong> – * used to split path into a list if path is a string, default ” “</p></li>
+<li><p><strong>fagus</strong> – * return self as a Fagus-object if it is a node (tuple / list / dict), default False</p></li>
+<li><p><strong>if_</strong> – * only update with values if they meet the condition specified here, otherwise do nothing. The
+condition can be a lambda, any value or a tuple of accepted values. Default _None (don’t check values)</p></li>
+<li><p><strong>default_node_type</strong> – * determines if new nodes by default should be created as (d)ict or (l)ist. Must be
+either “d” or “l”, default “d”</p></li>
+<li><p><strong>copy</strong> – if this is set, a copy of self is modified and then returned (thus self is not modified)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>self as a node if fagus is set, or a modified copy of self if copy is set</p>
+</dd>
+<dt class="field-odd">Raises</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ValueError</strong> – if it isn’t possible to parse an int-index from the provided key in a position where node-types
+    defines that the node shall be a list (if node-types is not l, the node will be replaced with a dict)</p></li>
+<li><p><strong>TypeError</strong> – if path is empty and the root node is not a set or dict (can’t update list) or the root node
+    needs to be modified and isn’t modifiable (e.g. tuple or frozenset)</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="fagus.fagus.Fagus.setdefault">
+<span class="sig-name descname"><span class="pre">setdefault</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">default</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">Ellipsis</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fagus</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">Ellipsis</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">node_types</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">Ellipsis</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">list_insert</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">Ellipsis</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">value_split</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">Ellipsis</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">default_node_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">Ellipsis</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Any</span></span></span><a class="headerlink" href="#fagus.fagus.Fagus.setdefault" title="Permalink to this definition"></a></dt>
+<dd><p>Get value at path and return it. If there is no value at path, set default at path, and return default</p>
+<p>* means that the parameter is a Fagus-Setting, see Fagus-class-docstring for more information about options</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>path</strong> – position in self where default shall be set / from where value shall be fetched. See get() and README</p></li>
+<li><p><strong>default</strong> – * returned if path doesn’t exist in self</p></li>
+<li><p><strong>fagus</strong> – * return self as a Fagus-object if it is a node (tuple / list / dict), default False</p></li>
+<li><p><strong>node_types</strong> – * Can be used to manually define if the nodes along path are supposed to be (l)ists or
+(d)icts. E.g. “dll” to create a dict at level 1, and lists at level 2 and 3. ” ” can also be used -
+space doesn’t enforce a node-type like d or l. For ” “, existing nodes are traversed if possible,
+otherwise default_node_type is used to create new nodes. Default “”, interpreted as ” ” at each level.</p></li>
+<li><p><strong>list_insert</strong> – * Level at which a new node shall be inserted into the list instead of traversing the
+existing node in the list at that index. See README</p></li>
+<li><p><strong>value_split</strong> – * used to split path into a list if path is a str, default ” “</p></li>
+<li><p><strong>default_node_type</strong> – * determines if new nodes by default should be created as (d)ict or (l)ist. Must be
+either “d” or “l”, default “d”</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>value at path if it exists, otherwise default is set at path and returned</p>
+</dd>
+<dt class="field-odd">Raises</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ValueError</strong> – if it isn’t possible to parse an int-index from the provided key in a position where node-types
+    defines that the node shall be a list (if node-types is not l, the node will be replaced with a dict)</p></li>
+<li><p><strong>TypeError</strong> – if the root node needs to be modified and isn’t modifiable (e.g. tuple or frozenset)</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="fagus.fagus.Fagus.mod">
+<span class="sig-name descname"><span class="pre">mod</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mod_function</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">default</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">Ellipsis</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">replace_value</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fagus</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">Ellipsis</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">node_types</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">Ellipsis</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">list_insert</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">Ellipsis</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">value_split</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">Ellipsis</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">default_node_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">Ellipsis</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Any</span></span></span><a class="headerlink" href="#fagus.fagus.Fagus.mod" title="Permalink to this definition"></a></dt>
+<dd><p>Modifies the value at path using the function-pointer mod_function</p>
+<p>mod can be used like this Fagus.mod(obj, “kitchen spoon”, lambda x: x + 1, 1) to count the number of spoons in
+the kitchen. If there is no value to modify, the default value (here 1) will be set at the node.</p>
+<p>* means that the parameter is a Fagus-Setting, see Fagus-class-docstring for more information about options</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>mod_function</strong> – A function pointer or lambda that modifies the existing value at path. TFunc can be used to
+call more complex functions requiring several arguments.</p></li>
+<li><p><strong>path</strong> – position in self at which the value shall be modified. Defined as a list/Tuple of key-values to
+recursively traverse self. Can also be specified as string which is split into a tuple using value_split</p></li>
+<li><p><strong>default</strong> – * this value is set in path if it doesn’t exist</p></li>
+<li><p><strong>fagus</strong> – * Return new value as a Fagus-object if it is a node (tuple / list / dict), default False</p></li>
+<li><p><strong>replace_value</strong> – Replace the old value with what mod_function returns. Can be deactivated e.g. if mod_function
+changes the object, but returns None (if ~ stays on, the object is replaced with None). Default True.
+If no value exists at path, the default value is always set at path (independent of ~)</p></li>
+<li><p><strong>node_types</strong> – * Can be used to manually define if the nodes along path are supposed to be (l)ists or
+(d)icts. E.g. “dll” to create a dict at level 1, and lists at level 2 and 3. ” ” can also be used -
+space doesn’t enforce a node-type like d or l. For ” “, existing nodes are traversed if possible,
+otherwise default_node_type is used to create new nodes. Default “”, interpreted as ” ” at each level.</p></li>
+<li><p><strong>list_insert</strong> – * Level at which a new node shall be inserted into the list instead of traversing the
+existing node in the list at that index. See README</p></li>
+<li><p><strong>value_split</strong> – * used to split path into a list if path is a str, default ” “</p></li>
+<li><p><strong>default_node_type</strong> – * determines if new nodes by default should be created as (d)ict or (l)ist. Must be
+either “d” or “l”, default “d”</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>the new value that was returned by the mod_function, or default if there was no value at path</p>
+</dd>
+<dt class="field-odd">Raises</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ValueError</strong> – if it isn’t possible to parse an int-index from the provided key in a position where node-types
+    defines that the node shall be a list (if node-types is not l, the node will be replaced with a dict)</p></li>
+<li><p><strong>TypeError</strong> – if the root node needs to be modified and isn’t modifiable (e.g. tuple or frozenset)</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="fagus.fagus.Fagus.mod_all">
+<span class="sig-name descname"><span class="pre">mod_all</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mod_function</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filter_</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="fagus.filters.html#fagus.filters.Fil" title="fagus.filters.Fil"><span class="pre">fagus.filters.Fil</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">replace_value</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">default</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">Ellipsis</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_depth</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">9223372036854775807</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fagus</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">Ellipsis</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">copy</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">value_split</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">Ellipsis</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">collections.abc.Collection</span></span></span><a class="headerlink" href="#fagus.fagus.Fagus.mod_all" title="Permalink to this definition"></a></dt>
+<dd><p>Modify all the leaf-values that match a certain filter</p>
+<p>* means that the parameter is a Fagus-Setting, see Fagus-class-docstring for more information about options</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>mod_function</strong> – A function pointer or lambda that modifies the existing value at path. TFunc can be used to
+call more complex functions requiring several arguments.</p></li>
+<li><p><strong>filter_</strong> – used to select which leaves shall be modified. Default None (all leaves are modified)</p></li>
+<li><p><strong>path</strong> – position in self at which the value shall be modified. See get() / README</p></li>
+<li><p><strong>default</strong> – * this value is returned if path doesn’t exist, or if no leaves match the filter</p></li>
+<li><p><strong>fagus</strong> – * Return new value as a Fagus-object if it is a node (tuple / list / dict), default False</p></li>
+<li><p><strong>replace_value</strong> – Replace the old value with what mod_function returns. Can be deactivated e.g. if mod_function
+changes the object, but returns None (if ~ stays on, the object is replaced with None). Default True.
+If no value exists at path, the default value is always set at path (independent of ~)</p></li>
+<li><p><strong>max_depth</strong> – Defines the maximum depth for the iteration. See Fagus.iter max_depth for more information</p></li>
+<li><p><strong>copy</strong> – Can be ued to make sure that the node at path is not modified (instead a modified copy is returned)</p></li>
+<li><p><strong>value_split</strong> – * used to split path into a list if path is a str, default ” “</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>the node at path where all the leaves matching filter_ are modified, or default if it didn’t exist</p>
+</dd>
+<dt class="field-odd">Raises</dt>
+<dd class="field-odd"><p><strong>TypeError</strong> – if the root node needs to be modified and isn’t modifiable (e.g. tuple or frozenset)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="fagus.fagus.Fagus.serialize">
+<span class="sig-name descname"><span class="pre">serialize</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mod_functions</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">collections.abc.Mapping</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">node_types</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">Ellipsis</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">list_insert</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">Ellipsis</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">value_split</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">Ellipsis</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">copy</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">dict</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#fagus.fagus.Fagus.serialize" title="Permalink to this definition"></a></dt>
+<dd><p>Makes sure the object can be serialized so that it can be converted to JSON, YAML etc.</p>
+<p>The only allowed data-types for serialization are: dict, list, bool, float, int, str, None</p>
+<p>Sets and tuples are converted into lists. Other objects whose types are not allowed in serialized objects are
+modified to a type that is allowed using the mod_functions-parameter. mod_functions is a dict, with the type
+of object like IPv4Address or a tuple of types like (IPv4Address, IPv6Address). The values are function pointers
+or lambdas, that are executed to convert e.g. an IPv4Address to one of the allowed data types mentioned above.</p>
+<p>The default mod_functions are: {datetime: lambda x: x.isoformat(), date: lambda x: x.isoformat(), time:
+lambda x: x.isoformat(), “default”: lambda x: str(x)}</p>
+<p>By default, date, datetime and time-objects are replaced by their isoformat-string. All other objects whose
+types don’t appear in mod_functions are modified by the function behind the key “default”. By default, this
+function is lambda x: str(x) that replaces the object with its string-representation.</p>
+<p>* means that the parameter is a Fagus-Setting, see Fagus-class-docstring for more information about options</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>mod_functions</strong> – * ~ is used to define how different types of objects are supposed to be serialized. This is
+defined in a dict. The keys are either a type (like IPAddress) or a tuple of different types
+(IPv4Address, IPv6Address). The values are function pointers, or lambdas, which are supposed to convert
+e.g. an IPv4Address into a string. Check out TFunc if you want to call more complicated functions with
+several arguments. See README for examples</p></li>
+<li><p><strong>path</strong> – position in self at which the value shall be modified. See get() / README</p></li>
+<li><p><strong>node_types</strong> – * Can be used to manually define if the nodes along path are supposed to be (l)ists or
+(d)icts. E.g. “dll” to create a dict at level 1, and lists at level 2 and 3. ” ” can also be used -
+space doesn’t enforce a node-type like d or l. For ” “, existing nodes are traversed if possible,
+otherwise default_node_type is used to create new nodes. Default “”, interpreted as ” ” at each level.</p></li>
+<li><p><strong>list_insert</strong> – * Level at which a new node shall be inserted into the list instead of traversing the
+existing node in the list at that index. See README</p></li>
+<li><p><strong>value_split</strong> – * used to split path into a list if path is a str, default ” “</p></li>
+<li><p><strong>copy</strong> – Create a copy and make that copy serializable. Default is to modify self directly</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>a serializable object that only contains types allowed in json or yaml</p>
+</dd>
+<dt class="field-odd">Raises</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>TypeError</strong> – if root node is not a dict or list (serialize can’t fix that for the root node)</p></li>
+<li><p><strong>ValueError</strong> – if tuple_keys is not defined in mod_functions and a dict has tuples as keys</p></li>
+<li><p><strong>Exception</strong> – Can raise any exception if it occurs in one of the mod_functions</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="fagus.fagus.Fagus.merge">
+<span class="sig-name descname"><span class="pre">merge</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">obj</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="fagus.iterators.html#fagus.iterators.FagusIterator" title="fagus.iterators.FagusIterator"><span class="pre">fagus.iterators.FagusIterator</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">collections.abc.Collection</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">new_value_action</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'r'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">extend_from</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">9223372036854775807</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">update_from</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">9223372036854775807</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fagus</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">Ellipsis</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">copy</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">copy_obj</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">value_split</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">Ellipsis</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">node_types</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">Ellipsis</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">list_insert</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">Ellipsis</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">default_node_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">Ellipsis</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">collections.abc.Collection</span></span></span><a class="headerlink" href="#fagus.fagus.Fagus.merge" title="Permalink to this definition"></a></dt>
+<dd><p>Merges two or more tree-objects to update and extend the root node</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>obj</strong> – tree-object that shall be merged. Can also be a FagusIterator returned from iter() to only merge
+values matching a filter defined in iter()</p></li>
+<li><p><strong>path</strong> – position in root where the new objects shall be merged, default “”</p></li>
+<li><p><strong>new_value_action</strong> – This parameter defines what merge is supposed to do if a value at a path is present in the
+root and in one of the objects to merge. The possible values are: (r)eplace - the value in the root is
+replaced with the new value, this is the default behaviour; (i)gnore - the value in the root is not
+updated; (a)ppend - the old and new value are both put into a list, and thus aggregated</p></li>
+<li><p><strong>extend_from</strong> – By default, lists are traversed, so the value at index i will be compared in both lists. If
+at some point you rather want to just append the contents from the objects to be merged, use this
+parameter to define the level (count of keys) from which lists should be extended isf traversed. Default
+infinite (never extend lists)</p></li>
+<li><p><strong>update_from</strong> – Like extend_from, but for dicts. Allows you to define at which level the contents of the root
+should just be updated with the contents of the objects instead of traversing and comparing each value</p></li>
+<li><p><strong>fagus</strong> – whether the returned tree-object should be returned as Fagus</p></li>
+<li><p><strong>copy</strong> – Don’t modify the root node, modify and return a copy instead</p></li>
+<li><p><strong>copy_obj</strong> – The objects to be merged are not modified, but references to subnodes of the objects can be
+put into the root node. Set this to True to prevent that and keep root and objects independent</p></li>
+<li><p><strong>value_split</strong> – * used to split path into a list if path is a str, default ” “</p></li>
+<li><p><strong>node_types</strong> – * Can be used to manually define if the nodes along path are supposed to be (l)ists or
+(d)icts. E.g. “dll” to create a dict at level 1, and lists at level 2 and 3. ” ” can also be used -
+space doesn’t enforce a node-type like d or l. For ” “, existing nodes are traversed if possible,
+otherwise default_node_type is used to create new nodes. Default “”, interpreted as ” ” at each level.</p></li>
+<li><p><strong>list_insert</strong> – * Level at which a new node shall be inserted into the list instead of traversing the
+existing node in the list at that index. See README</p></li>
+<li><p><strong>default_node_type</strong> – * determines if new nodes by default should be created as (d)ict or (l)ist. Must be
+either “d” or “l”, default “d”</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>a reference to the modified root node, or a modified copy of the root node (see copy-parameter)</p>
+</dd>
+<dt class="field-odd">Raises</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ValueError</strong> – if it isn’t possible to parse an int-index from the provided key in a position where node-types
+    defines that the node shall be a list (if node-types is not l, the node will be replaced with a dict)</p></li>
+<li><p><strong>TypeError</strong> – if obj is not either a FagusIterator or a Collection. Also raised if you try to merge different
+    types of nodes at root level, e.g. a dict can only be merged with another Mapping, and a list can only
+    be merged with another Iterable. ~ is also raised if a not modifiable root node needs to be modified</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="fagus.fagus.Fagus.pop">
+<span class="sig-name descname"><span class="pre">pop</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">default</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">Ellipsis</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fagus</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">Ellipsis</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">value_split</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">Ellipsis</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#fagus.fagus.Fagus.pop" title="Permalink to this definition"></a></dt>
+<dd><p>Deletes the value at path and returns it</p>
+<p>* means that the parameter is a Fagus-Setting, see Fagus-class-docstring for more information about options</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>path</strong> – pop value at this position in self, or don’t do anything if path doesn’t exist in self</p></li>
+<li><p><strong>default</strong> – * returned if path doesn’t exist in self</p></li>
+<li><p><strong>fagus</strong> – * return the result as Fagus-object if possible (default is just to return the result)</p></li>
+<li><p><strong>value_split</strong> – * used to split path into a list if path is a str, default ” “</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>value at path if it exists, or default if it doesn’t</p>
+</dd>
+<dt class="field-odd">Raises</dt>
+<dd class="field-odd"><p><strong>TypeError</strong> – if the root node needs to be modified and isn’t modifiable (e.g. tuple or frozenset)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="fagus.fagus.Fagus.popitem">
+<span class="sig-name descname"><span class="pre">popitem</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#fagus.fagus.Fagus.popitem" title="Permalink to this definition"></a></dt>
+<dd><p>This function is not implemented in Fagus</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="fagus.fagus.Fagus.discard">
+<span class="sig-name descname"><span class="pre">discard</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">value_split</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">Ellipsis</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#fagus.fagus.Fagus.discard" title="Permalink to this definition"></a></dt>
+<dd><p>Deletes the value at path if it exists</p>
+<p>* means that the parameter is a Fagus-Setting, see Fagus-class-docstring for more information about options</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>path</strong> – pop value at this position in self, or don’t do anything if path doesn’t exist in self</p></li>
+<li><p><strong>value_split</strong> – * used to split path into a list if path is a str, default ” “</p></li>
+</ul>
+</dd>
+</dl>
+<p>Returns: None</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="fagus.fagus.Fagus.remove">
+<span class="sig-name descname"><span class="pre">remove</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">value_split</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">Ellipsis</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#fagus.fagus.Fagus.remove" title="Permalink to this definition"></a></dt>
+<dd><p>Deletes the value at path if it exists, raises KeyError if it doesn’t</p>
+<p>* means that the parameter is a Fagus-Setting, see Fagus-class-docstring for more information about options</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>path</strong> – pop value at this position in self, or don’t do anything if path doesn’t exist in self</p></li>
+<li><p><strong>value_split</strong> – * used to split path into a list if path is a str, default ” “</p></li>
+</ul>
+</dd>
+</dl>
+<p>Returns: None</p>
+<dl class="field-list simple">
+<dt class="field-odd">Raises</dt>
+<dd class="field-odd"><p><strong>KeyError</strong> – if the value at path doesn’t exist</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="fagus.fagus.Fagus.keys">
+<span class="sig-name descname"><span class="pre">keys</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">value_split</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">Ellipsis</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#fagus.fagus.Fagus.keys" title="Permalink to this definition"></a></dt>
+<dd><p>Returns keys for the node at path, or None if that node is a set or doesn’t exist / doesn’t have keys</p>
+<p>* means that the parameter is a Fagus-Setting, see Fagus-class-docstring for more information about options</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>path</strong> – get keys for node at this position in self. Default “” (gets values from the root node), See get()</p></li>
+<li><p><strong>value_split</strong> – * used to split path into a list if path is a str, default ” “</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>keys for the node at path, or an empty tuple if that node is a set or doesn’t exist / doesn’t have keys</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="fagus.fagus.Fagus.values">
+<span class="sig-name descname"><span class="pre">values</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">value_split</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">Ellipsis</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fagus</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">Ellipsis</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">copy</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#fagus.fagus.Fagus.values" title="Permalink to this definition"></a></dt>
+<dd><p>Returns values for node at path</p>
+<p>* means that the parameter is a Fagus-Setting, see Fagus-class-docstring for more information about options</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>path</strong> – get values at this position in self, default “” (gets values from the root node). See get()</p></li>
+<li><p><strong>value_split</strong> – * used to split path into a list if path is a str, default ” “</p></li>
+<li><p><strong>fagus</strong> – * converts sub-nodes into Fagus-objects in the returned list of values, default False</p></li>
+<li><p><strong>copy</strong> – ~ creates a copy of the node before values() are returned. This can be beneficial if you want to make
+changes to the returned nodes, but you don’t want to change self. Default False</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>values for the node at path. Returns an empty tuple if the value doesn’t exist, or just the value in a
+tuple if the node isn’t iterable.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="fagus.fagus.Fagus.items">
+<span class="sig-name descname"><span class="pre">items</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">value_split</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">Ellipsis</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fagus</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">Ellipsis</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">copy</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#fagus.fagus.Fagus.items" title="Permalink to this definition"></a></dt>
+<dd><p>Returns in iterator of (key, value)-tuples in self, like dict.items()</p>
+<p>* means that the parameter is a Fagus-Setting, see Fagus-class-docstring for more information about options</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>path</strong> – get items at this position in self, Default “” (gets values from the root node). See get()</p></li>
+<li><p><strong>value_split</strong> – * used to split path into a list if path is a str, default ” “</p></li>
+<li><p><strong>fagus</strong> – * converts sub-nodes into Fagus-objects in the returned iterator, default False</p></li>
+<li><p><strong>copy</strong> – ~ creates a copy of the node before items() are returned. This can be beneficial if you want to make
+changes to the returned nodes, but you don’t want to change self. Default False</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>iterator of (key, value)-tuples in self, like dict.items()</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="fagus.fagus.Fagus.clear">
+<span class="sig-name descname"><span class="pre">clear</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">value_split</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">Ellipsis</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">copy</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fagus</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">Ellipsis</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">collections.abc.Collection</span></span></span><a class="headerlink" href="#fagus.fagus.Fagus.clear" title="Permalink to this definition"></a></dt>
+<dd><p>Removes all elements from node at path.</p>
+<p>* means that the parameter is a Fagus-Setting, see Fagus-class-docstring for more information about options</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>path</strong> – clear at this position in self, Default “” (gets values from the root node). See get()</p></li>
+<li><p><strong>value_split</strong> – * used to split path into a list if path is a str, default ” “</p></li>
+<li><p><strong>copy</strong> – if ~ is set, a copy of self is modified and then returned (thus self is not modified), default False</p></li>
+<li><p><strong>fagus</strong> – * return self as a Fagus-object if it is a node (tuple / list / dict), default False</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>self as a node if fagus is set, or a modified copy of self if copy is set</p>
+</dd>
+<dt class="field-odd">Raises</dt>
+<dd class="field-odd"><p><strong>TypeError</strong> – if the root node needs to be modified and isn’t modifiable (e.g. tuple or frozenset)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="fagus.fagus.Fagus.contains">
+<span class="sig-name descname"><span class="pre">contains</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">value_split</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">Ellipsis</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#fagus.fagus.Fagus.contains" title="Permalink to this definition"></a></dt>
+<dd><p>Check if value is present in the node at path</p>
+<p>* means that the parameter is a Fagus-Setting, see Fagus-class-docstring for more information about options</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>value</strong> – value to check</p></li>
+<li><p><strong>path</strong> – check if value is in node at this position in self, Default “” (checks root node). See get()</p></li>
+<li><p><strong>value_split</strong> – * used to split path into a list if path is a str, default ” “</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>whether value is in node at path in self. returns value == node if the node isn’t iterable, and false if
+path doesn’t exit in self</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="fagus.fagus.Fagus.count">
+<span class="sig-name descname"><span class="pre">count</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">value_split</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">Ellipsis</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">int</span></span></span><a class="headerlink" href="#fagus.fagus.Fagus.count" title="Permalink to this definition"></a></dt>
+<dd><p>Check the number of elements in the node at path</p>
+<p>* means that the parameter is a Fagus-Setting, see Fagus-class-docstring for more information about options</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>path</strong> – position in self where the number of elements shall be found.Default “” (checks root node). See get()</p></li>
+<li><p><strong>value_split</strong> – * used to split path into a list if path is a str, default ” “</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>the number of elements in the node at path. if there is no node at path, 0 is returned. If the element
+at path is not a node, 1 is returned</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="fagus.fagus.Fagus.index">
+<span class="sig-name descname"><span class="pre">index</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">Ellipsis</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stop</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">Ellipsis</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">all_</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">value_split</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">Ellipsis</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">collections.abc.Sequence</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#fagus.fagus.Fagus.index" title="Permalink to this definition"></a></dt>
+<dd><p>Returns the index / key of the specified value in the node at path if it exists</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>value</strong> – ~ to search index for</p></li>
+<li><p><strong>start</strong> – start searching at this index. Only applicable if the node at path is a list / tuple</p></li>
+<li><p><strong>stop</strong> – stop searching at this index. Only applicable if the node at path is a list / tuple</p></li>
+<li><p><strong>path</strong> – position in self where the node shall be searched for value. Default “” (checks root node). See get()</p></li>
+<li><p><strong>all_</strong> – returns all matching indices / keys in a generator (instead of only the first)</p></li>
+<li><p><strong>value_split</strong> – * used to split path into a list if path is a str, default ” “</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>The first index of value if the node at path is a list, or the first key containing value if the node at
+path is a dict. True if the node at path is a Set and contains value. If the element can’t be found in the
+node at path, or there is no Collection at path, None is returned (instead of a ValueError).</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="fagus.fagus.Fagus.isdisjoint">
+<span class="sig-name descname"><span class="pre">isdisjoint</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">other</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">collections.abc.Iterable</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">value_split</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">Ellipsis</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dict_</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'keys'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#fagus.fagus.Fagus.isdisjoint" title="Permalink to this definition"></a></dt>
+<dd><p>Returns whether the other iterable is disjoint (has no common items) with the node at path</p>
+<p>* means that the parameter is a Fagus-Setting, see Fagus-class-docstring for more information about options</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>other</strong> – other object to check</p></li>
+<li><p><strong>path</strong> – check if the node at this position in self, is disjoint from other</p></li>
+<li><p><strong>value_split</strong> – * used to split path into a list if path is a str, default ” “</p></li>
+<li><p><strong>dict_</strong> – use (k)eys, (v)alues or (i)tems for if value is a dict. Default keys</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="simple">
+<dt>Returns: whether the other iterable is disjoint from the value at path. If value is a dict, the keys are used.</dt><dd><p>Checks if value is present in other if value isn’t iterable. Returns True if there is no value at path.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="fagus.fagus.Fagus.child">
+<span class="sig-name descname"><span class="pre">child</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">obj</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">collections.abc.Collection</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#fagus.fagus.Fagus" title="fagus.fagus.Fagus"><span class="pre">fagus.fagus.Fagus</span></a></span></span><a class="headerlink" href="#fagus.fagus.Fagus.child" title="Permalink to this definition"></a></dt>
+<dd><p>Creates a Fagus-object for obj that has the same options as self</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="fagus.fagus.Fagus.reversed">
+<span class="sig-name descname"><span class="pre">reversed</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fagus</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">Ellipsis</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">value_split</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">Ellipsis</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">copy</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#fagus.fagus.Fagus.reversed" title="Permalink to this definition"></a></dt>
+<dd><p>Get reversed child-node at path if that node is a list</p>
+<p>* means that the parameter is a Fagus-Setting, see Fagus-class-docstring for more information about options</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>path</strong> – position in self where a list / tuple shall be returned reversed</p></li>
+<li><p><strong>fagus</strong> – * converts sub-nodes into Fagus-objects in the returned iterator, default False</p></li>
+<li><p><strong>value_split</strong> – * used to split path into a list if path is a str, default ” “</p></li>
+<li><p><strong>copy</strong> – ~ creates a copy of the node before it is returned reversed(). This can be beneficial if you want to
+make changes to the returned nodes, but you don’t want to change self. Default False</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>a reversed iterator on the node at path (empty if path doesn’t exist)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="fagus.fagus.Fagus.reverse">
+<span class="sig-name descname"><span class="pre">reverse</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fagus</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">Ellipsis</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">value_split</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">Ellipsis</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">copy</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">collections.abc.Collection</span></span></span><a class="headerlink" href="#fagus.fagus.Fagus.reverse" title="Permalink to this definition"></a></dt>
+<dd><p>Reverse child-node at path if that node exists and is reversible</p>
+<p>* means that the parameter is a Fagus-Setting, see Fagus-class-docstring for more information about options</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>path</strong> – position in self where a list / tuple shall be reversed</p></li>
+<li><p><strong>fagus</strong> – * converts sub-nodes into Fagus-objects in the returned iterator, default False</p></li>
+<li><p><strong>value_split</strong> – * used to split path into a list if path is a str, default ” “</p></li>
+<li><p><strong>copy</strong> – ~ creates a copy of the node before it is returned reversed(). This can be beneficial if you want to
+make changes to the returned nodes, but you don’t want to change self. Default False</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>self as a node if fagus is set, or a modified copy of self if copy is set</p>
+</dd>
+<dt class="field-odd">Raises</dt>
+<dd class="field-odd"><p><strong>TypeError</strong> – if the root node needs to be modified and isn’t modifiable (e.g. tuple or frozenset)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="fagus.fagus.Fagus.copy">
+<span class="sig-name descname"><span class="pre">copy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">deep</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#fagus.fagus.Fagus.copy" title="Permalink to this definition"></a></dt>
+<dd><p>Creates a copy of self. Creates a recursive shallow copy by default, or a copy.deepcopy() if deep is set.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="fagus.fagus.Fagus.options">
+<span class="sig-name descname"><span class="pre">options</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">options</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">dict</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">get_default_options</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reset</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span></span></span><a class="headerlink" href="#fagus.fagus.Fagus.options" title="Permalink to this definition"></a></dt>
+<dd><p>Function to set multiple Fagus-options in one line</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>options</strong> – dict with options that shall be set</p></li>
+<li><p><strong>get_default_options</strong> – return all options (include default-values). Default: only return options that are set</p></li>
+<li><p><strong>reset</strong> – if ~ is set, all options are reset before options is set</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>a dict of options that are set, or all options if get_default_options is set</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="fagus.fagus.Fagus.__copy__">
+<span class="sig-name descname"><span class="pre">__copy__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">recursive</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#fagus.fagus.Fagus.__copy__" title="Permalink to this definition"></a></dt>
+<dd><p>Recursively creates a shallow-copy of self</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="fagus.fagus.Fagus.__call__">
+<span class="sig-name descname"><span class="pre">__call__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#fagus.fagus.Fagus.__call__" title="Permalink to this definition"></a></dt>
+<dd><p>Calling the Fagus-object returns the root node the Fagus-object is wrapped around (equivalent to .root)</p>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">fagus</span> <span class="kn">import</span> <span class="n">Fagus</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">a</span> <span class="o">=</span> <span class="n">Fagus</span><span class="p">({</span><span class="s2">&quot;f&quot;</span><span class="p">:</span> <span class="s2">&quot;q&quot;</span><span class="p">})</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">a</span>
+<span class="go">Fagus({&#39;f&#39;: &#39;q&#39;})</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">a</span><span class="p">()</span>
+<span class="go">{&#39;f&#39;: &#39;q&#39;}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">a</span><span class="o">.</span><span class="n">root</span>  <span class="c1"># .root returns the root-object in the same way as ()</span>
+<span class="go">{&#39;f&#39;: &#39;q&#39;}</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>the root object Fagus is wrapped around</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="fagus.fagus.Fagus.__getattr__">
+<span class="sig-name descname"><span class="pre">__getattr__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">attr</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#fagus.fagus.Fagus.__getattr__" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="fagus.fagus.Fagus.__getitem__">
+<span class="sig-name descname"><span class="pre">__getitem__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">item</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#fagus.fagus.Fagus.__getitem__" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="fagus.fagus.Fagus.__setattr__">
+<span class="sig-name descname"><span class="pre">__setattr__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">attr</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#fagus.fagus.Fagus.__setattr__" title="Permalink to this definition"></a></dt>
+<dd><p>Implement setattr(self, name, value).</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="fagus.fagus.Fagus.__setitem__">
+<span class="sig-name descname"><span class="pre">__setitem__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#fagus.fagus.Fagus.__setitem__" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="fagus.fagus.Fagus.__delattr__">
+<span class="sig-name descname"><span class="pre">__delattr__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">attr</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#fagus.fagus.Fagus.__delattr__" title="Permalink to this definition"></a></dt>
+<dd><p>Implement delattr(self, name).</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="fagus.fagus.Fagus.__delitem__">
+<span class="sig-name descname"><span class="pre">__delitem__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#fagus.fagus.Fagus.__delitem__" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="fagus.fagus.Fagus.__iter__">
+<span class="sig-name descname"><span class="pre">__iter__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#fagus.fagus.Fagus.__iter__" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="fagus.fagus.Fagus.__hash__">
+<span class="sig-name descname"><span class="pre">__hash__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#fagus.fagus.Fagus.__hash__" title="Permalink to this definition"></a></dt>
+<dd><p>Return hash(self).</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="fagus.fagus.Fagus.__eq__">
+<span class="sig-name descname"><span class="pre">__eq__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">other</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#fagus.fagus.Fagus.__eq__" title="Permalink to this definition"></a></dt>
+<dd><p>Return self==value.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="fagus.fagus.Fagus.__ne__">
+<span class="sig-name descname"><span class="pre">__ne__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">other</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#fagus.fagus.Fagus.__ne__" title="Permalink to this definition"></a></dt>
+<dd><p>Return self!=value.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="fagus.fagus.Fagus.__lt__">
+<span class="sig-name descname"><span class="pre">__lt__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">other</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#fagus.fagus.Fagus.__lt__" title="Permalink to this definition"></a></dt>
+<dd><p>Return self&lt;value.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="fagus.fagus.Fagus.__le__">
+<span class="sig-name descname"><span class="pre">__le__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">other</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#fagus.fagus.Fagus.__le__" title="Permalink to this definition"></a></dt>
+<dd><p>Return self&lt;=value.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="fagus.fagus.Fagus.__gt__">
+<span class="sig-name descname"><span class="pre">__gt__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">other</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#fagus.fagus.Fagus.__gt__" title="Permalink to this definition"></a></dt>
+<dd><p>Return self&gt;value.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="fagus.fagus.Fagus.__ge__">
+<span class="sig-name descname"><span class="pre">__ge__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">other</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#fagus.fagus.Fagus.__ge__" title="Permalink to this definition"></a></dt>
+<dd><p>Return self&gt;=value.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="fagus.fagus.Fagus.__contains__">
+<span class="sig-name descname"><span class="pre">__contains__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#fagus.fagus.Fagus.__contains__" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="fagus.fagus.Fagus.__len__">
+<span class="sig-name descname"><span class="pre">__len__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#fagus.fagus.Fagus.__len__" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="fagus.fagus.Fagus.__bool__">
+<span class="sig-name descname"><span class="pre">__bool__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#fagus.fagus.Fagus.__bool__" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="fagus.fagus.Fagus.__repr__">
+<span class="sig-name descname"><span class="pre">__repr__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#fagus.fagus.Fagus.__repr__" title="Permalink to this definition"></a></dt>
+<dd><p>Return repr(self).</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="fagus.fagus.Fagus.__str__">
+<span class="sig-name descname"><span class="pre">__str__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#fagus.fagus.Fagus.__str__" title="Permalink to this definition"></a></dt>
+<dd><p>Return str(self).</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="fagus.fagus.Fagus.__iadd__">
+<span class="sig-name descname"><span class="pre">__iadd__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#fagus.fagus.Fagus.__iadd__" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="fagus.fagus.Fagus.__add__">
+<span class="sig-name descname"><span class="pre">__add__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">other</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#fagus.fagus.Fagus.__add__" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="fagus.fagus.Fagus.__radd__">
+<span class="sig-name descname"><span class="pre">__radd__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">other</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#fagus.fagus.Fagus.__radd__" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="fagus.fagus.Fagus.__isub__">
+<span class="sig-name descname"><span class="pre">__isub__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">other</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#fagus.fagus.Fagus.__isub__" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="fagus.fagus.Fagus.__sub__">
+<span class="sig-name descname"><span class="pre">__sub__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">other</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#fagus.fagus.Fagus.__sub__" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="fagus.fagus.Fagus.__rsub__">
+<span class="sig-name descname"><span class="pre">__rsub__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">other</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#fagus.fagus.Fagus.__rsub__" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="fagus.fagus.Fagus.__imul__">
+<span class="sig-name descname"><span class="pre">__imul__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">times</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#fagus.fagus.Fagus.__imul__" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="fagus.fagus.Fagus.__mul__">
+<span class="sig-name descname"><span class="pre">__mul__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">times</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#fagus.fagus.Fagus.__mul__" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="fagus.fagus.Fagus.__rmul__">
+<span class="sig-name descname"><span class="pre">__rmul__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">times</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#fagus.fagus.Fagus.__rmul__" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="fagus.fagus.Fagus.__abstractmethods__">
+<span class="sig-name descname"><span class="pre">__abstractmethods__</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">frozenset({})</span></em><a class="headerlink" href="#fagus.fagus.Fagus.__abstractmethods__" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="fagus.fagus.Fagus.__dict__">
+<span class="sig-name descname"><span class="pre">__dict__</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">mappingproxy({'__module__':</span> <span class="pre">'fagus.fagus',</span> <span class="pre">'__doc__':</span> <span class="pre">'Fagus</span> <span class="pre">is</span> <span class="pre">a</span> <span class="pre">wrapper-class</span> <span class="pre">for</span> <span class="pre">complex,</span> <span class="pre">nested</span> <span class="pre">objects</span> <span class="pre">of</span> <span class="pre">dicts</span> <span class="pre">and</span> <span class="pre">lists</span> <span class="pre">in</span> <span class="pre">Python\n\n</span>&#160;&#160;&#160; <span class="pre">Fagus</span> <span class="pre">can</span> <span class="pre">be</span> <span class="pre">used</span> <span class="pre">as</span> <span class="pre">an</span> <span class="pre">object</span> <span class="pre">by</span> <span class="pre">instantiating</span> <span class="pre">it,</span> <span class="pre">but</span> <span class="pre">it\'s</span> <span class="pre">also</span> <span class="pre">possible</span> <span class="pre">to</span> <span class="pre">use</span> <span class="pre">all</span> <span class="pre">methods</span> <span class="pre">statically</span> <span class="pre">without\n</span>&#160;&#160;&#160; <span class="pre">even</span> <span class="pre">an</span> <span class="pre">object,</span> <span class="pre">so</span> <span class="pre">that</span> <span class="pre">a</span> <span class="pre">=</span> <span class="pre">{};</span> <span class="pre">Fagus.set(a,</span> <span class="pre">&quot;top</span> <span class="pre">med&quot;,</span> <span class="pre">1)</span> <span class="pre">and</span> <span class="pre">a</span> <span class="pre">=</span> <span class="pre">Fagus({});</span> <span class="pre">a.set(1,</span> <span class="pre">&quot;top</span> <span class="pre">med&quot;)</span> <span class="pre">do</span> <span class="pre">the</span> <span class="pre">same.\n\n</span>&#160;&#160;&#160; <span class="pre">The</span> <span class="pre">root</span> <span class="pre">node</span> <span class="pre">is</span> <span class="pre">always</span> <span class="pre">modified</span> <span class="pre">directly.</span> <span class="pre">If</span> <span class="pre">you</span> <span class="pre">don\'t</span> <span class="pre">want</span> <span class="pre">to</span> <span class="pre">change</span> <span class="pre">the</span> <span class="pre">root</span> <span class="pre">node,</span> <span class="pre">all</span> <span class="pre">the</span> <span class="pre">functions</span> <span class="pre">where</span> <span class="pre">it\n</span>&#160;&#160;&#160; <span class="pre">makes</span> <span class="pre">sense</span> <span class="pre">support</span> <span class="pre">to</span> <span class="pre">rather</span> <span class="pre">modify</span> <span class="pre">a</span> <span class="pre">copy,</span> <span class="pre">and</span> <span class="pre">return</span> <span class="pre">that</span> <span class="pre">modified</span> <span class="pre">copy</span> <span class="pre">using</span> <span class="pre">the</span> <span class="pre">copy-parameter.\n\n</span>&#160;&#160;&#160; <span class="pre">Several</span> <span class="pre">parameters</span> <span class="pre">used</span> <span class="pre">in</span> <span class="pre">functions</span> <span class="pre">in</span> <span class="pre">Fagus</span> <span class="pre">work</span> <span class="pre">as</span> <span class="pre">options</span> <span class="pre">so</span> <span class="pre">that</span> <span class="pre">you</span> <span class="pre">don\'t</span> <span class="pre">have</span> <span class="pre">to</span> <span class="pre">specify</span> <span class="pre">them</span> <span class="pre">each</span> <span class="pre">time</span> <span class="pre">you\n</span>&#160;&#160;&#160; <span class="pre">run</span> <span class="pre">a</span> <span class="pre">function.</span> <span class="pre">In</span> <span class="pre">the</span> <span class="pre">docstrings,</span> <span class="pre">these</span> <span class="pre">options</span> <span class="pre">are</span> <span class="pre">marked</span> <span class="pre">with</span> <span class="pre">a</span> <span class="pre">\\*,</span> <span class="pre">e.g.</span> <span class="pre">the</span> <span class="pre">fagus</span> <span class="pre">parameter</span> <span class="pre">is</span> <span class="pre">an</span> <span class="pre">option.\n</span>&#160;&#160;&#160; <span class="pre">Options</span> <span class="pre">can</span> <span class="pre">be</span> <span class="pre">specified</span> <span class="pre">at</span> <span class="pre">three</span> <span class="pre">levels</span> <span class="pre">with</span> <span class="pre">increasing</span> <span class="pre">precedence:</span> <span class="pre">at</span> <span class="pre">class-level</span> <span class="pre">(Fagus.fagus</span> <span class="pre">=</span> <span class="pre">True),</span> <span class="pre">at\n</span>&#160;&#160;&#160; <span class="pre">object-level</span> <span class="pre">(a</span> <span class="pre">=</span> <span class="pre">Fagus(),</span> <span class="pre">a.fagus</span> <span class="pre">=</span> <span class="pre">True)</span> <span class="pre">and</span> <span class="pre">in</span> <span class="pre">each</span> <span class="pre">function-call</span> <span class="pre">(a.get(&quot;b&quot;,</span> <span class="pre">fagus=True)).</span> <span class="pre">If</span> <span class="pre">you</span> <span class="pre">generally</span> <span class="pre">want\n</span>&#160;&#160;&#160; <span class="pre">to</span> <span class="pre">change</span> <span class="pre">an</span> <span class="pre">option,</span> <span class="pre">change</span> <span class="pre">it</span> <span class="pre">at</span> <span class="pre">class-level</span> <span class="pre">-</span> <span class="pre">all</span> <span class="pre">objects</span> <span class="pre">in</span> <span class="pre">that</span> <span class="pre">file</span> <span class="pre">will</span> <span class="pre">inherit</span> <span class="pre">this</span> <span class="pre">option.</span> <span class="pre">If</span> <span class="pre">you</span> <span class="pre">want</span> <span class="pre">to\n</span>&#160;&#160;&#160; <span class="pre">change</span> <span class="pre">the</span> <span class="pre">option</span> <span class="pre">specifically</span> <span class="pre">for</span> <span class="pre">one</span> <span class="pre">object,</span> <span class="pre">change</span> <span class="pre">the</span> <span class="pre">option</span> <span class="pre">at</span> <span class="pre">object-level.</span> <span class="pre">If</span> <span class="pre">you</span> <span class="pre">only</span> <span class="pre">want</span> <span class="pre">to</span> <span class="pre">change</span> <span class="pre">the\n</span>&#160;&#160;&#160; <span class="pre">option</span> <span class="pre">for</span> <span class="pre">one</span> <span class="pre">single</span> <span class="pre">run</span> <span class="pre">of</span> <span class="pre">a</span> <span class="pre">function,</span> <span class="pre">put</span> <span class="pre">it</span> <span class="pre">as</span> <span class="pre">a</span> <span class="pre">function-parameter.</span> <span class="pre">More</span> <span class="pre">thorough</span> <span class="pre">examples</span> <span class="pre">of</span> <span class="pre">options</span> <span class="pre">can</span> <span class="pre">be\n</span>&#160;&#160;&#160; <span class="pre">found</span> <span class="pre">in</span> <span class="pre">README.md.\n</span>&#160;&#160;&#160; <span class="pre">',</span> <span class="pre">'__init__':</span> <span class="pre">&lt;function</span> <span class="pre">Fagus.__init__&gt;,</span> <span class="pre">'get':</span> <span class="pre">&lt;function</span> <span class="pre">Fagus.get&gt;,</span> <span class="pre">'iter':</span> <span class="pre">&lt;function</span> <span class="pre">Fagus.iter&gt;,</span> <span class="pre">'filter':</span> <span class="pre">&lt;function</span> <span class="pre">Fagus.filter&gt;,</span> <span class="pre">'split':</span> <span class="pre">&lt;function</span> <span class="pre">Fagus.split&gt;,</span> <span class="pre">'_split_r':</span> <span class="pre">&lt;staticmethod</span> <span class="pre">object&gt;,</span> <span class="pre">'set':</span> <span class="pre">&lt;function</span> <span class="pre">Fagus.set&gt;,</span> <span class="pre">'append':</span> <span class="pre">&lt;function</span> <span class="pre">Fagus.append&gt;,</span> <span class="pre">'extend':</span> <span class="pre">&lt;function</span> <span class="pre">Fagus.extend&gt;,</span> <span class="pre">'insert':</span> <span class="pre">&lt;function</span> <span class="pre">Fagus.insert&gt;,</span> <span class="pre">'add':</span> <span class="pre">&lt;function</span> <span class="pre">Fagus.add&gt;,</span> <span class="pre">'update':</span> <span class="pre">&lt;function</span> <span class="pre">Fagus.update&gt;,</span> <span class="pre">'_build_node':</span> <span class="pre">&lt;function</span> <span class="pre">Fagus._build_node&gt;,</span> <span class="pre">'_put_value':</span> <span class="pre">&lt;staticmethod</span> <span class="pre">object&gt;,</span> <span class="pre">'setdefault':</span> <span class="pre">&lt;function</span> <span class="pre">Fagus.setdefault&gt;,</span> <span class="pre">'mod':</span> <span class="pre">&lt;function</span> <span class="pre">Fagus.mod&gt;,</span> <span class="pre">'mod_all':</span> <span class="pre">&lt;function</span> <span class="pre">Fagus.mod_all&gt;,</span> <span class="pre">'serialize':</span> <span class="pre">&lt;function</span> <span class="pre">Fagus.serialize&gt;,</span> <span class="pre">'_serialize_r':</span> <span class="pre">&lt;staticmethod</span> <span class="pre">object&gt;,</span> <span class="pre">'_serializable_value':</span> <span class="pre">&lt;staticmethod</span> <span class="pre">object&gt;,</span> <span class="pre">'merge':</span> <span class="pre">&lt;function</span> <span class="pre">Fagus.merge&gt;,</span> <span class="pre">'pop':</span> <span class="pre">&lt;function</span> <span class="pre">Fagus.pop&gt;,</span> <span class="pre">'popitem':</span> <span class="pre">&lt;function</span> <span class="pre">Fagus.popitem&gt;,</span> <span class="pre">'discard':</span> <span class="pre">&lt;function</span> <span class="pre">Fagus.discard&gt;,</span> <span class="pre">'remove':</span> <span class="pre">&lt;function</span> <span class="pre">Fagus.remove&gt;,</span> <span class="pre">'keys':</span> <span class="pre">&lt;function</span> <span class="pre">Fagus.keys&gt;,</span> <span class="pre">'values':</span> <span class="pre">&lt;function</span> <span class="pre">Fagus.values&gt;,</span> <span class="pre">'items':</span> <span class="pre">&lt;function</span> <span class="pre">Fagus.items&gt;,</span> <span class="pre">'clear':</span> <span class="pre">&lt;function</span> <span class="pre">Fagus.clear&gt;,</span> <span class="pre">'contains':</span> <span class="pre">&lt;function</span> <span class="pre">Fagus.contains&gt;,</span> <span class="pre">'count':</span> <span class="pre">&lt;function</span> <span class="pre">Fagus.count&gt;,</span> <span class="pre">'index':</span> <span class="pre">&lt;function</span> <span class="pre">Fagus.index&gt;,</span> <span class="pre">'isdisjoint':</span> <span class="pre">&lt;function</span> <span class="pre">Fagus.isdisjoint&gt;,</span> <span class="pre">'child':</span> <span class="pre">&lt;function</span> <span class="pre">Fagus.child&gt;,</span> <span class="pre">'reversed':</span> <span class="pre">&lt;function</span> <span class="pre">Fagus.reversed&gt;,</span> <span class="pre">'reverse':</span> <span class="pre">&lt;function</span> <span class="pre">Fagus.reverse&gt;,</span> <span class="pre">'copy':</span> <span class="pre">&lt;function</span> <span class="pre">Fagus.copy&gt;,</span> <span class="pre">'options':</span> <span class="pre">&lt;function</span> <span class="pre">Fagus.options&gt;,</span> <span class="pre">'_opt':</span> <span class="pre">&lt;function</span> <span class="pre">Fagus._opt&gt;,</span> <span class="pre">'_ensure_mutable_node':</span> <span class="pre">&lt;staticmethod</span> <span class="pre">object&gt;,</span> <span class="pre">'_get_mutable_node':</span> <span class="pre">&lt;function</span> <span class="pre">Fagus._get_mutable_node&gt;,</span> <span class="pre">'_node_type':</span> <span class="pre">&lt;staticmethod</span> <span class="pre">object&gt;,</span> <span class="pre">'_hash':</span> <span class="pre">&lt;function</span> <span class="pre">Fagus._hash&gt;,</span> <span class="pre">'__copy__':</span> <span class="pre">&lt;function</span> <span class="pre">Fagus.__copy__&gt;,</span> <span class="pre">'__call__':</span> <span class="pre">&lt;function</span> <span class="pre">Fagus.__call__&gt;,</span> <span class="pre">'__getattr__':</span> <span class="pre">&lt;function</span> <span class="pre">Fagus.__getattr__&gt;,</span> <span class="pre">'__getitem__':</span> <span class="pre">&lt;function</span> <span class="pre">Fagus.__getitem__&gt;,</span> <span class="pre">'__setattr__':</span> <span class="pre">&lt;function</span> <span class="pre">Fagus.__setattr__&gt;,</span> <span class="pre">'__setitem__':</span> <span class="pre">&lt;function</span> <span class="pre">Fagus.__setitem__&gt;,</span> <span class="pre">'__delattr__':</span> <span class="pre">&lt;function</span> <span class="pre">Fagus.__delattr__&gt;,</span> <span class="pre">'__delitem__':</span> <span class="pre">&lt;function</span> <span class="pre">Fagus.__delitem__&gt;,</span> <span class="pre">'__iter__':</span> <span class="pre">&lt;function</span> <span class="pre">Fagus.__iter__&gt;,</span> <span class="pre">'__hash__':</span> <span class="pre">&lt;function</span> <span class="pre">Fagus.__hash__&gt;,</span> <span class="pre">'__eq__':</span> <span class="pre">&lt;function</span> <span class="pre">Fagus.__eq__&gt;,</span> <span class="pre">'__ne__':</span> <span class="pre">&lt;function</span> <span class="pre">Fagus.__ne__&gt;,</span> <span class="pre">'__lt__':</span> <span class="pre">&lt;function</span> <span class="pre">Fagus.__lt__&gt;,</span> <span class="pre">'__le__':</span> <span class="pre">&lt;function</span> <span class="pre">Fagus.__le__&gt;,</span> <span class="pre">'__gt__':</span> <span class="pre">&lt;function</span> <span class="pre">Fagus.__gt__&gt;,</span> <span class="pre">'__ge__':</span> <span class="pre">&lt;function</span> <span class="pre">Fagus.__ge__&gt;,</span> <span class="pre">'__contains__':</span> <span class="pre">&lt;function</span> <span class="pre">Fagus.__contains__&gt;,</span> <span class="pre">'__len__':</span> <span class="pre">&lt;function</span> <span class="pre">Fagus.__len__&gt;,</span> <span class="pre">'__bool__':</span> <span class="pre">&lt;function</span> <span class="pre">Fagus.__bool__&gt;,</span> <span class="pre">'__repr__':</span> <span class="pre">&lt;function</span> <span class="pre">Fagus.__repr__&gt;,</span> <span class="pre">'__str__':</span> <span class="pre">&lt;function</span> <span class="pre">Fagus.__str__&gt;,</span> <span class="pre">'__iadd__':</span> <span class="pre">&lt;function</span> <span class="pre">Fagus.__iadd__&gt;,</span> <span class="pre">'__add__':</span> <span class="pre">&lt;function</span> <span class="pre">Fagus.__add__&gt;,</span> <span class="pre">'__radd__':</span> <span class="pre">&lt;function</span> <span class="pre">Fagus.__radd__&gt;,</span> <span class="pre">'__isub__':</span> <span class="pre">&lt;function</span> <span class="pre">Fagus.__isub__&gt;,</span> <span class="pre">'__sub__':</span> <span class="pre">&lt;function</span> <span class="pre">Fagus.__sub__&gt;,</span> <span class="pre">'__rsub__':</span> <span class="pre">&lt;function</span> <span class="pre">Fagus.__rsub__&gt;,</span> <span class="pre">'__imul__':</span> <span class="pre">&lt;function</span> <span class="pre">Fagus.__imul__&gt;,</span> <span class="pre">'__mul__':</span> <span class="pre">&lt;function</span> <span class="pre">Fagus.__mul__&gt;,</span> <span class="pre">'__rmul__':</span> <span class="pre">&lt;function</span> <span class="pre">Fagus.__rmul__&gt;,</span> <span class="pre">'__reversed__':</span> <span class="pre">&lt;function</span> <span class="pre">Fagus.__reversed__&gt;,</span> <span class="pre">'__reduce__':</span> <span class="pre">&lt;function</span> <span class="pre">Fagus.__reduce__&gt;,</span> <span class="pre">'__reduce_ex__':</span> <span class="pre">&lt;function</span> <span class="pre">Fagus.__reduce_ex__&gt;,</span> <span class="pre">'__dict__':</span> <span class="pre">&lt;attribute</span> <span class="pre">'__dict__'</span> <span class="pre">of</span> <span class="pre">'Fagus'</span> <span class="pre">objects&gt;,</span> <span class="pre">'__weakref__':</span> <span class="pre">&lt;attribute</span> <span class="pre">'__weakref__'</span> <span class="pre">of</span> <span class="pre">'Fagus'</span> <span class="pre">objects&gt;,</span> <span class="pre">'__abstractmethods__':</span> <span class="pre">frozenset(),</span> <span class="pre">'_abc_impl':</span> <span class="pre">&lt;_abc_data</span> <span class="pre">object&gt;,</span> <span class="pre">'__annotations__':</span> <span class="pre">{}})</span></em><a class="headerlink" href="#fagus.fagus.Fagus.__dict__" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="fagus.fagus.Fagus.__module__">
+<span class="sig-name descname"><span class="pre">__module__</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'fagus.fagus'</span></em><a class="headerlink" href="#fagus.fagus.Fagus.__module__" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="fagus.fagus.Fagus.__reversed__">
+<span class="sig-name descname"><span class="pre">__reversed__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#fagus.fagus.Fagus.__reversed__" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="fagus.fagus.Fagus.__weakref__">
+<span class="sig-name descname"><span class="pre">__weakref__</span></span><a class="headerlink" href="#fagus.fagus.Fagus.__weakref__" title="Permalink to this definition"></a></dt>
+<dd><p>list of weak references to the object (if defined)</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="fagus.fagus.Fagus.__reduce__">
+<span class="sig-name descname"><span class="pre">__reduce__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#fagus.fagus.Fagus.__reduce__" title="Permalink to this definition"></a></dt>
+<dd><p>Helper for pickle.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="fagus.fagus.Fagus.__reduce_ex__">
+<span class="sig-name descname"><span class="pre">__reduce_ex__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">protocol</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#fagus.fagus.Fagus.__reduce_ex__" title="Permalink to this definition"></a></dt>
+<dd><p>Helper for pickle.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="fagus.html" class="btn btn-neutral float-left" title="fagus package" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="fagus.filters.html" class="btn btn-neutral float-right" title="fagus.filters module" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Lukas Neuenschwander.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+</body>
+</html>

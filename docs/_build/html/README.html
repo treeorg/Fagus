@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Fagus &mdash; Fagus 1.0.1 documentation</title>
+      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="_static/wider_page.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="fagus package" href="fagus.html" />
+    <link rel="prev" title="ISC License" href="LICENSE.html" />
+</head>
+
+<body class="wy-body-for-nav">
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="index.html" class="icon icon-home"> Fagus
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="LICENSE.html">ISC License</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">README</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#code-and-tests-ready-documentation-still-work-in-progress">Code and tests ready, documentation still WORK IN PROGRESS</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#basic-principles">Basic principles</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#introduction-what-it-solves">Introduction – What it solves</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#the-path-parameter">The path-parameter</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#static-and-instance-usage">Static and instance usage</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#fagus-options">Fagus options</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#default">default</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#default-node-type">default_node_type</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#if">if_</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#iter-fill">iter_fill</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#iter-nodes">iter_nodes</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#value-split">value_split</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#iterating-over-nested-objects">Iterating over nested objects</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#skipping-nodes-in-iteration">Skipping nodes in iteration.</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="fagus.html">fagus package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="CHANGELOG.html">CHANGELOG</a></li>
+<li class="toctree-l1"><a class="reference internal" href="CONTRIBUTING.html">CONTRIBUTING</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Fagus</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+      <li>Fagus</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/README.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+
+  <section id="fagus">
+<h1>Fagus<a class="headerlink" href="#fagus" title="Permalink to this headline"></a></h1>
+<p>These days most data is converted to and from <code class="docutils literal notranslate"><span class="pre">json</span></code> and <code class="docutils literal notranslate"><span class="pre">yaml</span></code> while it is sent back and forth to and from API’s. Often this data is deeply nested. <code class="docutils literal notranslate"><span class="pre">Fagus</span></code> is a Python-library that makes it easier to work with nested dicts and lists. It allows you to traverse and edit these tree-objects with simple function-calls that handle the most common errors and exceptions internally. The name fagus is actually the latin name for the genus of beech-trees.</p>
+<section id="code-and-tests-ready-documentation-still-work-in-progress">
+<h2>Code and tests ready, documentation still WORK IN PROGRESS<a class="headerlink" href="#code-and-tests-ready-documentation-still-work-in-progress" title="Permalink to this headline"></a></h2>
+<p>This documentation is still Work in Progress. I have some more ideas for features, but most of the coding is done. The code is tested as good as possible, but of course there still might be bugs as this library has just been released. Just report them so we get them away ;). Even though this README is not done yet, you should be able to use most of the functions based on the docstrings and some trial and error. Just ask questions <a class="reference external" href="https://github.com/treeorg/Fagus/discussions/categories/q-a">here</a> if sth is unclear. The documentation will be filled in and completed as soon as possible.</p>
+<p><strong>HAVE FUN!</strong></p>
+</section>
+<section id="basic-principles">
+<h2>Basic principles<a class="headerlink" href="#basic-principles" title="Permalink to this headline"></a></h2>
+<section id="introduction-what-it-solves">
+<h3>Introduction – What it solves<a class="headerlink" href="#introduction-what-it-solves" title="Permalink to this headline"></a></h3>
+<p>Imagine you want to fetch values from a nested dict like shown below:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="linenos">1</span><span class="gp">&gt;&gt;&gt; </span><span class="n">a</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;a1&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;b1&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;c1&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">},</span> <span class="s2">&quot;b2&quot;</span><span class="p">:</span> <span class="mi">4</span><span class="p">},</span> <span class="s2">&quot;a2&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;d1&quot;</span><span class="p">:</span> <span class="mi">6</span><span class="p">}}</span>
+<span class="linenos">2</span><span class="gp">&gt;&gt;&gt; </span><span class="n">a</span><span class="p">[</span><span class="s2">&quot;a1&quot;</span><span class="p">][</span><span class="s2">&quot;b1&quot;</span><span class="p">][</span><span class="s2">&quot;c1&quot;</span><span class="p">]</span>  <span class="c1"># prints 2, so far so good</span>
+<span class="linenos">3</span><span class="go">2</span>
+<span class="linenos">4</span><span class="gp">&gt;&gt;&gt; </span><span class="n">a</span><span class="p">[</span><span class="s2">&quot;a1&quot;</span><span class="p">][</span><span class="s2">&quot;b3&quot;</span><span class="p">][</span><span class="s2">&quot;c2&quot;</span><span class="p">]</span>  <span class="c1"># fails, because b3 doesn&#39;t exist</span>
+<span class="linenos">5</span><span class="gt">Traceback (most recent call last):</span>
+<span class="linenos">6</span> <span class="c">...</span>
+<span class="linenos">7</span><span class="gr">KeyError</span>: <span class="n">&#39;b3&#39;</span>
+</pre></div>
+</div>
+<p>The problem is that the consecutive square brackets fail if one of the nodes doesn’t exist. There are ways around, like writing <code class="docutils literal notranslate"><span class="pre">a.get(&quot;a1&quot;,</span> <span class="pre">{}).get(&quot;b3&quot;,</span> <span class="pre">{}).get(&quot;c2&quot;)</span></code> or surrounding each of these statements with <code class="docutils literal notranslate"><span class="pre">try-except</span></code>, but both are hard to maintain and verbose. Below you can see how <code class="docutils literal notranslate"><span class="pre">Fagus</span></code> can help to resolve this:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="linenos">1</span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">fagus</span> <span class="kn">import</span> <span class="n">Fagus</span>
+<span class="linenos">2</span><span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">Fagus</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="p">(</span><span class="s2">&quot;a1&quot;</span><span class="p">,</span> <span class="s2">&quot;b3&quot;</span><span class="p">,</span> <span class="s2">&quot;c2&quot;</span><span class="p">)))</span>  <span class="c1"># None, as this key doesn&#39;t exist in a</span>
+<span class="linenos">3</span><span class="go">None</span>
+</pre></div>
+</div>
+<p>As you can see, now only one function call is needed to fetch the value from <code class="docutils literal notranslate"><span class="pre">a</span></code>. If one of the keys doesn’t exist, a default value is returned. In this case no default value was specified, so <code class="docutils literal notranslate"><span class="pre">None</span></code> is returned.</p>
+<p>The whole <code class="docutils literal notranslate"><span class="pre">Fagus</span></code> library is built around these principles. It provides:</p>
+<ul class="simple">
+<li><p><strong>Simple functions</strong>: replacing tedious code that is hard to maintain and error prone</p></li>
+<li><p><strong>Few exceptions</strong>: Rather than raising a lot of exceptions, <code class="docutils literal notranslate"><span class="pre">Fagus</span></code> does what is most likely the programmer’s intention.</p></li>
+</ul>
+</section>
+<section id="the-path-parameter">
+<h3>The path-parameter<a class="headerlink" href="#the-path-parameter" title="Permalink to this headline"></a></h3>
+<p><code class="docutils literal notranslate"><span class="pre">Fagus</span></code> is built around the concept of a Mapping or dict, where there are keys that are used to refer to values. For lists, the indices are used as keys. In opposition to a simple dict, in <code class="docutils literal notranslate"><span class="pre">Fagus</span></code> the key can consist of multiple values – one for each layer.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="linenos">1</span><span class="gp">&gt;&gt;&gt; </span><span class="n">a</span> <span class="o">=</span> <span class="p">[</span><span class="mi">5</span><span class="p">,</span> <span class="p">{</span><span class="mi">6</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;b&quot;</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="p">{</span><span class="s2">&quot;c&quot;</span><span class="p">:</span> <span class="s2">&quot;v1&quot;</span><span class="p">}]},</span> <span class="p">[</span><span class="s2">&quot;e&quot;</span><span class="p">,</span> <span class="p">{</span><span class="s2">&quot;fg&quot;</span><span class="p">:</span> <span class="s2">&quot;v2&quot;</span><span class="p">}]]</span>
+<span class="linenos">2</span><span class="gp">&gt;&gt;&gt; </span><span class="n">Fagus</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="s2">&quot;c&quot;</span><span class="p">))</span>
+<span class="linenos">3</span><span class="go">&#39;v1&#39;</span>
+<span class="linenos">4</span><span class="gp">&gt;&gt;&gt; </span><span class="n">Fagus</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="s2">&quot;2 1 fg&quot;</span><span class="p">)</span>
+<span class="linenos">5</span><span class="go">&#39;v2&#39;</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p><strong>Line 3</strong>: The path-parameter is the tuple in the second argument of the get-function. The first and third element in that tuple are list-indices, whereas the second and fourth element are dict-keys.</p></li>
+<li><p><strong>Line 5</strong>: In many cases, the dict-keys that are traversed are strings. For convenience, it’s also possible to provide the whole path-parameter as one string that is split up into the different keys. In the example above, <code class="docutils literal notranslate"><span class="pre">&quot;</span> <span class="pre">&quot;</span></code> is used to split the path-string, this can be customized using <code class="docutils literal notranslate"><span class="pre">value_split</span></code>.</p></li>
+</ul>
+</section>
+<section id="static-and-instance-usage">
+<h3>Static and instance usage<a class="headerlink" href="#static-and-instance-usage" title="Permalink to this headline"></a></h3>
+<p>All functions in <code class="docutils literal notranslate"><span class="pre">Fagus</span></code> can be used statically, or on a <code class="docutils literal notranslate"><span class="pre">Fagus</span></code>-instance, so the following two calls of <code class="docutils literal notranslate"><span class="pre">get()</span></code> give the same result:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="linenos">1</span><span class="gp">&gt;&gt;&gt; </span><span class="n">a</span> <span class="o">=</span> <span class="p">[</span><span class="mi">5</span><span class="p">,</span> <span class="p">{</span><span class="mi">6</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;b&quot;</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="p">{</span><span class="s2">&quot;c&quot;</span><span class="p">:</span> <span class="s2">&quot;v1&quot;</span><span class="p">}]},</span> <span class="p">[</span><span class="s2">&quot;e&quot;</span><span class="p">,</span> <span class="p">{</span><span class="s2">&quot;fg&quot;</span><span class="p">:</span> <span class="s2">&quot;v2&quot;</span><span class="p">}]]</span>
+<span class="linenos">2</span><span class="gp">&gt;&gt;&gt; </span><span class="n">Fagus</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="s2">&quot;2 0&quot;</span><span class="p">)</span>
+<span class="linenos">3</span><span class="go">&#39;e&#39;</span>
+<span class="linenos">4</span><span class="gp">&gt;&gt;&gt; </span><span class="n">b</span> <span class="o">=</span> <span class="n">Fagus</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
+<span class="linenos">5</span><span class="gp">&gt;&gt;&gt; </span><span class="n">b</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;2 0&quot;</span><span class="p">)</span>
+<span class="linenos">6</span><span class="go">&#39;e&#39;</span>
+</pre></div>
+</div>
+<p>The first call of <code class="docutils literal notranslate"><span class="pre">get()</span></code> in line 3 is static, as we have seen before. No <code class="docutils literal notranslate"><span class="pre">Fagus</span></code> instance is required, the object <code class="docutils literal notranslate"><span class="pre">a</span></code> is just passed as the first parameter. In line 5, <code class="docutils literal notranslate"><span class="pre">b</span></code> is created as a <code class="docutils literal notranslate"><span class="pre">Fagus</span></code>-instance – calling <code class="docutils literal notranslate"><span class="pre">get()</span></code> on <code class="docutils literal notranslate"><span class="pre">b</span></code> also yields <code class="docutils literal notranslate"><span class="pre">e</span></code>.</p>
+<p>While it’s not necessary to instantiate <code class="docutils literal notranslate"><span class="pre">Fagus</span></code>, there are some neat shortcuts that are only available to <code class="docutils literal notranslate"><span class="pre">Fagus</span></code>-instances:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="linenos">1</span><span class="gp">&gt;&gt;&gt; </span><span class="n">a</span> <span class="o">=</span> <span class="n">Fagus</span><span class="p">()</span>
+<span class="linenos">2</span><span class="gp">&gt;&gt;&gt; </span><span class="n">a</span><span class="p">[</span><span class="s2">&quot;x y z&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">6</span>  <span class="c1"># a = {&quot;x&quot;: {&quot;y&quot;: {&quot;z&quot;: 6}}}</span>
+<span class="linenos">3</span><span class="gp">&gt;&gt;&gt; </span><span class="n">a</span><span class="o">.</span><span class="n">x</span>  <span class="c1"># returns the whole subnode at a[&quot;x&quot;]</span>
+<span class="linenos">4</span><span class="go">{&#39;y&#39;: {&#39;z&#39;: 6}}</span>
+<span class="linenos">5</span><span class="gp">&gt;&gt;&gt; </span><span class="k">del</span> <span class="n">a</span><span class="p">[(</span><span class="s2">&quot;x&quot;</span><span class="p">,</span> <span class="s2">&quot;y&quot;</span><span class="p">,</span> <span class="s2">&quot;z&quot;</span><span class="p">)]</span>  <span class="c1"># Delete the z-subnode in a[&quot;x y&quot;]</span>
+<span class="linenos">6</span><span class="gp">&gt;&gt;&gt; </span><span class="n">a</span><span class="p">()</span>
+<span class="linenos">7</span><span class="go">{&#39;x&#39;: {&#39;y&#39;: {}}}</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p><strong>Square bracket notation</strong>: On <code class="docutils literal notranslate"><span class="pre">Fagus</span></code>-instances, the square-bracket notation can be used for easier access of data if no further customization is needed. Line 3 is equivalent to <code class="docutils literal notranslate"><span class="pre">a.set(6,</span> <span class="pre">&quot;x</span> <span class="pre">y</span> <span class="pre">z&quot;)</span></code>. It can be used for getting, setting and deleting items (line 6).</p></li>
+<li><p><strong>Dot notation</strong>: The dot-notation is activated for setting, getting and deleting items as well (line 4). It can be used to access <code class="docutils literal notranslate"><span class="pre">str</span></code>-keys in <code class="docutils literal notranslate"><span class="pre">dict</span></code>s and <code class="docutils literal notranslate"><span class="pre">list</span></code>-indices, the index must then be preceded with an underscore due to Python naming limitations (<code class="docutils literal notranslate"><span class="pre">a._4</span></code>). This can be further customized using <a class="reference internal" href="#value-split"><span class="std std-doc"><code class="docutils literal notranslate"><span class="pre">value_split</span></code></span></a></p></li>
+</ul>
+<p><code class="docutils literal notranslate"><span class="pre">Fagus</span></code> is a wrapper-class around a tree of <code class="docutils literal notranslate"><span class="pre">dict</span></code>- or <code class="docutils literal notranslate"><span class="pre">list</span></code>-objects. To get back the root-object inside the instance, use <code class="docutils literal notranslate"><span class="pre">()</span></code> to call the object – this is shown in line 7.</p>
+</section>
+<section id="fagus-options">
+<h3>Fagus options<a class="headerlink" href="#fagus-options" title="Permalink to this headline"></a></h3>
+<p>There are several parameters used across many functions in <code class="docutils literal notranslate"><span class="pre">Fagus</span></code> which steer the behaviour of that function. Often, similar behaviour is intended across a whole application or parts of it, and this is where options come in handy allowing to only specify these parameters once.</p>
+<p>One example of a <code class="docutils literal notranslate"><span class="pre">Fagus</span></code>-option is <a class="reference internal" href="#default"><span class="std std-doc"><code class="docutils literal notranslate"><span class="pre">default</span></code></span></a>. This option contains the value that is returned e.g. in <code class="docutils literal notranslate"><span class="pre">get()</span></code> if a <code class="docutils literal notranslate"><span class="pre">path</span></code> doesn’t exist, see <a class="reference internal" href="#introduction-what-it-solves"><span class="std std-doc">Introduction</span></a>, code block two for an example.</p>
+<p><strong>The four levels of <code class="docutils literal notranslate"><span class="pre">Fagus</span></code>-options</strong>:</p>
+<ol class="arabic simple">
+<li><p><strong>Argument</strong>: The highest level - if an option is specified directly as an argument to a function, that value takes precedence over all other levels.</p></li>
+<li><p><strong>Instance</strong>: If an option is set for an instance, it will apply to all function calls at that instance where level one has not been specified.</p></li>
+<li><p><strong>Class</strong>: If an option is set at class level (i.e. <code class="docutils literal notranslate"><span class="pre">Fagus.option</span></code>), it applies to all function calls and all instances where level one and two of that option aren’t defined. Options at this level apply for the whole file <code class="docutils literal notranslate"><span class="pre">Fagus</span></code> has been imported in.</p></li>
+<li><p><strong>Default</strong>: If no other level is specified, the hardcoded default for that option is used.</p></li>
+</ol>
+<p>Below is an example of how the different levels take precedence over one another:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="linenos"> 1</span><span class="gp">&gt;&gt;&gt; </span><span class="n">a</span> <span class="o">=</span> <span class="n">Fagus</span><span class="p">({</span><span class="s2">&quot;a&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">})</span>
+<span class="linenos"> 2</span><span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">a</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;b&quot;</span><span class="p">))</span>  <span class="c1"># b does not exist in a - default is None by default</span>
+<span class="linenos"> 3</span><span class="go">None</span>
+<span class="linenos"> 4</span><span class="gp">&gt;&gt;&gt; </span><span class="n">Fagus</span><span class="o">.</span><span class="n">default</span> <span class="o">=</span> <span class="s2">&quot;class&quot;</span>  <span class="c1"># Overriding default at class level</span>
+<span class="linenos"> 5</span><span class="gp">&gt;&gt;&gt; </span><span class="n">a</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;b&quot;</span><span class="p">)</span>  <span class="c1"># now &#39;class&#39; is returned, as None was overridden</span>
+<span class="linenos"> 6</span><span class="go">&#39;class&#39;</span>
+<span class="linenos"> 7</span><span class="gp">&gt;&gt;&gt; </span><span class="n">a</span><span class="o">.</span><span class="n">default</span> <span class="o">=</span> <span class="s1">&#39;instance&#39;</span>  <span class="c1"># setting the default option at instance level</span>
+<span class="linenos"> 8</span><span class="gp">&gt;&gt;&gt; </span><span class="n">a</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;b&quot;</span><span class="p">)</span>  <span class="c1"># for a default is set to &#39;instance&#39; -- return &#39;instance&#39;</span>
+<span class="linenos"> 9</span><span class="go">&#39;instance&#39;</span>
+<span class="linenos">10</span><span class="gp">&gt;&gt;&gt; </span><span class="n">b</span> <span class="o">=</span> <span class="n">Fagus</span><span class="p">({</span><span class="s2">&quot;a&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">})</span>
+<span class="linenos">11</span><span class="gp">&gt;&gt;&gt; </span><span class="n">b</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;b&quot;</span><span class="p">)</span>  <span class="c1"># for b, line 7 doesn&#39;t apply -- line 5 still applies</span>
+<span class="linenos">12</span><span class="go">&#39;class&#39;</span>
+<span class="linenos">13</span><span class="gp">&gt;&gt;&gt; </span><span class="k">del</span> <span class="n">Fagus</span><span class="o">.</span><span class="n">default</span>  <span class="c1"># deleting an option resets it to its default</span>
+<span class="linenos">14</span><span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">b</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;b&quot;</span><span class="p">))</span>  <span class="c1"># for default, the default is None</span>
+<span class="linenos">15</span><span class="go">None</span>
+<span class="linenos">16</span><span class="gp">&gt;&gt;&gt; </span><span class="n">a</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;b&quot;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="s1">&#39;arg&#39;</span><span class="p">)</span>  <span class="c1"># passing an option as a parameter always wins</span>
+<span class="linenos">17</span><span class="go">&#39;arg&#39;</span>
+</pre></div>
+</div>
+<p>All <code class="docutils literal notranslate"><span class="pre">Fagus</span></code>-options at level two can be set in the constructor of <code class="docutils literal notranslate"><span class="pre">Fagus</span></code>, so they don’t have to be set one by one like in line 8. You can also use <code class="docutils literal notranslate"><span class="pre">options()</span></code> on an instance or on the <code class="docutils literal notranslate"><span class="pre">Fagus</span></code>-class to set several options in one line, or get all the options that apply to an instance.</p>
+<p>Some <code class="docutils literal notranslate"><span class="pre">Fagus</span></code>-functions return child-<code class="docutils literal notranslate"><span class="pre">Fagus</span></code>-objects in their result. These child-objects inherit the options at level two from their parent.</p>
+<p>The remaining part of this section explains the options one by one.</p>
+<section id="default">
+<h4>default<a class="headerlink" href="#default" title="Permalink to this headline"></a></h4>
+<ul class="simple">
+<li><p><strong>Default</strong>: <code class="docutils literal notranslate"><span class="pre">None</span></code></p></li>
+<li><p><strong>Type</strong>: <code class="docutils literal notranslate"><span class="pre">Any</span></code></p></li>
+</ul>
+<p>This value is returned if the requested <a class="reference internal" href="#the-path-parameter"><span class="std std-doc"><code class="docutils literal notranslate"><span class="pre">path</span></code></span></a> does not exist. Example in <a class="reference internal" href="#introduction-what-it-solves"><span class="std std-doc">Introduction</span></a>, code block two.</p>
+</section>
+<section id="default-node-type">
+<h4>default_node_type<a class="headerlink" href="#default-node-type" title="Permalink to this headline"></a></h4>
+<ul class="simple">
+<li><p><strong>Default</strong>: <code class="docutils literal notranslate"><span class="pre">&quot;d&quot;</span></code></p></li>
+<li><p><strong>Type</strong>: <code class="docutils literal notranslate"><span class="pre">str</span></code></p></li>
+<li><p><strong>Allowed values</strong>: <code class="docutils literal notranslate"><span class="pre">&quot;d&quot;</span></code> and <code class="docutils literal notranslate"><span class="pre">&quot;l&quot;</span></code></p></li>
+</ul>
+<p>Can be either <code class="docutils literal notranslate"><span class="pre">&quot;d&quot;</span></code> for <code class="docutils literal notranslate"><span class="pre">dict</span></code> or <code class="docutils literal notranslate"><span class="pre">&quot;l&quot;</span></code> for <code class="docutils literal notranslate"><span class="pre">list</span></code>. A new node of this type is created if it’s not specified clearly what other type that node shall have. It is used e.g. when Fagus is instanciated with an empty constructor:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="linenos">1</span><span class="gp">&gt;&gt;&gt; </span><span class="n">Fagus</span><span class="o">.</span><span class="n">default_node_type</span> <span class="o">=</span> <span class="s2">&quot;l&quot;</span>
+<span class="linenos">2</span><span class="gp">&gt;&gt;&gt; </span><span class="n">a</span> <span class="o">=</span> <span class="n">Fagus</span><span class="p">()</span>
+<span class="linenos">3</span><span class="gp">&gt;&gt;&gt; </span><span class="n">a</span><span class="p">()</span>  <span class="c1"># the root node of a is an empty list as this was set in line 2</span>
+<span class="linenos">4</span><span class="go">[]</span>
+<span class="linenos">5</span><span class="gp">&gt;&gt;&gt; </span><span class="k">del</span> <span class="n">Fagus</span><span class="o">.</span><span class="n">default_node_type</span>
+<span class="linenos">6</span><span class="gp">&gt;&gt;&gt; </span><span class="n">b</span> <span class="o">=</span> <span class="n">Fagus</span><span class="p">()</span>
+<span class="linenos">7</span><span class="gp">&gt;&gt;&gt; </span><span class="n">b</span><span class="p">()</span>  <span class="c1"># the root node of b is a dict (default for default_node_type)</span>
+<span class="linenos">8</span><span class="go">{}</span>
+</pre></div>
+</div>
+</section>
+<section id="if">
+<h4>if_<a class="headerlink" href="#if" title="Permalink to this headline"></a></h4>
+<ul class="simple">
+<li><p><strong>Default</strong>: <code class="docutils literal notranslate"><span class="pre">_None</span></code>, meaning that the value is not checked</p></li>
+<li><p><strong>Type</strong>: Any</p></li>
+</ul>
+<p>This option can be used to verify values before they’re inserted into the <code class="docutils literal notranslate"><span class="pre">Fagus</span></code>-object. Generating configuration-files, default values can often be omitted whereas special settings shall be included, <code class="docutils literal notranslate"><span class="pre">if_</span></code> can be used to do this without an extra if-statement.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="linenos"> 1</span><span class="gp">&gt;&gt;&gt; </span><span class="n">a</span> <span class="o">=</span> <span class="n">Fagus</span><span class="p">(</span><span class="n">if_</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>  <span class="c1"># the only allowed value for set is now True</span>
+<span class="linenos"> 2</span><span class="gp">&gt;&gt;&gt; </span><span class="n">a</span><span class="o">.</span><span class="n">v1</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="linenos"> 3</span><span class="gp">&gt;&gt;&gt; </span><span class="n">a</span><span class="p">()</span>  <span class="c1"># v1 was set, because it was True (as requested in line 1)</span>
+<span class="linenos"> 4</span><span class="go">{&#39;v1&#39;: True}</span>
+<span class="linenos"> 5</span><span class="gp">&gt;&gt;&gt; </span><span class="n">a</span><span class="o">.</span><span class="n">v2</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="linenos"> 6</span><span class="gp">&gt;&gt;&gt; </span><span class="n">a</span><span class="p">()</span>  <span class="c1"># note that v2 has not been set as it was not True</span>
+<span class="linenos"> 7</span><span class="go">{&#39;v1&#39;: True}</span>
+<span class="linenos"> 8</span><span class="gp">&gt;&gt;&gt; </span><span class="n">a</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="mi">6</span><span class="p">,</span> <span class="s2">&quot;v2&quot;</span><span class="p">,</span> <span class="n">if_</span><span class="o">=</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">))</span>  <span class="c1"># 6 was set as it was in (4, 5, 6)</span>
+<span class="linenos"> 9</span><span class="go">{&#39;v1&#39;: True, &#39;v2&#39;: 6}</span>
+<span class="linenos">10</span><span class="gp">&gt;&gt;&gt; </span><span class="n">a</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="s2">&quot;v3&quot;</span><span class="p">,</span> <span class="n">if_</span><span class="o">=</span><span class="nb">bool</span><span class="p">)</span>  <span class="c1"># v3 is not set because bool(&quot;&quot;) is False</span>
+<span class="linenos">11</span><span class="go">{&#39;v1&#39;: True, &#39;v2&#39;: 6}</span>
+</pre></div>
+</div>
+<p>Possible ways to specify <code class="docutils literal notranslate"><span class="pre">if_</span></code>:</p>
+<ul class="simple">
+<li><p><strong>Single value</strong>: This is shown in line 1 – the only values that can now be set is <code class="docutils literal notranslate"><span class="pre">True</span></code>, anything else is not accepted.</p></li>
+<li><p><strong>List of values</strong>: You can also specify any <code class="docutils literal notranslate"><span class="pre">Iterable</span></code> (e.g. a <code class="docutils literal notranslate"><span class="pre">list</span></code>) with multiple values – the values that can be set must be one of the values in the <code class="docutils literal notranslate"><span class="pre">list</span></code> (line 8).</p></li>
+<li><p><strong>Callable</strong>: You can also pass a callable object or a function (lambda) – the result of that call determines whether the value is set (line 10).</p></li>
+</ul>
+</section>
+<section id="iter-fill">
+<h4>iter_fill<a class="headerlink" href="#iter-fill" title="Permalink to this headline"></a></h4>
+<ul class="simple">
+<li><p><strong>Default</strong>: <code class="docutils literal notranslate"><span class="pre">_None</span></code>, meaning that <code class="docutils literal notranslate"><span class="pre">iter_fill</span></code> is inactive</p></li>
+<li><p><strong>Type</strong>: Any</p></li>
+</ul>
+<p>This option is used to get a constant number of items in the iterator while iterating over a <code class="docutils literal notranslate"><span class="pre">Fagus</span></code>-object, see <a class="reference internal" href="#iterating-over-nested-objects"><span class="std std-doc">here</span></a> for more about iteration in <code class="docutils literal notranslate"><span class="pre">Fagus</span></code>. The example below shows what happens by default when iterating over a <code class="docutils literal notranslate"><span class="pre">Fagus</span></code>-object where the leaf-nodes are at different depths:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="linenos"> 1</span><span class="gp">&gt;&gt;&gt; </span><span class="n">a</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">Fagus</span><span class="o">.</span><span class="n">iter</span><span class="p">({</span><span class="s2">&quot;a&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;b&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">},</span> <span class="s2">&quot;c&quot;</span><span class="p">:</span> <span class="mi">4</span><span class="p">},</span> <span class="mi">1</span><span class="p">))</span>
+<span class="linenos"> 2</span><span class="gp">&gt;&gt;&gt; </span><span class="n">a</span>
+<span class="linenos"> 3</span><span class="go">[(&#39;a&#39;, &#39;b&#39;, 2), (&#39;c&#39;, 4)]</span>
+<span class="linenos"> 4</span><span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span> <span class="ow">in</span> <span class="n">a</span><span class="p">:</span>
+<span class="linenos"> 5</span><span class="gp">... </span>    <span class="nb">print</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span><span class="p">)</span>
+<span class="linenos"> 6</span><span class="gt">Traceback (most recent call last):</span>
+<span class="linenos"> 7</span><span class="c">...</span>
+<span class="linenos"> 8</span><span class="gr">ValueError</span>: <span class="n">not enough values to unpack (expected 3, got 2)</span>
+<span class="linenos"> 9</span><span class="gp">&gt;&gt;&gt; </span><span class="n">a</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">Fagus</span><span class="o">.</span><span class="n">iter</span><span class="p">({</span><span class="s2">&quot;a&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;b&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">},</span> <span class="s2">&quot;c&quot;</span><span class="p">:</span> <span class="mi">4</span><span class="p">},</span> <span class="mi">1</span><span class="p">,</span> <span class="n">iter_fill</span><span class="o">=</span><span class="kc">None</span><span class="p">))</span>
+<span class="linenos">10</span><span class="gp">&gt;&gt;&gt; </span><span class="n">a</span>
+<span class="linenos">11</span><span class="go">[(&#39;a&#39;, &#39;b&#39;, 2), (&#39;c&#39;, 4, None)]</span>
+<span class="linenos">12</span><span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span> <span class="ow">in</span> <span class="n">a</span><span class="p">:</span>
+<span class="linenos">13</span><span class="gp">... </span>    <span class="nb">print</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span><span class="p">)</span>
+<span class="linenos">14</span><span class="go">a b 2</span>
+<span class="linenos">15</span><span class="go">c 4 None</span>
+</pre></div>
+</div>
+<p>In line 3, we see that the first tuple has three items, and the second only two. When this is run in a loop that always expects three values to unpack, it fails (line 4-8). That problem is solved in line 9 by using <code class="docutils literal notranslate"><span class="pre">iter_fill</span></code>, which fills up the shorter tuples with the value that was specified for <code class="docutils literal notranslate"><span class="pre">iter_fill</span></code>, here <code class="docutils literal notranslate"><span class="pre">None</span></code>. With that in place, the loop in line 12-15 runs through without raising an error. Note that <code class="docutils literal notranslate"><span class="pre">max_depth</span></code> has to be specified for <code class="docutils literal notranslate"><span class="pre">Fagus</span></code> to know how many items to fill up to.</p>
+</section>
+<section id="iter-nodes">
+<h4>iter_nodes<a class="headerlink" href="#iter-nodes" title="Permalink to this headline"></a></h4>
+<ul class="simple">
+<li><p><strong>Default</strong>: <code class="docutils literal notranslate"><span class="pre">False</span></code></p></li>
+<li><p><strong>Type</strong>: <code class="docutils literal notranslate"><span class="pre">bool</span></code></p></li>
+</ul>
+<p>This option is used to get references to the traversed nodes while iterating on a <code class="docutils literal notranslate"><span class="pre">Fagus</span></code>-object, see <a class="reference internal" href="#iterating-over-nested-objects"><span class="std std-doc">here</span></a> for more about iteration in <code class="docutils literal notranslate"><span class="pre">Fagus</span></code>. Below is an example of what this means:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="linenos">1</span><span class="gp">&gt;&gt;&gt; </span><span class="nb">list</span><span class="p">(</span><span class="n">Fagus</span><span class="o">.</span><span class="n">iter</span><span class="p">({</span><span class="s2">&quot;a&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;b&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">},</span> <span class="s2">&quot;c&quot;</span><span class="p">:</span> <span class="mi">4</span><span class="p">},</span> <span class="mi">1</span><span class="p">))</span>
+<span class="linenos">2</span><span class="go">[(&#39;a&#39;, &#39;b&#39;, 2), (&#39;c&#39;, 4)]</span>
+<span class="linenos">3</span><span class="gp">&gt;&gt;&gt; </span><span class="nb">list</span><span class="p">(</span><span class="n">Fagus</span><span class="o">.</span><span class="n">iter</span><span class="p">({</span><span class="s2">&quot;a&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;b&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">},</span> <span class="s2">&quot;c&quot;</span><span class="p">:</span> <span class="mi">4</span><span class="p">},</span> <span class="n">iter_nodes</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
+<span class="linenos">4</span><span class="go">[({&#39;a&#39;: {&#39;b&#39;: 2}, &#39;c&#39;: 4}, &#39;a&#39;, {&#39;b&#39;: 2}, &#39;b&#39;, 2), ({&#39;a&#39;: {&#39;b&#39;: 2}, &#39;c&#39;: 4}, &#39;c&#39;, 4)]</span>
+</pre></div>
+</div>
+<p>As you can see, the node itself is included as the first element in both tuples. In the first tuple, we also find the subnode <code class="docutils literal notranslate"><span class="pre">{&quot;b&quot;:</span> <span class="pre">2}</span></code> as the third element. In line 2, the tuples are filled after this scheme: <code class="docutils literal notranslate"><span class="pre">key1,</span> <span class="pre">key2,</span> <span class="pre">key3,</span> <span class="pre">...,</span> <span class="pre">value</span></code>. In line 4, we additionally get the nodes, so it is <code class="docutils literal notranslate"><span class="pre">root-node,</span> <span class="pre">key1,</span> <span class="pre">node,</span> <span class="pre">key2,</span> <span class="pre">node2,</span> <span class="pre">key3,</span> <span class="pre">...,</span> <span class="pre">value</span></code>.</p>
+<p>Sometimes in loops it can be helpful to actually have access to the whole node containing other relevant information. This can be especially useful combined with <a class="reference internal" href="#skipping-nodes-in-iteration"><span class="std std-doc"><code class="docutils literal notranslate"><span class="pre">skip()</span></code></span></a>.</p>
+</section>
+<section id="value-split">
+<h4>value_split<a class="headerlink" href="#value-split" title="Permalink to this headline"></a></h4>
+</section>
+</section>
+<section id="iterating-over-nested-objects">
+<h3>Iterating over nested objects<a class="headerlink" href="#iterating-over-nested-objects" title="Permalink to this headline"></a></h3>
+<section id="skipping-nodes-in-iteration">
+<h4>Skipping nodes in iteration.<a class="headerlink" href="#skipping-nodes-in-iteration" title="Permalink to this headline"></a></h4>
+</section>
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="LICENSE.html" class="btn btn-neutral float-left" title="ISC License" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="fagus.html" class="btn btn-neutral float-right" title="fagus package" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Lukas Neuenschwander.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+</body>
+</html>

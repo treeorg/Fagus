@@ -702,7 +702,7 @@ class Fagus(MutableMapping, MutableSequence, MutableSet, metaclass=FagusMeta):
         copy: bool = False,
         index: int = ...,
     ) -> Collection:
-        """Internal function that is used to build all necessary subnodes in path"""
+        """Internal function that is used to _build all necessary subnodes in path"""
         root = self.root if isinstance(self, Fagus) else self
         if_ = Fagus._opt(self, "if_", if_)
         if if_ is not _None and not (
@@ -1913,7 +1913,8 @@ class Fagus(MutableMapping, MutableSequence, MutableSet, metaclass=FagusMeta):
         return Fagus.child(self, new_node) if isinstance(self, Fagus) else new_node
 
     def __call__(self):
-        """Returns the object Fagus is wrapped around
+        """Calling the Fagus-object returns the root node the Fagus-object is wrapped around (equivalent to .root)
+
         Example:
             >>> from fagus import Fagus
             >>> a = Fagus({"f": "q"})
@@ -1921,9 +1922,11 @@ class Fagus(MutableMapping, MutableSequence, MutableSet, metaclass=FagusMeta):
             Fagus({'f': 'q'})
             >>> a()
             {'f': 'q'}
+            >>> a.root  # .root returns the root-object in the same way as ()
+            {'f': 'q'}
 
         Returns:
-            the object Fagus is wrapped around
+            the root object Fagus is wrapped around
         """
         return self.root
 
