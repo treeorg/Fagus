@@ -42,6 +42,7 @@
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="modules.html">Fagus</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">README</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#code-and-tests-ready-documentation-still-work-in-progress">Code and tests ready, documentation still WORK IN PROGRESS</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#basic-principles">Basic principles</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#introduction-what-it-solves">Introduction – What it solves</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#the-path-parameter">The path-parameter</a></li>
@@ -52,21 +53,20 @@
 <li class="toctree-l4"><a class="reference internal" href="#if">if_</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#iter-fill">iter_fill</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#iter-nodes">iter_nodes</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#value-split">value_split</a></li>
 </ul>
 </li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="#work-in-progress">WORK IN PROGRESS</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#value-split">value_split</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#iterating-over-nested-objects">Iterating over nested objects</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#skipping-nodes-in-iteration">Skipping nodes in iteration.</a></li>
 </ul>
 </li>
 </ul>
 </li>
+<li class="toctree-l2"><a class="reference internal" href="#work-in-progress">WORK IN PROGRESS</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="CONTRIBUTING.html">CONTRIBUTING</a></li>
+<li class="toctree-l1"><a class="reference internal" href="CHANGELOG.html">CHANGELOG</a></li>
 </ul>
 
         </div>
@@ -95,8 +95,12 @@
 
   <section id="fagus">
 <h1>Fagus<a class="headerlink" href="#fagus" title="Permalink to this headline"></a></h1>
-<p><code class="docutils literal notranslate"><span class="pre">Fagus</span></code> is a Python-library that makes it easier to work with nested dicts and lists. It allows you to traverse and edit these tree-objects with simple function-calls that handle the most common errors and exceptions internally. The name fagus is actually the latin name for the genus of beech-trees.</p>
-<p><em><strong>This documentation is still Work in Progress</strong></em></p>
+<p>These days most data is converted to and from <code class="docutils literal notranslate"><span class="pre">json</span></code> and <code class="docutils literal notranslate"><span class="pre">yaml</span></code> while it is sent back and forth to and from API’s. Often this data is deeply nested. <code class="docutils literal notranslate"><span class="pre">Fagus</span></code> is a Python-library that makes it easier to work with nested dicts and lists. It allows you to traverse and edit these tree-objects with simple function-calls that handle the most common errors and exceptions internally. The name fagus is actually the latin name for the genus of beech-trees.</p>
+<section id="code-and-tests-ready-documentation-still-work-in-progress">
+<h2>Code and tests ready, documentation still WORK IN PROGRESS<a class="headerlink" href="#code-and-tests-ready-documentation-still-work-in-progress" title="Permalink to this headline"></a></h2>
+<p>This documentation is still Work in Progress. I have some more ideas for features, but most of the coding is done. The code is tested as good as possible, but of course there still might be bugs as this library has just been released. Just report them so we get them away ;). Even though this README is not done yet, you should be able to use most of the functions based on the docstrings and some trial and error. Just ask questions <a class="reference external" href="https://github.com/treeorg/Fagus/discussions/categories/q-a">here</a> if sth is unclear. The documentation will be filled in and completed as soon as possible.</p>
+<p><strong>HAVE FUN!</strong></p>
+</section>
 <section id="basic-principles">
 <h2>Basic principles<a class="headerlink" href="#basic-principles" title="Permalink to this headline"></a></h2>
 <section id="introduction-what-it-solves">
@@ -297,12 +301,9 @@
 <p>As you can see, the node itself is included as the first element in both tuples. In the first tuple, we also find the subnode <code class="docutils literal notranslate"><span class="pre">{&quot;b&quot;:</span> <span class="pre">2}</span></code> as the third element. In line 2, the tuples are filled after this scheme: <code class="docutils literal notranslate"><span class="pre">key1,</span> <span class="pre">key2,</span> <span class="pre">key3,</span> <span class="pre">...,</span> <span class="pre">value</span></code>. In line 4, we additionally get the nodes, so it is <code class="docutils literal notranslate"><span class="pre">root-node,</span> <span class="pre">key1,</span> <span class="pre">node,</span> <span class="pre">key2,</span> <span class="pre">node2,</span> <span class="pre">key3,</span> <span class="pre">...,</span> <span class="pre">value</span></code>.</p>
 <p>Sometimes in loops it can be helpful to actually have access to the whole node containing other relevant information. This can be especially useful combined with <a class="reference internal" href="#skipping-nodes-in-iteration"><span class="std std-doc"><code class="docutils literal notranslate"><span class="pre">skip()</span></code></span></a>.</p>
 </section>
-</section>
-</section>
-<section id="work-in-progress">
-<h2>WORK IN PROGRESS<a class="headerlink" href="#work-in-progress" title="Permalink to this headline"></a></h2>
 <section id="value-split">
-<h3>value_split<a class="headerlink" href="#value-split" title="Permalink to this headline"></a></h3>
+<h4>value_split<a class="headerlink" href="#value-split" title="Permalink to this headline"></a></h4>
+</section>
 </section>
 <section id="iterating-over-nested-objects">
 <h3>Iterating over nested objects<a class="headerlink" href="#iterating-over-nested-objects" title="Permalink to this headline"></a></h3>
@@ -310,6 +311,9 @@
 <h4>Skipping nodes in iteration.<a class="headerlink" href="#skipping-nodes-in-iteration" title="Permalink to this headline"></a></h4>
 </section>
 </section>
+</section>
+<section id="work-in-progress">
+<h2>WORK IN PROGRESS<a class="headerlink" href="#work-in-progress" title="Permalink to this headline"></a></h2>
 </section>
 </section>
 

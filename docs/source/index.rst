@@ -13,6 +13,7 @@ Welcome to Fagus's documentation!
    modules
    README<README>
    CONTRIBUTING<CONTRIBUTING>
+   CHANGELOG<CHANGELOG>
 
 Indices and tables
 ==================

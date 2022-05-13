@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Fagus &mdash; Fagus 1.0.0 documentation</title>
+  <title>Changelog &mdash; Fagus 1.0.0 documentation</title>
       <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="_static/wider_page.css" type="text/css" />
@@ -19,8 +19,7 @@
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="fagus package" href="fagus.html" />
-    <link rel="prev" title="Welcome to Fagus’s documentation!" href="index.html" />
+    <link rel="prev" title="Contributing to Fagus" href="CONTRIBUTING.html" />
 </head>
 
 <body class="wy-body-for-nav">
@@ -40,13 +39,16 @@
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
 <ul class="current">
-<li class="toctree-l1 current"><a class="current reference internal" href="#">Fagus</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="fagus.html">fagus package</a></li>
-</ul>
-</li>
+<li class="toctree-l1"><a class="reference internal" href="modules.html">Fagus</a></li>
 <li class="toctree-l1"><a class="reference internal" href="README.html">README</a></li>
 <li class="toctree-l1"><a class="reference internal" href="CONTRIBUTING.html">CONTRIBUTING</a></li>
-<li class="toctree-l1"><a class="reference internal" href="CHANGELOG.html">CHANGELOG</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">CHANGELOG</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#release-of-fagus-on-github-and-readthedocs">13.05.2022 1.0.0 Release of Fagus on GitHub and ReadTheDocs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#renaming-to-fagus">04.05.2022 Renaming to Fagus</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#release-getting-closer">04-2022 Release getting closer</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#first-idea-for-treeo">06-2021 First idea for TreeO</a></li>
+</ul>
+</li>
 </ul>
 
         </div>
@@ -63,9 +65,9 @@
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
       <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
-      <li>Fagus</li>
+      <li>Changelog</li>
       <li class="wy-breadcrumbs-aside">
-            <a href="_sources/modules.rst.txt" rel="nofollow"> View page source</a>
+            <a href="_sources/CHANGELOG.rst.txt" rel="nofollow"> View page source</a>
       </li>
   </ul>
   <hr/>
@@ -73,30 +75,31 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
 
-  <section id="fagus">
-<h1>Fagus<a class="headerlink" href="#fagus" title="Permalink to this headline"></a></h1>
-<div class="toctree-wrapper compound">
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="fagus.html">fagus package</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="fagus.html#submodules">Submodules</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="fagus.fagus.html">fagus.fagus module</a></li>
-<li class="toctree-l3"><a class="reference internal" href="fagus.filters.html">fagus.filters module</a></li>
-<li class="toctree-l3"><a class="reference internal" href="fagus.iterators.html">fagus.iterators module</a></li>
-<li class="toctree-l3"><a class="reference internal" href="fagus.utils.html">fagus.utils module</a></li>
-</ul>
-</li>
-</ul>
-</li>
-</ul>
-</div>
+  <section id="changelog">
+<h1>Changelog<a class="headerlink" href="#changelog" title="Permalink to this headline"></a></h1>
+<section id="release-of-fagus-on-github-and-readthedocs">
+<h2>13.05.2022 1.0.0 Release of Fagus on GitHub and ReadTheDocs<a class="headerlink" href="#release-of-fagus-on-github-and-readthedocs" title="Permalink to this headline"></a></h2>
+<p>Now. Finally. The documentation is still not completely ready but it’s time to get some feedback from the community.</p>
+</section>
+<section id="renaming-to-fagus">
+<h2>04.05.2022 Renaming to Fagus<a class="headerlink" href="#renaming-to-fagus" title="Permalink to this headline"></a></h2>
+<p>Checking GitHub I found that there already were several other libraries and programs having TreeO as a name which I had chosen originally. I then found another (much cooler) name which wasn’t in use yet.</p>
+</section>
+<section id="release-getting-closer">
+<h2>04-2022 Release getting closer<a class="headerlink" href="#release-getting-closer" title="Permalink to this headline"></a></h2>
+<p>Development has been ongoing for almost a year. Documentation and testing takes time, but it is absolutely necessary for a library like this. Finally moving away from two Python-files (one for tests and one for the lib) to a proper <code class="docutils literal notranslate"><span class="pre">poetry</span></code>-project, starting to implement sphinx to parse the docstrings that had been written earlier.</p>
+</section>
+<section id="first-idea-for-treeo">
+<h2>06-2021 First idea for TreeO<a class="headerlink" href="#first-idea-for-treeo" title="Permalink to this headline"></a></h2>
+<p>Development starts, the idea to this was born writing my Bachelor’s thesis where I felt that constantly writing <code class="docutils literal notranslate"><span class="pre">.get(&quot;a&quot;,</span> <span class="pre">{}).get(&quot;b&quot;,</span> <span class="pre">{}).get(&quot;c&quot;,</span> <span class="pre">{})</span></code> was too annoying to go on with.</p>
+</section>
 </section>
 
 
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="index.html" class="btn btn-neutral float-left" title="Welcome to Fagus’s documentation!" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="fagus.html" class="btn btn-neutral float-right" title="fagus package" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="CONTRIBUTING.html" class="btn btn-neutral float-left" title="Contributing to Fagus" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
     </div>
 
   <hr/>

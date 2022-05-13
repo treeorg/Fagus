@@ -1,7 +1,10 @@
 # Fagus
-`Fagus` is a Python-library that makes it easier to work with nested dicts and lists. It allows you to traverse and edit these tree-objects with simple function-calls that handle the most common errors and exceptions internally. The name fagus is actually the latin name for the genus of beech-trees.
+These days most data is converted to and from `json` and `yaml` while it is sent back and forth to and from API's. Often this data is deeply nested. `Fagus` is a Python-library that makes it easier to work with nested dicts and lists. It allows you to traverse and edit these tree-objects with simple function-calls that handle the most common errors and exceptions internally. The name fagus is actually the latin name for the genus of beech-trees.
 
-***This documentation is still Work in Progress***
+### Code and tests ready, documentation still WORK IN PROGRESS
+This documentation is still Work in Progress. I have some more ideas for features, but most of the coding is done. The code is tested as good as possible, but of course there still might be bugs as this library has just been released. Just report them so we get them away ;). Even though this README is not done yet, you should be able to use most of the functions based on the docstrings and some trial and error. Just ask questions [here](https://github.com/treeorg/Fagus/discussions/categories/q-a) if sth is unclear. The documentation will be filled in and completed as soon as possible.
+
+**HAVE FUN!**
 
 ## Basic principles
 
@@ -191,10 +194,10 @@ As you can see, the node itself is included as the first element in both tuples.
 
 Sometimes in loops it can be helpful to actually have access to the whole node containing other relevant information. This can be especially useful combined with [`skip()`](#skipping-nodes-in-iteration).
 
-## WORK IN PROGRESS
-
 #### value_split
 
 ### Iterating over nested objects
 
 #### Skipping nodes in iteration.
+
+## WORK IN PROGRESS
