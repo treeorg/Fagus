@@ -21,12 +21,8 @@
 \contentsline {subsection}{\numberline {3.1.2}fagus.filters module}{30}{subsection.3.1.2}%
 \contentsline {subsection}{\numberline {3.1.3}fagus.iterators module}{33}{subsection.3.1.3}%
 \contentsline {subsection}{\numberline {3.1.4}fagus.utils module}{35}{subsection.3.1.4}%
-\contentsline {chapter}{\numberline {4}CHANGELOG}{37}{chapter.4}%
-\contentsline {section}{\numberline {4.1}13.05.2022 1.0.0 Release of Fagus on GitHub and ReadTheDocs}{37}{section.4.1}%
-\contentsline {section}{\numberline {4.2}04.05.2022 Renaming to Fagus}{37}{section.4.2}%
-\contentsline {section}{\numberline {4.3}04\sphinxhyphen {}2022 Release getting closer}{37}{section.4.3}%
-\contentsline {section}{\numberline {4.4}06\sphinxhyphen {}2021 First idea for TreeO}{37}{section.4.4}%
-\contentsline {chapter}{\numberline {5}CONTRIBUTING}{39}{chapter.5}%
+\contentsline {chapter}{\numberline {4}Changelog}{37}{chapter.4}%
+\contentsline {chapter}{\numberline {5}Contributing to Fagus}{39}{chapter.5}%
 \contentsline {section}{\numberline {5.1}Table of contents}{39}{section.5.1}%
 \contentsline {section}{\numberline {5.2}Fagus Principles}{39}{section.5.2}%
 \contentsline {section}{\numberline {5.3}How Can I Contribute?}{40}{section.5.3}%
@@ -44,6 +40,5 @@
 \contentsline {subsubsection}{Tests}{42}{subsubsection*.135}%
 \contentsline {subsubsection}{Committing using pre\sphinxhyphen {}commit and commitizen}{42}{subsubsection*.136}%
 \contentsline {subsubsection}{Releasing A New Fagus Package on PyPi}{42}{subsubsection*.137}%
-\contentsline {chapter}{\numberline {6}Indices and tables}{43}{chapter.6}%
-\contentsline {chapter}{Python Module Index}{45}{section*.138}%
-\contentsline {chapter}{Index}{47}{section*.139}%
+\contentsline {chapter}{Python Module Index}{43}{section*.138}%
+\contentsline {chapter}{Index}{45}{section*.139}%

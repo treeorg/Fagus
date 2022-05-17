@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.20 (TeX Live 2019/Debian) (preloaded format=pdflatex 2022.5.16)  16 MAY 2022 23:42
+This is pdfTeX, Version 3.14159265-2.6-1.40.20 (TeX Live 2019/Debian) (preloaded format=pdflatex 2022.5.16)  17 MAY 2022 18:53
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -922,16 +922,11 @@ Underfull \hbox (badness 10000) in paragraph at lines 3977--3979
  = []"$(poetry version []s)[]"/" fagus/
  []
 
-[42]
-Chapter 6.
-[43
-
-] [44
-
-] [45
+[42] [43
 
 
-] (./fagus.ind [46
+
+] (./fagus.ind [44
 
 
 ]
@@ -1006,7 +1001,7 @@ Underfull \hbox (badness 10000) in paragraph at lines 79--81
 FagusIterator at-
  []
 
-[47
+[45
 
 ]
 Underfull \hbox (badness 10000) in paragraph at lines 147--148
@@ -1024,22 +1019,22 @@ Underfull \hbox (badness 10000) in paragraph at lines 168--170
 \T1/lmr/m/it/10 gus.iterators.FilteredIterator static
  []
 
-[48])
-Package atveryend Info: Empty hook `BeforeClearDocument' on input line 4013.
-Package atveryend Info: Empty hook `AfterLastShipout' on input line 4013.
+[46])
+Package atveryend Info: Empty hook `BeforeClearDocument' on input line 3996.
+Package atveryend Info: Empty hook `AfterLastShipout' on input line 3996.
  (./fagus.aux)
-Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 4013.
-Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 4013.
+Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 3996.
+Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 3996.
 
 Package rerunfilecheck Info: File `fagus.out' has not changed.
-(rerunfilecheck)             Checksum: DF7A7E0F5CAC4EEE89B13CB86B9A473B;8561.
-Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 4013.
+(rerunfilecheck)             Checksum: E1FC5C0E8D6DBB7D762A9AC53829BB52;7473.
+Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 3996.
  )
 Here is how much of TeX's memory you used:
- 14287 strings out of 483183
- 208077 string characters out of 5966292
- 564273 words of memory out of 5000000
- 28661 multiletter control sequences out of 15000+600000
+ 14270 strings out of 483183
+ 207781 string characters out of 5966292
+ 563985 words of memory out of 5000000
+ 28651 multiletter control sequences out of 15000+600000
  607981 words of font info for 78 fonts, out of 8000000 for 9000
  15 hyphenation exceptions out of 8191
  38i,12n,51p,20981b,687s stack positions out of 5000i,500n,10000p,200000b,80000s
@@ -1053,9 +1048,9 @@ ts/type1/public/lm/lmssbx10.pfb></usr/share/texmf/fonts/type1/public/lm/lmsy10.
 pfb></usr/share/texmf/fonts/type1/public/lm/lmtk10.pfb></usr/share/texmf/fonts/
 type1/public/lm/lmtko10.pfb></usr/share/texmf/fonts/type1/public/lm/lmtt10.pfb>
 </usr/share/texmf/fonts/type1/public/lm/lmtti10.pfb>
-Output written on fagus.pdf (52 pages, 438539 bytes).
+Output written on fagus.pdf (50 pages, 436948 bytes).
 PDF statistics:
- 939 PDF objects out of 1000 (max. 8388607)
- 859 compressed objects within 9 object streams
- 244 named destinations out of 1000 (max. 500000)
- 405 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 905 PDF objects out of 1000 (max. 8388607)
+ 827 compressed objects within 9 object streams
+ 237 named destinations out of 1000 (max. 500000)
+ 365 words of extra memory for PDF output out of 10000 (max. 10000000)

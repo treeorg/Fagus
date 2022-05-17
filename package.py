@@ -53,7 +53,7 @@ def update(version: str, build: bool, documentation: bool, latex_pdf: bool, pre_
             f"sphinx-apidoc -f --module-first --separate -o docs . tests {sys.argv[0]}",
             shell=True,
         )
-        original_files = sphinx_hacks()
+        original_files = sphinx_hacks("general")
         subprocess.run("make clean", shell=True, **({} if os.getcwd().endswith("docs") else {"cwd": "docs"}))
         if documentation:
             if packaging.version.parse(platform.python_version()) < packaging.version.parse("3.7"):
@@ -62,14 +62,14 @@ def update(version: str, build: bool, documentation: bool, latex_pdf: bool, pre_
                 )
             subprocess.run("make html", shell=True, **({} if os.getcwd().endswith("docs") else {"cwd": "docs"}))
         if latex_pdf:
-            original_files.update(sphinx_hacks("pdf"))
+            original_files.update(sphinx_hacks("pdf", original_files))
             subprocess.run("make latexpdf", shell=True, **({} if os.getcwd().endswith("docs") else {"cwd": "docs"}))
         sphinx_hacks(restore=original_files)
     if pre_commit:
         subprocess.run("git add -A; pre-commit run; git add -A", shell=True)
 
 
-def sphinx_hacks(hack: str = "general", restore: dict = None) -> Optional[dict]:
+def sphinx_hacks(hack: str = "", restore: dict = None) -> Optional[dict]:
     """Change some files before building, or restore them if restore has been specified
 
     Args:
@@ -80,45 +80,49 @@ def sphinx_hacks(hack: str = "general", restore: dict = None) -> Optional[dict]:
         None dict with filepath as key and the original content of the file before the hack as value
     """
     files = {}
-    if restore:
-        for file, content in restore.items():
-            with open(file, "w") as f:
-                f.write(content)
-        return
-    elif hack == "general":
-        filepath = f"{'..' if os.getcwd().endswith('docs') else '.'}/fagus/fagus.py"
-        with open(filepath, "r+") as f:
-            files[filepath] = f.read()  # __options has to be renamed to options to get the doc right (at runtime
-            f.seek(0)  # exactly the same rename is done in __init__)
-            f.write(files[filepath].replace("def __options(", "def options(  "))  # add spaces to have same length
-            f.seek(0)
-        filepath = f"{'..' if os.getcwd().endswith('docs') else '.'}/LICENSE.md"
-        with open(filepath, "r+") as f:
-            files[filepath] = f.read()
-            f.seek(0)
-            f.write("# " + files[filepath])  # make ISC-License a heading
-            f.seek(0)
-        filepath = f"{'.' if os.getcwd().endswith('docs') else 'docs'}/modules.rst"
-        if os.path.exists(filepath):
-            os.remove(filepath)
-    elif hack == "pdf":
-        for md_file in ("CHANGELOG", "CONTRIBUTING", "README"):
-            filepath = f"{'..' if os.getcwd().endswith('docs') else '.'}/{md_file}.md"
+    try:
+        if hack == "general":
+            filepath = f"{'..' if os.getcwd().endswith('docs') else '.'}/fagus/fagus.py"
+            with open(filepath, "r+") as f:
+                files[filepath] = f.read()  # __options has to be renamed to options to get the doc right (at runtime
+                f.seek(0)  # exactly the same rename is done in __init__)
+                f.write(files[filepath].replace("def __options(", "def options(  "))  # add spaces to have same length
+                f.seek(0)
+            filepath = f"{'..' if os.getcwd().endswith('docs') else '.'}/LICENSE.md"
+            with open(filepath, "r+") as f:
+                files[filepath] = f.read()
+                f.seek(0)
+                f.write("# " + files[filepath])  # make ISC-License a heading
+                f.seek(0)
+            filepath = f"{'.' if os.getcwd().endswith('docs') else 'docs'}/modules.rst"
+            if os.path.exists(filepath):
+                os.remove(filepath)
+        elif hack == "pdf":
+            filepath = f"{'..' if os.getcwd().endswith('docs') else '.'}/README.md"
             with open(filepath, "r+") as f:
                 files[filepath] = f.read()
                 f.seek(0)
                 lines = files[filepath].splitlines()
-                f.write("\n".join(["# " + md_file + (len(lines[0]) - len(md_file) - 2) * " "] + lines[1:]))
+                f.write("\n".join(["# README" + (len(lines[0]) - len("README") - 2) * " "] + lines[1:]))
                 f.seek(0)
-        filepath = f"{'.' if os.getcwd().endswith('docs') else 'docs'}/index.rst"
-        with open(filepath, "r+") as f:
-            try:
+            filepath = f"{'.' if os.getcwd().endswith('docs') else 'docs'}/index.rst"
+            with open(filepath, "r+") as f:
+                files[filepath] = f.read()
                 pos = files[filepath].index("Indices and tables")
                 f.seek(pos)
                 f.write(" " * (len(files[filepath]) - pos))
                 f.seek(0)
-            except KeyError:
-                pass
+        elif restore:
+            for file, content in restore.items():
+                with open(file, "w") as f:
+                    f.write(content)
+            return
+    except (FileNotFoundError, ValueError, KeyError) as e:
+        for file, content in {**files, **(restore if restore else {})}.items():
+            with open(file, "w") as f:
+                f.write(content)
+        print("Restored all changed files before aborting")
+        raise e
     return files
 
 

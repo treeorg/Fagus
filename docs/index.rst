@@ -13,8 +13,8 @@ Welcome to Fagus's documentation!
    LICENSE
    README<README>
    fagus
-   CHANGELOG<CHANGELOG>
-   CONTRIBUTING<CONTRIBUTING>
+   CHANGELOG
+   CONTRIBUTING
 
 Indices and tables
 ==================
