@@ -57,6 +57,7 @@ class FagusMeta(ABCMeta):
             lambda x: x in ("d", "l"),
             'default_node_type must be either "d" for dict or "l" for list.',
         ),
+        fagus=(False, bool),
         if_=(_None,),
         iter_fill=(_None,),
         iter_nodes=(False, bool),
@@ -74,8 +75,7 @@ class FagusMeta(ABCMeta):
             'The only allowed characters in node_types are d (for dict) and l (for list). " " can also be used. '
             "In that case, existing nodes are used if possible, and default_node_type is used to create new nodes.",
         ),
-        fagus=(False, bool),
-        value_split=(" ", str, lambda x: bool(x), 'value_split can\'t be "", as a string can\'t be split by "".'),
+        path_split=(" ", str, lambda x: bool(x), 'path_split can\'t be "", as a string can\'t be split by "".'),
     )
     """Default values for all options used in Fagus"""
 

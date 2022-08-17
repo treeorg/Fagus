@@ -11,7 +11,7 @@
   \item \spxentry{\_\_call\_\_()}\spxextra{fagus.fagus.Fagus method}, \hyperpage{26}
   \item \spxentry{\_\_contains\_\_()}\spxextra{fagus.fagus.Fagus method}, \hyperpage{27}
   \item \spxentry{\_\_copy\_\_()}\spxextra{fagus.fagus.Fagus method}, \hyperpage{26}
-  \item \spxentry{\_\_default\_options\_\_}\spxextra{fagus.utils.FagusMeta attribute}, 
+  \item \spxentry{\_\_default\_options\_\_}\spxextra{fagus.utils.FagusMeta attribute},
 		\hyperpage{35}
   \item \spxentry{\_\_delattr\_\_()}\spxextra{fagus.fagus.Fagus method}, \hyperpage{27}
   \item \spxentry{\_\_delattr\_\_()}\spxextra{fagus.utils.FagusMeta method}, \hyperpage{35}
@@ -19,7 +19,7 @@
   \item \spxentry{\_\_dict\_\_}\spxextra{fagus.fagus.Fagus attribute}, \hyperpage{28}
   \item \spxentry{\_\_dict\_\_}\spxextra{fagus.filters.FilBase attribute}, \hyperpage{30}
   \item \spxentry{\_\_dict\_\_}\spxextra{fagus.iterators.FagusIterator attribute}, \hyperpage{34}
-  \item \spxentry{\_\_dict\_\_}\spxextra{fagus.iterators.FilteredIterator attribute}, 
+  \item \spxentry{\_\_dict\_\_}\spxextra{fagus.iterators.FilteredIterator attribute},
 		\hyperpage{34}
   \item \spxentry{\_\_eq\_\_()}\spxextra{fagus.fagus.Fagus method}, \hyperpage{27}
   \item \spxentry{\_\_ge\_\_()}\spxextra{fagus.fagus.Fagus method}, \hyperpage{27}
@@ -52,7 +52,7 @@
   \item \spxentry{\_\_module\_\_}\spxextra{fagus.filters.KFil attribute}, \hyperpage{32}
   \item \spxentry{\_\_module\_\_}\spxextra{fagus.filters.VFil attribute}, \hyperpage{31}
   \item \spxentry{\_\_module\_\_}\spxextra{fagus.iterators.FagusIterator attribute}, \hyperpage{34}
-  \item \spxentry{\_\_module\_\_}\spxextra{fagus.iterators.FilteredIterator attribute}, 
+  \item \spxentry{\_\_module\_\_}\spxextra{fagus.iterators.FilteredIterator attribute},
 		\hyperpage{34}
   \item \spxentry{\_\_module\_\_}\spxextra{fagus.utils.FagusMeta attribute}, \hyperpage{35}
   \item \spxentry{\_\_mul\_\_()}\spxextra{fagus.fagus.Fagus method}, \hyperpage{28}
@@ -72,13 +72,13 @@
   \item \spxentry{\_\_setitem\_\_()}\spxextra{fagus.filters.KFil method}, \hyperpage{32}
   \item \spxentry{\_\_str\_\_()}\spxextra{fagus.fagus.Fagus method}, \hyperpage{27}
   \item \spxentry{\_\_sub\_\_()}\spxextra{fagus.fagus.Fagus method}, \hyperpage{28}
-  \item \spxentry{\_\_verify\_option\_\_()}\spxextra{fagus.utils.FagusMeta static method}, 
+  \item \spxentry{\_\_verify\_option\_\_()}\spxextra{fagus.utils.FagusMeta static method},
 		\hyperpage{35}
   \item \spxentry{\_\_weakref\_\_}\spxextra{fagus.fagus.Fagus attribute}, \hyperpage{30}
   \item \spxentry{\_\_weakref\_\_}\spxextra{fagus.filters.FilBase attribute}, \hyperpage{30}
-  \item \spxentry{\_\_weakref\_\_}\spxextra{fagus.iterators.FagusIterator attribute}, 
+  \item \spxentry{\_\_weakref\_\_}\spxextra{fagus.iterators.FagusIterator attribute},
 		\hyperpage{34}
-  \item \spxentry{\_\_weakref\_\_}\spxextra{fagus.iterators.FilteredIterator attribute}, 
+  \item \spxentry{\_\_weakref\_\_}\spxextra{fagus.iterators.FilteredIterator attribute},
 		\hyperpage{34}
 
   \indexspace
@@ -165,7 +165,7 @@
 
   \indexspace
   \bigletter O
-  \item \spxentry{optimal\_iterator()}\spxextra{fagus.iterators.FilteredIterator static method}, 
+  \item \spxentry{optimal\_iterator()}\spxextra{fagus.iterators.FilteredIterator static method},
 		\hyperpage{33}
   \item \spxentry{options()}\spxextra{fagus.fagus.Fagus method}, \hyperpage{26}
   \item \spxentry{options()}\spxextra{fagus.utils.FagusMeta method}, \hyperpage{35}

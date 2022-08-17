@@ -12,7 +12,7 @@
 \contentsline {subsubsection}{if\_}{6}{subsubsection*.5}%
 \contentsline {subsubsection}{iter\_fill}{7}{subsubsection*.6}%
 \contentsline {subsubsection}{iter\_nodes}{7}{subsubsection*.7}%
-\contentsline {subsubsection}{value\_split}{8}{subsubsection*.8}%
+\contentsline {subsubsection}{path\_split}{8}{subsubsection*.8}%
 \contentsline {subsection}{\numberline {2.2.5}Iterating over nested objects}{8}{subsection.2.2.5}%
 \contentsline {subsubsection}{Skipping nodes in iteration.}{8}{subsubsection*.9}%
 \contentsline {chapter}{\numberline {3}fagus package}{9}{chapter.3}%

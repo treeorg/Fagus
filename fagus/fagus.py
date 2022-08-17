@@ -54,7 +54,7 @@ class Fagus(MutableMapping, MutableSequence, MutableSet, metaclass=FagusMeta):
         root: Collection = None,
         node_types: str = ...,
         list_insert: int = ...,
-        value_split: str = ...,
+        path_split: str = ...,
         fagus: bool = ...,
         default_node_type: str = ...,
         default=...,
@@ -76,7 +76,7 @@ class Fagus(MutableMapping, MutableSequence, MutableSet, metaclass=FagusMeta):
                 otherwise default_node_type is used to create new nodes. Default "", interpreted as " " at each level.
             list_insert: \\* Level at which a new node shall be inserted into the list instead of traversing the
                 existing node in the list at that index. See README
-            value_split: \\* used to split path into a list if path is a string, default " "
+            path_split: \\* used to split path into a list if path is a string, default " "
             fagus: \\* this option is used to determine whether nodes in the returned object should be returned as
                 Fagus-objects. This can be useful e.g. if you want to use Fagus in an iteration. Check the particular
                 function you want to use for a more thorough explanation of what this does in each case
@@ -91,7 +91,7 @@ class Fagus(MutableMapping, MutableSequence, MutableSet, metaclass=FagusMeta):
                 won't modify the root node that was passed here itself. Default False
         """
         if root is None:
-            root = [] if Fagus.default_node_type == "l" else {}
+            root = [] if Fagus.default_node_type == "l" or default_node_type == "l" else {}
         if copy:
             root = Fagus.__copy__(root)
         if isinstance(root, Fagus):
@@ -112,7 +112,7 @@ class Fagus(MutableMapping, MutableSequence, MutableSet, metaclass=FagusMeta):
         default=...,
         fagus: bool = ...,
         copy: bool = False,
-        value_split: str = ...,
+        path_split: str = ...,
     ) -> Any:
         """Retrieves value at path. If the value doesn't exist, default is returned.
 
@@ -121,27 +121,27 @@ class Fagus(MutableMapping, MutableSequence, MutableSet, metaclass=FagusMeta):
         top-most dict, and then the 2nd element {"c": "d"} is picked from that list. Then, "d" is picked from {"c": "d"}
         and returned. The path-parameter can be a tuple or list, the keys must be either integers for lists, or any
         hashable objects for dicts. For convenience, the keys can also be put in a single string separated by
-        value_split (default " "), so a["a 1 c"] also returns "d".
+        path_split (default " "), so a["a 1 c"] also returns "d".
 
         \\* means that the parameter is a Fagus-Setting, see Fagus-class-docstring for more information about options
 
         Args:
             path: List/Tuple of key-values to recursively traverse self. Can also be specified as string, that is split
-                into a tuple using value_split
+                into a tuple using path_split
             default: \\* returned if path doesn't exist in self
             fagus: \\* returns a Fagus-object if the value at path is a list or dict
             copy: Option to return a copy of the returned value. The default behaviour is that if there are subnodes
                 (dicts, lists) in the returned values, and you make changes to these nodes, these changes will also be
                 applied in the root node from which values() was called. If you want the returned values to be
                 independent, use copy to get a shallow copy of the returned value
-            value_split: \\* used to split path into a list if path is a str, default " "
+            path_split: \\* used to split path into a list if path is a str, default " "
 
         Returns:
             the value if the path exists, or default if it doesn't exist
         """
         node = self.root if isinstance(self, Fagus) else self
         if isinstance(path, str):
-            t_path = path.split(Fagus._opt(self, "value_split", value_split)) if path else ()
+            t_path = path.split(Fagus._opt(self, "path_split", path_split)) if path else ()
         else:
             t_path = tuple(path) if _is(path, Collection) else (path,)
         if t_path:
@@ -170,7 +170,7 @@ class Fagus(MutableMapping, MutableSequence, MutableSet, metaclass=FagusMeta):
         copy: bool = False,
         iter_nodes: bool = ...,
         filter_ends: bool = False,
-        value_split: str = ...,
+        path_split: str = ...,
     ) -> "FagusIterator":
         """Recursively iterate through Fagus-object, starting at path
 
@@ -200,13 +200,13 @@ class Fagus(MutableMapping, MutableSequence, MutableSet, metaclass=FagusMeta):
             filter_ends: Affects the end dict/list that is returned if max_items is used. Normally, filters are not
                 applied on that end node. If you would like to get the end node filtered too, set this to True. If this
                 is set to True, the last nodes will always be copies (if unfiltered they are references)
-            value_split: \\* used to split path into a list if path is a str, default " "
+            path_split: \\* used to split path into a list if path is a str, default " "
 
         Returns:
             FagusIterator with one tuple for each leaf-node, containing the keys of the parent-nodes until the leaf
         """
         iter_fill = Fagus._opt(self, "iter_fill", iter_fill)
-        node = Fagus.get(self, path, (), True, copy and iter_fill, value_split)
+        node = Fagus.get(self, path, (), True, copy and iter_fill, path_split)
         if not _is(node, Collection) or isinstance(filter_, Fil) and not filter_.match_extra_filters(node):
             node = Fagus.child(self, ())
         return FagusIterator(
@@ -228,7 +228,7 @@ class Fagus(MutableMapping, MutableSequence, MutableSet, metaclass=FagusMeta):
         fagus: bool = ...,
         copy: bool = False,
         default=...,
-        value_split: str = ...,
+        path_split: str = ...,
     ) -> Collection:
         """Filters self, only keeping the nodes that pass the filter
 
@@ -241,7 +241,7 @@ class Fagus(MutableMapping, MutableSequence, MutableSet, metaclass=FagusMeta):
             fagus: \\* return the filtered self as Fagus-object (default is just to return the filtered node)
             copy: Create a copy and filter on that copy. Default is to modify the self directly
             default: \\* returned if path doesn't exist in self, or the value at path can't be filtered
-            value_split: \\* used to split path into a list if path is a str, default " "
+            path_split: \\* used to split path into a list if path is a str, default " "
 
         Returns:
             the filtered object, starting at path
@@ -250,11 +250,11 @@ class Fagus(MutableMapping, MutableSequence, MutableSet, metaclass=FagusMeta):
             TypeError: if the root node needs to be modified and isn't modifiable (e.g. tuple or frozenset)
         """
         if isinstance(path, str):
-            l_path = path.split(Fagus._opt(self, "value_split", value_split)) if path else []
+            l_path = path.split(Fagus._opt(self, "path_split", path_split)) if path else []
         else:
             l_path = list(path) if _is(path, Collection) else [path]
         if copy:
-            parent_node = Fagus.get(self, l_path[:-1], _None, False, copy, value_split)
+            parent_node = Fagus.get(self, l_path[:-1], _None, False, copy, path_split)
         else:
             parent_node = Fagus._get_mutable_node(self, l_path)
         node = _None if parent_node is _None else Fagus.get(parent_node, l_path[-1:], _None, False)
@@ -279,7 +279,7 @@ class Fagus(MutableMapping, MutableSequence, MutableSet, metaclass=FagusMeta):
         fagus: bool = ...,
         copy: bool = False,
         default=...,
-        value_split: str = ...,
+        path_split: str = ...,
     ) -> Union[Tuple[Collection, Collection], Tuple[Any, Any]]:
         """Splits self into nodes that pass the filter, and nodes that don't pass the filter
 
@@ -292,7 +292,7 @@ class Fagus(MutableMapping, MutableSequence, MutableSet, metaclass=FagusMeta):
             fagus: \\* return the filtered self as Fagus-object (default is just to return the filtered node)
             copy: Create a copy and filter on that copy. Default is to modify the object directly
             default: \\* returned if path doesn't exist in self, or the
-            value_split: \\* used to split path into a list if path is a str, default " "
+            path_split: \\* used to split path into a list if path is a str, default " "
 
         Returns:
             a tuple, where the first element is the nodes that pass the filter, and the second element is the nodes that
@@ -302,11 +302,11 @@ class Fagus(MutableMapping, MutableSequence, MutableSet, metaclass=FagusMeta):
             TypeError: if the root node needs to be modified and isn't modifiable (e.g. tuple or frozenset)
         """
         if isinstance(path, str):
-            l_path = path.split(Fagus._opt(self, "value_split", value_split)) if path else []
+            l_path = path.split(Fagus._opt(self, "path_split", path_split)) if path else []
         else:
             l_path = list(path) if _is(path, Collection) else [path]
         if copy:
-            parent_node = Fagus.get(self, l_path[:-1], _None, False, copy, value_split)
+            parent_node = Fagus.get(self, l_path[:-1], _None, False, copy, path_split)
         else:
             parent_node = Fagus._get_mutable_node(self, l_path)
         node = _None if parent_node is _None else Fagus.get(parent_node, l_path[-1:], _None, False)
@@ -387,7 +387,7 @@ class Fagus(MutableMapping, MutableSequence, MutableSet, metaclass=FagusMeta):
         path: Iterable,
         node_types: str = ...,
         list_insert: int = ...,
-        value_split: str = ...,
+        path_split: str = ...,
         fagus: bool = ...,
         if_: Any = ...,
         default_node_type: str = ...,
@@ -400,14 +400,14 @@ class Fagus(MutableMapping, MutableSequence, MutableSet, metaclass=FagusMeta):
         Args:
             value: ~ is placed at path, after creating new nodes if necessary. An existing value at path is overwritten
             path: List/Tuple of key-values that are traversed in self. If no nodes exist at the keys, new nodes are
-                created. Can also be specified as a string, that is split into a tuple using value_split. See get()
+                created. Can also be specified as a string, that is split into a tuple using path_split. See get()
             node_types: \\* Can be used to manually define if the nodes along path are supposed to be (l)ists or
                 (d)icts. E.g. "dll" to create a dict at level 1, and lists at level 2 and 3. " " can also be used -
                 space doesn't enforce a node-type like d or l. For " ", existing nodes are traversed if possible,
                 otherwise default_node_type is used to create new nodes. Default "", interpreted as " " at each level.
             list_insert: \\* Level at which a new node shall be inserted into the list instead of traversing the
                 existing node in the list at that index. See README
-            value_split: \\* used to split path into a list if path is a string, default " "
+            path_split: \\* used to split path into a list if path is a string, default " "
             fagus: \\* return self as a Fagus-object if it is a node (tuple / list / dict), default False
             if_: \\* only set value if it meets the condition specified here, otherwise do nothing. The condition can be
                 a lambda, any value or a tuple of accepted values. Default _None (don't check value)
@@ -424,7 +424,7 @@ class Fagus(MutableMapping, MutableSequence, MutableSet, metaclass=FagusMeta):
             TypeError: if the root node needs to be modified and isn't modifiable (e.g. tuple or frozenset)
         """
         return Fagus._build_node(
-            self, value, path, "set", node_types, list_insert, value_split, fagus, if_, default_node_type, copy
+            self, value, path, "set", node_types, list_insert, path_split, fagus, if_, default_node_type, copy
         )
 
     def append(
@@ -433,7 +433,7 @@ class Fagus(MutableMapping, MutableSequence, MutableSet, metaclass=FagusMeta):
         path: Any = "",
         node_types: str = ...,
         list_insert: int = ...,
-        value_split: str = ...,
+        path_split: str = ...,
         fagus: bool = ...,
         if_: Any = ...,
         default_node_type: str = ...,
@@ -448,14 +448,14 @@ class Fagus(MutableMapping, MutableSequence, MutableSet, metaclass=FagusMeta):
         Args:
             value: ~ is appended to list at path, after creating new nodes along path as necessary
             path: List/Tuple of key-values that are traversed in self. If no nodes exist at the keys, new nodes are
-                created. Can also be specified as a string, that is split into a tuple using value_split. See get()
+                created. Can also be specified as a string, that is split into a tuple using path_split. See get()
             node_types: \\* Can be used to manually define if the nodes along path are supposed to be (l)ists or
                 (d)icts. E.g. "dll" to create a dict at level 1, and lists at level 2 and 3. " " can also be used -
                 space doesn't enforce a node-type like d or l. For " ", existing nodes are traversed if possible,
                 otherwise default_node_type is used to create new nodes. Default "", interpreted as " " at each level.
             list_insert: \\* Level at which a new node shall be inserted into the list instead of traversing the
                 existing node in the list at that index. See README
-            value_split: \\* used to split path into a list if path is a string, default " "
+            path_split: \\* used to split path into a list if path is a string, default " "
             fagus: \\* return self as a Fagus-object if it is a node (tuple / list / dict), default False
             if_: \\* only append value if it meets the condition specified here, otherwise do nothing. The condition can
                 be a lambda, any value or a tuple of accepted values. Default _None (don't check value)
@@ -473,7 +473,7 @@ class Fagus(MutableMapping, MutableSequence, MutableSet, metaclass=FagusMeta):
                 root node needs to be modified and isn't modifiable (e.g. tuple or frozenset)
         """
         return Fagus._build_node(
-            self, value, path, "append", node_types, list_insert, value_split, fagus, if_, default_node_type, copy
+            self, value, path, "append", node_types, list_insert, path_split, fagus, if_, default_node_type, copy
         )
 
     def extend(
@@ -482,7 +482,7 @@ class Fagus(MutableMapping, MutableSequence, MutableSet, metaclass=FagusMeta):
         path: Any = "",
         node_types: str = ...,
         list_insert: int = ...,
-        value_split: str = ...,
+        path_split: str = ...,
         fagus: bool = ...,
         if_: Any = ...,
         default_node_type: str = ...,
@@ -497,7 +497,7 @@ class Fagus(MutableMapping, MutableSequence, MutableSet, metaclass=FagusMeta):
         Args:
             values: the list at path is extended with ~, after creating new nodes along path as necessary
             path: List/Tuple of key-values that are traversed in self. If no nodes exist at the keys, new nodes are
-                created. Can also be specified as a string, that is split into a tuple using value_split. See get()
+                created. Can also be specified as a string, that is split into a tuple using path_split. See get()
 
             node_types: \\* Can be used to manually define if the nodes along path are supposed to be (l)ists or
                 (d)icts. E.g. "dll" to create a dict at level 1, and lists at level 2 and 3. " " can also be used -
@@ -505,7 +505,7 @@ class Fagus(MutableMapping, MutableSequence, MutableSet, metaclass=FagusMeta):
                 otherwise default_node_type is used to create new nodes. Default "", interpreted as " " at each level.
             list_insert: \\* Level at which a new node shall be inserted into the list instead of traversing the
                 existing node in the list at that index. See README
-            value_split: \\* used to split path into a list if path is a string, default " "
+            path_split: \\* used to split path into a list if path is a string, default " "
             fagus: \\* return self as a Fagus-object if it is a node (tuple / list / dict), default False
             if_: \\* only extend with values if they meet the condition specified here, otherwise do nothing. The
                 condition can be a lambda, any value or a tuple of accepted values. Default _None (don't check values)
@@ -523,7 +523,7 @@ class Fagus(MutableMapping, MutableSequence, MutableSet, metaclass=FagusMeta):
                 root node needs to be modified and isn't modifiable (e.g. tuple or frozenset)
         """
         return Fagus._build_node(
-            self, values, path, "extend", node_types, list_insert, value_split, fagus, if_, default_node_type, copy
+            self, values, path, "extend", node_types, list_insert, path_split, fagus, if_, default_node_type, copy
         )
 
     def insert(
@@ -533,7 +533,7 @@ class Fagus(MutableMapping, MutableSequence, MutableSet, metaclass=FagusMeta):
         path: Any = "",
         node_types: str = ...,
         list_insert: int = ...,
-        value_split: str = ...,
+        path_split: str = ...,
         fagus: bool = ...,
         if_: Any = ...,
         default_node_type: str = ...,
@@ -550,14 +550,14 @@ class Fagus(MutableMapping, MutableSequence, MutableSet, metaclass=FagusMeta):
             index: ~ at which the value shall be inserted in the list at path
             value: ~ is inserted at index into list at path, after creating new nodes along path as necessary
             path: List/Tuple of key-values that are traversed in self. If no nodes exist at the keys, new nodes are
-                created. Can also be specified as a string, that is split into a tuple using value_split. See get()
+                created. Can also be specified as a string, that is split into a tuple using path_split. See get()
             node_types: \\* Can be used to manually define if the nodes along path are supposed to be (l)ists or
                 (d)icts. E.g. "dll" to create a dict at level 1, and lists at level 2 and 3. " " can also be used -
                 space doesn't enforce a node-type like d or l. For " ", existing nodes are traversed if possible,
                 otherwise default_node_type is used to create new nodes. Default "", interpreted as " " at each level.
             list_insert: \\* Level at which a new node shall be inserted into the list instead of traversing the
                 existing node in the list at that index. See README
-            value_split: \\* used to split path into a list if path is a string, default " "
+            path_split: \\* used to split path into a list if path is a string, default " "
             fagus: \\* return self as a Fagus-object if it is a node (tuple / list / dict), default False
             if_: \\* only insert value if it meets the condition specified here, otherwise do nothing. The condition can
                 be a lambda, any value or a tuple of accepted values. Default _None (don't check value)
@@ -581,7 +581,7 @@ class Fagus(MutableMapping, MutableSequence, MutableSet, metaclass=FagusMeta):
             "insert",
             node_types,
             list_insert,
-            value_split,
+            path_split,
             fagus,
             if_,
             default_node_type,
@@ -595,7 +595,7 @@ class Fagus(MutableMapping, MutableSequence, MutableSet, metaclass=FagusMeta):
         path: Any = "",
         node_types: str = ...,
         list_insert: int = ...,
-        value_split: str = ...,
+        path_split: str = ...,
         fagus: bool = ...,
         if_: Any = ...,
         default_node_type: str = ...,
@@ -610,14 +610,14 @@ class Fagus(MutableMapping, MutableSequence, MutableSet, metaclass=FagusMeta):
         Args:
             value: ~ is added to set at path, after creating new nodes along path as necessary
             path: List/Tuple of key-values that are traversed in self. If no nodes exist at the keys, new nodes are
-                created. Can also be specified as a string, that is split into a tuple using value_split. See get()
+                created. Can also be specified as a string, that is split into a tuple using path_split. See get()
             node_types: \\* Can be used to manually define if the nodes along path are supposed to be (l)ists or
                 (d)icts. E.g. "dll" to create a dict at level 1, and lists at level 2 and 3. " " can also be used -
                 space doesn't enforce a node-type like d or l. For " ", existing nodes are traversed if possible,
                 otherwise default_node_type is used to create new nodes. Default "", interpreted as " " at each level.
             list_insert: \\* Level at which a new node shall be inserted into the list instead of traversing the
                 existing node in the list at that index. See README
-            value_split: \\* used to split path into a list if path is a string, default " "
+            path_split: \\* used to split path into a list if path is a string, default " "
             fagus: \\* return self as a Fagus-object if it is a node (tuple / list / dict), default False
             if_: \\* only add value if it meets the condition specified here, otherwise do nothing. The condition can be
                 a lambda, any value or a tuple of accepted values. Default _None (don't check value)
@@ -635,7 +635,7 @@ class Fagus(MutableMapping, MutableSequence, MutableSet, metaclass=FagusMeta):
                 needs to be modified and isn't modifiable (e.g. tuple or frozenset)
         """
         return Fagus._build_node(
-            self, value, path, "add", node_types, list_insert, value_split, fagus, if_, default_node_type, copy
+            self, value, path, "add", node_types, list_insert, path_split, fagus, if_, default_node_type, copy
         )
 
     def update(
@@ -644,7 +644,7 @@ class Fagus(MutableMapping, MutableSequence, MutableSet, metaclass=FagusMeta):
         path: Any = "",
         node_types: str = ...,
         list_insert: int = ...,
-        value_split: str = ...,
+        path_split: str = ...,
         fagus: bool = ...,
         if_: Any = ...,
         default_node_type: str = ...,
@@ -660,14 +660,14 @@ class Fagus(MutableMapping, MutableSequence, MutableSet, metaclass=FagusMeta):
         Args:
             values: the set/dict at path is updated with ~, after creating new nodes along path as necessary
             path: List/Tuple of key-values that are traversed in self. If no nodes exist at the keys, new nodes are
-                created. Can also be specified as a string, that is split into a tuple using value_split. See get()
+                created. Can also be specified as a string, that is split into a tuple using path_split. See get()
             node_types: \\* Can be used to manually define if the nodes along path are supposed to be (l)ists or
                 (d)icts. E.g. "dll" to create a dict at level 1, and lists at level 2 and 3. " " can also be used -
                 space doesn't enforce a node-type like d or l. For " ", existing nodes are traversed if possible,
                 otherwise default_node_type is used to create new nodes. Default "", interpreted as " " at each level.
             list_insert: \\* Level at which a new node shall be inserted into the list instead of traversing the
                 existing node in the list at that index. See README
-            value_split: \\* used to split path into a list if path is a string, default " "
+            path_split: \\* used to split path into a list if path is a string, default " "
             fagus: \\* return self as a Fagus-object if it is a node (tuple / list / dict), default False
             if_: \\* only update with values if they meet the condition specified here, otherwise do nothing. The
                 condition can be a lambda, any value or a tuple of accepted values. Default _None (don't check values)
@@ -685,7 +685,7 @@ class Fagus(MutableMapping, MutableSequence, MutableSet, metaclass=FagusMeta):
                 needs to be modified and isn't modifiable (e.g. tuple or frozenset)
         """
         return Fagus._build_node(
-            self, values, path, "update", node_types, list_insert, value_split, fagus, if_, default_node_type, copy
+            self, values, path, "update", node_types, list_insert, path_split, fagus, if_, default_node_type, copy
         )
 
     def _build_node(
@@ -695,7 +695,7 @@ class Fagus(MutableMapping, MutableSequence, MutableSet, metaclass=FagusMeta):
         action: str,
         node_types: str = ...,
         list_insert: int = ...,
-        value_split: str = ...,
+        path_split: str = ...,
         fagus: bool = ...,
         if_: Any = ...,
         default_node_type: str = ...,
@@ -714,7 +714,7 @@ class Fagus(MutableMapping, MutableSequence, MutableSet, metaclass=FagusMeta):
             root = Fagus.__copy__(root)
         node = root
         if isinstance(path, str):
-            l_path = path.split(Fagus._opt(self, "value_split", value_split)) if path else []
+            l_path = path.split(Fagus._opt(self, "path_split", path_split)) if path else []
         else:
             l_path = list(path) if _is(path, Collection) else [path]
         if l_path:
@@ -875,7 +875,7 @@ class Fagus(MutableMapping, MutableSequence, MutableSet, metaclass=FagusMeta):
         fagus: bool = ...,
         node_types: str = ...,
         list_insert: int = ...,
-        value_split: str = ...,
+        path_split: str = ...,
         default_node_type: str = ...,
     ) -> Any:
         """Get value at path and return it. If there is no value at path, set default at path, and return default
@@ -892,7 +892,7 @@ class Fagus(MutableMapping, MutableSequence, MutableSet, metaclass=FagusMeta):
                 otherwise default_node_type is used to create new nodes. Default "", interpreted as " " at each level.
             list_insert: \\* Level at which a new node shall be inserted into the list instead of traversing the
                 existing node in the list at that index. See README
-            value_split: \\* used to split path into a list if path is a str, default " "
+            path_split: \\* used to split path into a list if path is a str, default " "
             default_node_type: \\* determines if new nodes by default should be created as (d)ict or (l)ist. Must be
                 either "d" or "l", default "d"
 
@@ -905,7 +905,7 @@ class Fagus(MutableMapping, MutableSequence, MutableSet, metaclass=FagusMeta):
             TypeError: if the root node needs to be modified and isn't modifiable (e.g. tuple or frozenset)
         """
         if isinstance(path, str):
-            l_path = path.split(Fagus._opt(self, "value_split", value_split)) if path else []
+            l_path = path.split(Fagus._opt(self, "path_split", path_split)) if path else []
         else:
             l_path = list(path) if _is(path, Collection) else [path]
         parent_node = Fagus._get_mutable_node(
@@ -913,7 +913,7 @@ class Fagus(MutableMapping, MutableSequence, MutableSet, metaclass=FagusMeta):
         )
         if parent_node is _None:
             value = Fagus._opt(self, "default", default)
-            Fagus.set(self, value, path, node_types, list_insert, value_split, False, _None, default_node_type)
+            Fagus.set(self, value, path, node_types, list_insert, path_split, False, _None, default_node_type)
         else:
             value = Fagus.get(parent_node, l_path[-1], _None, fagus=False)
             if value is _None or (list_insert == len(l_path) - 1 and isinstance(parent_node, MutableSequence)):
@@ -933,7 +933,7 @@ class Fagus(MutableMapping, MutableSequence, MutableSet, metaclass=FagusMeta):
         fagus: bool = ...,
         node_types: str = ...,
         list_insert: int = ...,
-        value_split: str = ...,
+        path_split: str = ...,
         default_node_type: str = ...,
     ) -> Any:
         """Modifies the value at path using the function-pointer mod_function
@@ -947,7 +947,7 @@ class Fagus(MutableMapping, MutableSequence, MutableSet, metaclass=FagusMeta):
             mod_function: A function pointer or lambda that modifies the existing value at path. TFunc can be used to
                 call more complex functions requiring several arguments.
             path: position in self at which the value shall be modified. Defined as a list/Tuple of key-values to
-                recursively traverse self. Can also be specified as string which is split into a tuple using value_split
+                recursively traverse self. Can also be specified as string which is split into a tuple using path_split
             default: \\* this value is set in path if it doesn't exist
             fagus: \\* Return new value as a Fagus-object if it is a node (tuple / list / dict), default False
             replace_value: Replace the old value with what mod_function returns. Can be deactivated e.g. if mod_function
@@ -959,7 +959,7 @@ class Fagus(MutableMapping, MutableSequence, MutableSet, metaclass=FagusMeta):
                 otherwise default_node_type is used to create new nodes. Default "", interpreted as " " at each level.
             list_insert: \\* Level at which a new node shall be inserted into the list instead of traversing the
                 existing node in the list at that index. See README
-            value_split: \\* used to split path into a list if path is a str, default " "
+            path_split: \\* used to split path into a list if path is a str, default " "
             default_node_type: \\* determines if new nodes by default should be created as (d)ict or (l)ist. Must be
                 either "d" or "l", default "d"
 
@@ -973,7 +973,7 @@ class Fagus(MutableMapping, MutableSequence, MutableSet, metaclass=FagusMeta):
         """
         root = self.root if isinstance(self, Fagus) else self
         if isinstance(path, str):
-            l_path = path.split(Fagus._opt(self, "value_split", value_split)) if path else []
+            l_path = path.split(Fagus._opt(self, "path_split", path_split)) if path else []
         else:
             l_path = list(path) if _is(path, Collection) else [path]
         list_insert = Fagus._opt(self, "list_insert", list_insert)
@@ -997,7 +997,7 @@ class Fagus(MutableMapping, MutableSequence, MutableSet, metaclass=FagusMeta):
                     parent[l_path[-1]] = new_value
         else:
             new_value = Fagus._opt(self, "default", default)
-            Fagus.set(root, new_value, path, node_types, list_insert, value_split, False, _None, default_node_type)
+            Fagus.set(root, new_value, path, node_types, list_insert, path_split, False, _None, default_node_type)
         return Fagus.child(self, default) if _is(default, Collection) and Fagus._opt(self, "fagus", fagus) else default
 
     def mod_all(
@@ -1010,7 +1010,7 @@ class Fagus(MutableMapping, MutableSequence, MutableSet, metaclass=FagusMeta):
         max_depth: int = INF,
         fagus: bool = ...,
         copy=False,
-        value_split: str = ...,
+        path_split: str = ...,
     ) -> Collection:
         """Modify all the leaf-values that match a certain filter
 
@@ -1028,7 +1028,7 @@ class Fagus(MutableMapping, MutableSequence, MutableSet, metaclass=FagusMeta):
                 If no value exists at path, the default value is always set at path (independent of ~)
             max_depth: Defines the maximum depth for the iteration. See Fagus.iter max_depth for more information
             copy: Can be ued to make sure that the node at path is not modified (instead a modified copy is returned)
-            value_split: \\* used to split path into a list if path is a str, default " "
+            path_split: \\* used to split path into a list if path is a str, default " "
 
         Returns:
             the node at path where all the leaves matching filter\\_ are modified, or default if it didn't exist
@@ -1036,7 +1036,7 @@ class Fagus(MutableMapping, MutableSequence, MutableSet, metaclass=FagusMeta):
         Raises:
             TypeError: if the root node needs to be modified and isn't modifiable (e.g. tuple or frozenset)
         """
-        base = Fagus.get(self, path, _None, False, copy, value_split)
+        base = Fagus.get(self, path, _None, False, copy, path_split)
         if base is _None or not _is(base, Collection) or not base:
             return Fagus._opt(self, "default", default)
         f_iter = Fagus.iter(base, max_depth, filter_=filter_, fagus=False, iter_fill=_None, iter_nodes=True)
@@ -1067,7 +1067,7 @@ class Fagus(MutableMapping, MutableSequence, MutableSet, metaclass=FagusMeta):
         path: Any = "",
         node_types: str = ...,
         list_insert: int = ...,
-        value_split: str = ...,
+        path_split: str = ...,
         copy: bool = False,
     ) -> Union[dict, list]:
         """Makes sure the object can be serialized so that it can be converted to JSON, YAML etc.
@@ -1101,7 +1101,7 @@ class Fagus(MutableMapping, MutableSequence, MutableSet, metaclass=FagusMeta):
                 otherwise default_node_type is used to create new nodes. Default "", interpreted as " " at each level.
             list_insert: \\* Level at which a new node shall be inserted into the list instead of traversing the
                 existing node in the list at that index. See README
-            value_split: \\* used to split path into a list if path is a str, default " "
+            path_split: \\* used to split path into a list if path is a str, default " "
             copy: Create a copy and make that copy serializable. Default is to modify self directly
 
         Returns:
@@ -1113,7 +1113,7 @@ class Fagus(MutableMapping, MutableSequence, MutableSet, metaclass=FagusMeta):
             Exception: Can raise any exception if it occurs in one of the mod_functions
         """
         if isinstance(path, str):
-            l_path = path.split(Fagus._opt(self, "value_split", value_split)) if path else []
+            l_path = path.split(Fagus._opt(self, "path_split", path_split)) if path else []
         else:
             l_path = list(path) if _is(path, Collection) else [path]
         node = Fagus._get_mutable_node(
@@ -1202,7 +1202,7 @@ class Fagus(MutableMapping, MutableSequence, MutableSet, metaclass=FagusMeta):
         fagus: bool = ...,
         copy: bool = False,
         copy_obj: bool = False,
-        value_split: str = ...,
+        path_split: str = ...,
         node_types: str = ...,
         list_insert: int = ...,
         default_node_type: str = ...,
@@ -1227,7 +1227,7 @@ class Fagus(MutableMapping, MutableSequence, MutableSet, metaclass=FagusMeta):
             copy: Don't modify the root node, modify and return a copy instead
             copy_obj: The objects to be merged are not modified, but references to subnodes of the objects can be
                 put into the root node. Set this to True to prevent that and keep root and objects independent
-            value_split: \\* used to split path into a list if path is a str, default " "
+            path_split: \\* used to split path into a list if path is a str, default " "
             node_types: \\* Can be used to manually define if the nodes along path are supposed to be (l)ists or
                 (d)icts. E.g. "dll" to create a dict at level 1, and lists at level 2 and 3. " " can also be used -
                 space doesn't enforce a node-type like d or l. For " ", existing nodes are traversed if possible,
@@ -1251,7 +1251,7 @@ class Fagus(MutableMapping, MutableSequence, MutableSet, metaclass=FagusMeta):
             raise ValueError(
                 f"Invalid new_value_action: {new_value_action}. Valid inputs: (r)eplace, (i)gnore or (a)ppend."
             )
-        node = Fagus.get(self, path, _None, False, copy, value_split)
+        node = Fagus.get(self, path, _None, False, copy, path_split)
         if node is _None or not _is(node, Collection):
             if isinstance(obj, FagusIterator):
                 object_ = obj.obj()
@@ -1262,7 +1262,7 @@ class Fagus(MutableMapping, MutableSequence, MutableSet, metaclass=FagusMeta):
             if copy_obj:
                 object_ = Fagus.__copy__(object_)
             if not copy:
-                Fagus.set(self, object_, path, node_types, list_insert, value_split, False, _None, default_node_type)
+                Fagus.set(self, object_, path, node_types, list_insert, path_split, False, _None, default_node_type)
             return Fagus.child(self, object_) if Fagus._opt(self, "fagus", fagus) else object_
         base_nodes = [node]
         iter_options = dict(
@@ -1362,7 +1362,7 @@ class Fagus(MutableMapping, MutableSequence, MutableSet, metaclass=FagusMeta):
                     node[path[2 * len(base_nodes) - 1]] = new_value
         return Fagus.child(self, base_nodes[0]) if Fagus._opt(self, "fagus", fagus) else base_nodes[0]
 
-    def pop(self: Collection, path: Any = "", default=..., fagus: bool = ..., value_split: str = ...):
+    def pop(self: Collection, path: Any = "", default=..., fagus: bool = ..., path_split: str = ...):
         """Deletes the value at path and returns it
 
         \\* means that the parameter is a Fagus-Setting, see Fagus-class-docstring for more information about options
@@ -1371,7 +1371,7 @@ class Fagus(MutableMapping, MutableSequence, MutableSet, metaclass=FagusMeta):
             path: pop value at this position in self, or don't do anything if path doesn't exist in self
             default: \\* returned if path doesn't exist in self
             fagus: \\* return the result as Fagus-object if possible (default is just to return the result)
-            value_split: \\* used to split path into a list if path is a str, default " "
+            path_split: \\* used to split path into a list if path is a str, default " "
 
         Returns:
             value at path if it exists, or default if it doesn't
@@ -1380,7 +1380,7 @@ class Fagus(MutableMapping, MutableSequence, MutableSet, metaclass=FagusMeta):
             TypeError: if the root node needs to be modified and isn't modifiable (e.g. tuple or frozenset)
         """
         if isinstance(path, str):
-            l_path = path.split(Fagus._opt(self, "value_split", value_split)) if path else []
+            l_path = path.split(Fagus._opt(self, "path_split", path_split)) if path else []
         else:
             l_path = list(path) if _is(path, Collection) else [path]
         default = Fagus._opt(self, "default", default)
@@ -1403,49 +1403,49 @@ class Fagus(MutableMapping, MutableSequence, MutableSet, metaclass=FagusMeta):
         """This function is not implemented in Fagus"""
         pass
 
-    def discard(self: Collection, path: Any = "", value_split: str = ...) -> None:
+    def discard(self: Collection, path: Any = "", path_split: str = ...) -> None:
         """Deletes the value at path if it exists
 
         \\* means that the parameter is a Fagus-Setting, see Fagus-class-docstring for more information about options
 
         Args:
             path: pop value at this position in self, or don't do anything if path doesn't exist in self
-            value_split: \\* used to split path into a list if path is a str, default " "
+            path_split: \\* used to split path into a list if path is a str, default " "
 
         Returns: None
         """
-        Fagus.pop(self, path, value_split=value_split)
+        Fagus.pop(self, path, path_split=path_split)
 
-    def remove(self, path: Any = "", value_split: str = ...) -> None:
+    def remove(self, path: Any = "", path_split: str = ...) -> None:
         """Deletes the value at path if it exists, raises KeyError if it doesn't
 
         \\* means that the parameter is a Fagus-Setting, see Fagus-class-docstring for more information about options
 
         Args:
             path: pop value at this position in self, or don't do anything if path doesn't exist in self
-            value_split: \\* used to split path into a list if path is a str, default " "
+            path_split: \\* used to split path into a list if path is a str, default " "
 
         Returns: None
 
         Raises:
             KeyError: if the value at path doesn't exist
         """
-        if Fagus.pop(self, path, _None, value_split=value_split) is _None:
+        if Fagus.pop(self, path, _None, path_split=path_split) is _None:
             raise KeyError(f"Couldn't remove {path}: Does not exist")
 
-    def keys(self: Collection, path: Any = "", value_split: str = ...):
+    def keys(self: Collection, path: Any = "", path_split: str = ...):
         """Returns keys for the node at path, or None if that node is a set or doesn't exist / doesn't have keys
 
         \\* means that the parameter is a Fagus-Setting, see Fagus-class-docstring for more information about options
 
         Args:
             path: get keys for node at this position in self. Default "" (gets values from the root node), See get()
-            value_split: \\* used to split path into a list if path is a str, default " "
+            path_split: \\* used to split path into a list if path is a str, default " "
 
         Returns:
             keys for the node at path, or an empty tuple if that node is a set or doesn't exist / doesn't have keys
         """
-        node = Fagus.get(self, path, fagus=False, value_split=value_split)
+        node = Fagus.get(self, path, fagus=False, path_split=path_split)
         if isinstance(node, Mapping):
             return node.keys()
         if _is(node, Sequence):
@@ -1457,7 +1457,7 @@ class Fagus(MutableMapping, MutableSequence, MutableSet, metaclass=FagusMeta):
     def values(
         self: Collection,
         path: Any = "",
-        value_split: str = ...,
+        path_split: str = ...,
         fagus: bool = ...,
         copy: bool = False,
     ):
@@ -1467,7 +1467,7 @@ class Fagus(MutableMapping, MutableSequence, MutableSet, metaclass=FagusMeta):
 
         Args:
             path: get values at this position in self, default "" (gets values from the root node). See get()
-            value_split: \\* used to split path into a list if path is a str, default " "
+            path_split: \\* used to split path into a list if path is a str, default " "
             fagus: \\* converts sub-nodes into Fagus-objects in the returned list of values, default False
             copy: ~ creates a copy of the node before values() are returned. This can be beneficial if you want to make
                 changes to the returned nodes, but you don't want to change self. Default False
@@ -1476,7 +1476,7 @@ class Fagus(MutableMapping, MutableSequence, MutableSet, metaclass=FagusMeta):
             values for the node at path. Returns an empty tuple if the value doesn't exist, or just the value in a
             tuple if the node isn't iterable.
         """
-        node = Fagus.get(self, path, _None, value_split=value_split, fagus=False, copy=copy)
+        node = Fagus.get(self, path, _None, path_split=path_split, fagus=False, copy=copy)
         if _is(node, Collection):
             values = node.values() if isinstance(node, Mapping) else node
             if Fagus._opt(self, "fagus", fagus):
@@ -1489,7 +1489,7 @@ class Fagus(MutableMapping, MutableSequence, MutableSet, metaclass=FagusMeta):
     def items(
         self: Collection,
         path: Any = "",
-        value_split: str = ...,
+        path_split: str = ...,
         fagus: bool = ...,
         copy: bool = False,
     ):
@@ -1499,7 +1499,7 @@ class Fagus(MutableMapping, MutableSequence, MutableSet, metaclass=FagusMeta):
 
         Args:
             path: get items at this position in self, Default "" (gets values from the root node). See get()
-            value_split: \\* used to split path into a list if path is a str, default " "
+            path_split: \\* used to split path into a list if path is a str, default " "
             fagus: \\* converts sub-nodes into Fagus-objects in the returned iterator, default False
             copy: ~ creates a copy of the node before items() are returned. This can be beneficial if you want to make
                 changes to the returned nodes, but you don't want to change self. Default False
@@ -1507,7 +1507,7 @@ class Fagus(MutableMapping, MutableSequence, MutableSet, metaclass=FagusMeta):
         Returns:
             iterator of (key, value)-tuples in self, like dict.items()
         """
-        node = Fagus.get(self, path, _None, False, copy, value_split)
+        node = Fagus.get(self, path, _None, False, copy, path_split)
         if isinstance(node, Mapping):
             items = node.items()
         elif _is(node, Sequence):
@@ -1523,7 +1523,7 @@ class Fagus(MutableMapping, MutableSequence, MutableSet, metaclass=FagusMeta):
     def clear(
         self: Collection,
         path: Any = "",
-        value_split: str = ...,
+        path_split: str = ...,
         copy: bool = False,
         fagus: bool = ...,
     ) -> Collection:
@@ -1533,7 +1533,7 @@ class Fagus(MutableMapping, MutableSequence, MutableSet, metaclass=FagusMeta):
 
         Args:
             path: clear at this position in self, Default "" (gets values from the root node). See get()
-            value_split: \\* used to split path into a list if path is a str, default " "
+            path_split: \\* used to split path into a list if path is a str, default " "
             copy: if ~ is set, a copy of self is modified and then returned (thus self is not modified), default False
             fagus: \\* return self as a Fagus-object if it is a node (tuple / list / dict), default False
 
@@ -1545,7 +1545,7 @@ class Fagus(MutableMapping, MutableSequence, MutableSet, metaclass=FagusMeta):
         """
         root = Fagus.__copy__(self) if copy else self
         if isinstance(path, str):
-            l_path = path.split(Fagus._opt(self, "value_split", value_split)) if path else []
+            l_path = path.split(Fagus._opt(self, "path_split", path_split)) if path else []
         else:
             l_path = list(path) if _is(path, Collection) else [path]
         node = Fagus._get_mutable_node(root, l_path, parent=False)
@@ -1555,7 +1555,7 @@ class Fagus(MutableMapping, MutableSequence, MutableSet, metaclass=FagusMeta):
             return root if Fagus._opt(self, "fagus", fagus) else root()
         return Fagus.child(self, root) if Fagus._opt(self, "fagus", fagus) else root
 
-    def contains(self: Collection, value, path: Any = "", value_split: str = ...) -> bool:
+    def contains(self: Collection, value, path: Any = "", path_split: str = ...) -> bool:
         """Check if value is present in the node at path
 
         \\* means that the parameter is a Fagus-Setting, see Fagus-class-docstring for more information about options
@@ -1563,28 +1563,28 @@ class Fagus(MutableMapping, MutableSequence, MutableSet, metaclass=FagusMeta):
         Args:
             value: value to check
             path: check if value is in node at this position in self, Default "" (checks root node). See get()
-            value_split: \\* used to split path into a list if path is a str, default " "
+            path_split: \\* used to split path into a list if path is a str, default " "
 
         Return:
             whether value is in node at path in self. returns value == node if the node isn't iterable, and false if
             path doesn't exit in self"""
-        node = Fagus.get(self, path, _None, fagus=False, value_split=value_split)
+        node = Fagus.get(self, path, _None, fagus=False, path_split=path_split)
         return value in node if _is(node, Collection) else value == node
 
-    def count(self: Collection, path: Any = "", value_split: str = ...) -> int:
+    def count(self: Collection, path: Any = "", path_split: str = ...) -> int:
         """Check the number of elements in the node at path
 
         \\* means that the parameter is a Fagus-Setting, see Fagus-class-docstring for more information about options
 
         Args:
             path: position in self where the number of elements shall be found.Default "" (checks root node). See get()
-            value_split: \\* used to split path into a list if path is a str, default " "
+            path_split: \\* used to split path into a list if path is a str, default " "
 
         Return:
             the number of elements in the node at path. if there is no node at path, 0 is returned. If the element
             at path is not a node, 1 is returned
         """
-        node = Fagus.get(self, path, _None, fagus=False, value_split=value_split)
+        node = Fagus.get(self, path, _None, fagus=False, path_split=path_split)
         return len(node) if _is(node, Collection) else 0 if node is _None else 1
 
     def index(
@@ -1594,7 +1594,7 @@ class Fagus(MutableMapping, MutableSequence, MutableSet, metaclass=FagusMeta):
         stop: int = ...,
         path: Any = "",
         all_: bool = False,
-        value_split: str = ...,
+        path_split: str = ...,
     ) -> Optional[Union[int, Any, Sequence]]:
         """Returns the index / key of the specified value in the node at path if it exists
 
@@ -1604,14 +1604,14 @@ class Fagus(MutableMapping, MutableSequence, MutableSet, metaclass=FagusMeta):
             stop: stop searching at this index. Only applicable if the node at path is a list / tuple
             path: position in self where the node shall be searched for value. Default "" (checks root node). See get()
             all_: returns all matching indices / keys in a generator (instead of only the first)
-            value_split: \\* used to split path into a list if path is a str, default " "
+            path_split: \\* used to split path into a list if path is a str, default " "
 
         Returns:
             The first index of value if the node at path is a list, or the first key containing value if the node at
             path is a dict. True if the node at path is a Set and contains value. If the element can't be found in the
             node at path, or there is no Collection at path, None is returned (instead of a ValueError).
         """
-        node = Fagus.get(self, path, None, False, False, value_split)
+        node = Fagus.get(self, path, None, False, False, path_split)
         if isinstance(node, Set):
             if all_:
                 return
@@ -1641,7 +1641,7 @@ class Fagus(MutableMapping, MutableSequence, MutableSet, metaclass=FagusMeta):
                 pass
 
     def isdisjoint(
-        self: Collection, other: Iterable, path: Any = "", value_split: str = ..., dict_: str = "keys"
+        self: Collection, other: Iterable, path: Any = "", path_split: str = ..., dict_: str = "keys"
     ) -> bool:
         """Returns whether the other iterable is disjoint (has no common items) with the node at path
 
@@ -1650,13 +1650,13 @@ class Fagus(MutableMapping, MutableSequence, MutableSet, metaclass=FagusMeta):
         Args:
             other: other object to check
             path: check if the node at this position in self, is disjoint from other
-            value_split: \\* used to split path into a list if path is a str, default " "
+            path_split: \\* used to split path into a list if path is a str, default " "
             dict_: use (k)eys, (v)alues or (i)tems for if value is a dict. Default keys
 
         Returns: whether the other iterable is disjoint from the value at path. If value is a dict, the keys are used.
             Checks if value is present in other if value isn't iterable. Returns True if there is no value at path.
         """
-        node = Fagus.get(self, path, _None, False, False, value_split)
+        node = Fagus.get(self, path, _None, False, False, path_split)
         if isinstance(node, Mapping):
             if not dict_ or dict_[0] not in ("k", "v", "i"):
                 raise ValueError(f"dict_ attribute must bei either (k)eys, (v)alues or (i)tems. You provided {dict_}")
@@ -1673,7 +1673,7 @@ class Fagus(MutableMapping, MutableSequence, MutableSet, metaclass=FagusMeta):
         self: Collection,
         path: Any = "",
         fagus: bool = ...,
-        value_split: str = ...,
+        path_split: str = ...,
         copy: bool = False,
     ):
         """Get reversed child-node at path if that node is a list
@@ -1683,14 +1683,14 @@ class Fagus(MutableMapping, MutableSequence, MutableSet, metaclass=FagusMeta):
         Args:
             path: position in self where a list / tuple shall be returned reversed
             fagus: \\* converts sub-nodes into Fagus-objects in the returned iterator, default False
-            value_split: \\* used to split path into a list if path is a str, default " "
+            path_split: \\* used to split path into a list if path is a str, default " "
             copy: ~ creates a copy of the node before it is returned reversed(). This can be beneficial if you want to
                 make changes to the returned nodes, but you don't want to change self. Default False
 
         Returns:
             a reversed iterator on the node at path (empty if path doesn't exist)
         """
-        node = Fagus.values(self, path, value_split, fagus, copy)
+        node = Fagus.values(self, path, path_split, fagus, copy)
         if not _is(node, Reversible):
             node = tuple(node) if _is(node, Iterable) else (node,)
         return reversed(node)
@@ -1699,7 +1699,7 @@ class Fagus(MutableMapping, MutableSequence, MutableSet, metaclass=FagusMeta):
         self: Collection,
         path: Any = "",
         fagus: bool = ...,
-        value_split: str = ...,
+        path_split: str = ...,
         copy: bool = False,
     ) -> Collection:
         """Reverse child-node at path if that node exists and is reversible
@@ -1709,7 +1709,7 @@ class Fagus(MutableMapping, MutableSequence, MutableSet, metaclass=FagusMeta):
         Args:
             path: position in self where a list / tuple shall be reversed
             fagus: \\* converts sub-nodes into Fagus-objects in the returned iterator, default False
-            value_split: \\* used to split path into a list if path is a str, default " "
+            path_split: \\* used to split path into a list if path is a str, default " "
             copy: ~ creates a copy of the node before it is returned reversed(). This can be beneficial if you want to
                 make changes to the returned nodes, but you don't want to change self. Default False
 
@@ -1723,7 +1723,7 @@ class Fagus(MutableMapping, MutableSequence, MutableSet, metaclass=FagusMeta):
         if copy:
             root = Fagus.__copy__(self)
         if isinstance(path, str):
-            l_path = path.split(Fagus._opt(self, "value_split", value_split)) if path else []
+            l_path = path.split(Fagus._opt(self, "path_split", path_split)) if path else []
         else:
             l_path = list(path) if _is(path, Collection) else [path]
         if l_path:
@@ -1938,7 +1938,7 @@ class Fagus(MutableMapping, MutableSequence, MutableSet, metaclass=FagusMeta):
                 return self._options.get(attr, getattr(Fagus, attr))
             return getattr(Fagus, attr)
         else:
-            return self.get(attr.lstrip(Fagus._opt(self, "value_split") if isinstance(attr, str) else attr))
+            return self.get(attr.lstrip(Fagus._opt(self, "path_split") if isinstance(attr, str) else attr))
 
     def __getitem__(self, item):  # Enable [] access for dict-keys at the top-level
         return self.get(item)
@@ -1951,7 +1951,7 @@ class Fagus(MutableMapping, MutableSequence, MutableSet, metaclass=FagusMeta):
                 super(Fagus, self).__setattr__("_options", {})
             self._options[attr] = Fagus.__verify_option__(attr, value)
         else:
-            self.set(value, attr.lstrip(Fagus._opt(self, "value_split") if isinstance(attr, str) else attr))
+            self.set(value, attr.lstrip(Fagus._opt(self, "path_split") if isinstance(attr, str) else attr))
 
     def __setitem__(self, path, value):  # Enable [] for setting items at a given path
         self.set(value, path)
@@ -1963,7 +1963,7 @@ class Fagus(MutableMapping, MutableSequence, MutableSet, metaclass=FagusMeta):
                 if not self._options:
                     self._options = None
         else:
-            self.pop(attr.lstrip(Fagus._opt(self, "value_split") if isinstance(attr, str) else attr))
+            self.pop(attr.lstrip(Fagus._opt(self, "path_split") if isinstance(attr, str) else attr))
 
     def __delitem__(self, path):  # Enable [] for deleting items
         self.pop(path)

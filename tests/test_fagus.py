@@ -42,11 +42,11 @@ class TestFagus(unittest.TestCase):
         self.assertEqual(1, Fagus(self.a).get((1, 0, 0), 1), "Path not existing return default that comes from param")
         self.assertEqual(1, Fagus.get((((1, 0), 2), 3), "0 0 0"), "Successfully traversing tuples")
         self.assertEqual([[3, 4], {"b": 1}], a.a, "Using dot-notation to get value from Fagus")
-        a.value_split = "_"
-        self.assertEqual(1, a.a_1_b, "Using dot-notation with value_split as _ to get value from Fagus")
+        a.path_split = "_"
+        self.assertEqual(1, a.a_1_b, "Using dot-notation with path_split as _ to get value from Fagus")
         a.c_e = {"a_haa_k": 72}
-        a.value_split = "__"
-        self.assertEqual(72, a.c__e__a_haa_k, "Using dot-notation with __ as value_split to get keys with _ inside")
+        a.path_split = "__"
+        self.assertEqual(72, a.c__e__a_haa_k, "Using dot-notation with __ as path_split to get keys with _ inside")
         del Fagus.default
 
     def test_iter(self):
@@ -432,12 +432,12 @@ class TestFagus(unittest.TestCase):
         a[("1", 1)] = "hei"
         b["1"][1] = "hei"
         self.assertEqual(b, a(), "Using __set_item__ to set a value")
-        a.value_split = "_"
+        a.path_split = "_"
         a.a_1_b = 2
         b["a"][1]["b"] = 2
         self.assertEqual(a(), b, "Using another path separator and __setattr__")
         b["1"] = {"0": {"0": {"g": [9, 5]}}}
-        self.assertEqual(b, a.set({"g": [9, 5]}, "1øæ0øæ0", "dd", value_split="øæ"), "Replace list with dict")
+        self.assertEqual(b, a.set({"g": [9, 5]}, "1øæ0øæ0", "dd", path_split="øæ"), "Replace list with dict")
         self.assertEqual([[["a"]]], Fagus.set([], "a", "1 1 1", default_node_type="l"), "Only create lists")
         a = Fagus(self.a, copy=True)
         b = copy.deepcopy(a())
@@ -658,7 +658,7 @@ class TestFagus(unittest.TestCase):
             a(),
             "Removing tuples / sets in complex dict / list tree",
         )
-        a = Fagus(default_node_type="l")
+        a = Fagus({}, default_node_type="l")
         a["a 1"] = ip_address("::1")
         a.append(ip_address("127.0.0.1"), "a 0")
         a["a -8"] = IPv4Network("192.168.178.0/24")
@@ -976,7 +976,7 @@ class TestFagus(unittest.TestCase):
         self.assertEqual(b, Fagus.reverse(a, "a c"), "Reversing a dict inside a tree")
 
     def test_child(self):
-        a = Fagus(self.a, fagus=True, value_split="_")
+        a = Fagus(self.a, fagus=True, path_split="_")
         b = a.child({"1": 9, 3: 11})
         self.assertEqual(a._options, b._options, "a child has the same options as its parent")
 
@@ -997,7 +997,7 @@ class TestFagus(unittest.TestCase):
         self.assertNotEqual(a, b(), "Can pop deeply in the object without affecting the original object")
 
     def test_repr(self):
-        a = Fagus({"a": 9, "c": [1, 2, False]}, value_split="_", fagus=True)
+        a = Fagus({"a": 9, "c": [1, 2, False]}, path_split="_", fagus=True)
         b = eval(repr(a))
         self.assertEqual(a, b, "Able to create equivalent obj from repr")
         self.assertEqual(a._options, b._options, "Able to create equivalent obj from repr, even with options")
@@ -1076,7 +1076,7 @@ class TestFagus(unittest.TestCase):
         )
         self.assertEqual({"fagus": True, "iter_fill": True}, a.options(), "same a-opts despite Fagus reset")
         self.assertRaisesRegex(
-            TypeError, "Can't apply value_split because value_split needs to be a str", a.options, {"value_split": 9}
+            TypeError, "Can't apply path_split because path_split needs to be a str", a.options, {"path_split": 9}
         )
         self.assertRaisesRegex(ValueError, "The only allowed characters in node", Fagus.options, {"node_types": "fpg"})
         self.assertEqual({}, Fagus.options(reset=True), "All options have been removed at class level and not replaced")

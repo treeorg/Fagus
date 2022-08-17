@@ -43,7 +43,7 @@ The whole `Fagus` library is built around these principles. It provides:
 ```
 * **Line 3**: The path-parameter is the tuple in the second argument of the get-function. The first and third element in that tuple are list-indices, whereas the second and fourth element are dict-keys.
 
-* **Line 5**: In many cases, the dict-keys that are traversed are strings. For convenience, it's also possible to provide the whole path-parameter as one string that is split up into the different keys. In the example above, `" "` is used to split the path-string, this can be customized using `value_split`.
+* **Line 5**: In many cases, the dict-keys that are traversed are strings. For convenience, it's also possible to provide the whole path-parameter as one string that is split up into the different keys. In the example above, `" "` is used to split the path-string, this can be customized using `path_split`.
 
 ### Static and instance usage
 All functions in `Fagus` can be used statically, or on a `Fagus`-instance, so the following two calls of `get()` give the same result:
@@ -68,7 +68,7 @@ While it's not necessary to instantiate `Fagus`, there are some neat shortcuts t
 {'x': {'y': {}}}
 ```
 * **Square bracket notation**: On `Fagus`-instances, the square-bracket notation can be used for easier access of data if no further customization is needed. Line 3 is equivalent to `a.set(6, "x y z")`. It can be used for getting, setting and deleting items (line 6).
-* **Dot notation**: The dot-notation is activated for setting, getting and deleting items as well (line 4). It can be used to access `str`-keys in `dict`s and `list`-indices, the index must then be preceded with an underscore due to Python naming limitations (`a._4`). This can be further customized using [`value_split`](#value_split)
+* **Dot notation**: The dot-notation is activated for setting, getting and deleting items as well (line 4). It can be used to access `str`-keys in `dict`s and `list`-indices, the index must then be preceded with an underscore due to Python naming limitations (`a._4`). This can be further customized using [`path_split`](#path_split)
 
 `Fagus` is a wrapper-class around a tree of `dict`- or `list`-objects. To get back the root-object inside the instance, use `()` to call the object -- this is shown in line 7.
 
@@ -194,7 +194,31 @@ As you can see, the node itself is included as the first element in both tuples.
 
 Sometimes in loops it can be helpful to actually have access to the whole node containing other relevant information. This can be especially useful combined with [`skip()`](#skipping-nodes-in-iteration).
 
-#### value_split
+#### path_split
+* **Default**: `" "`
+* **Type**: `str`
+
+The keys needed to traverse a `Fagus`-object for getting or setting a value are passed as a `tuple` or `list` (line 2). `path_split` allows to alternatively specify all the keys in a single string, split by `path_split` (line 4). As shown in line 4, list indices can be specified in the path-string, they are automatically converted back to `int`.
+
+```python
+>>> a = Fagus({"a": {"b": [True, "q"]}})
+>>> a[("a", "b", 0)]
+True
+>>> a["a b 0"]
+True
+```
+
+By default, `path_split` is a single space `" "`, but any other string can be used as a split character. If path string is set to `"_"`, the dot-notation can be used to get or set a node deeply inside a `Fagus`-object.
+
+```python
+>>> a = Fagus(path_split="_")
+>>> a.a_c_1 = 4  # {"a": {"c": {"1": 4}}}
+>>> a = Fagus(path_split="_", default_node_type="l")
+>>> a._0_2 = 6  # [[6]], note that the str after . is prefixed with a _ for a list index
+>>> a = Fagus(path_split="__")
+>>> a.example_index__another_index = "q"  # {"example_index": {"another_index": "q"}}
+```
+
 
 ### Iterating over nested objects
 
