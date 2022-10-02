@@ -194,6 +194,42 @@ As you can see, the node itself is included as the first element in both tuples.
 
 Sometimes in loops it can be helpful to actually have access to the whole node containing other relevant information. This can be especially useful combined with [`skip()`](#skipping-nodes-in-iteration).
 
+#### list_insert
+* **Default**: `INF` (infinity, defined as `sys.maxsize`, the max value of an `int` in Python)
+* **Type**: `int`
+
+By default, lists are traversed in Fagus when new items are inserted. New lists are only created if necessary. Consider the following example: 
+
+```python
+>>> a = Fagus([0, [3, 4, [5, 6], 2]])
+>>> a.set("insert_1", (1, 2))
+[0, [3, 4, 'insert_1', 2]]
+```
+
+The list `[5, 6]` is overridden with the new value `"insert_1"`. In some cases it is desirable to insert a new value into one of the lists rather than just overwriting the existing value. This is where `list_insert` comes into the picture.
+
+```python
+>>> a = Fagus([0, [3, 4, [5, 6], 2]], default_node_type="l")
+>>> a.set("insert_2", (1, 2), list_insert=1)
+[0, [3, 4, 'insert_2', [5, 6], 2]]
+>>> a.set("insert_3", (1, 2), list_insert=0)
+[0, ['insert_3'], [3, 4, 'insert_3', [5, 6], 2]]
+```
+
+The parameter `list_insert` defines at which depth a new element should be inserted into the list. In line 2, `list_insert` is set to one, so `"insert_2"` is inserted in position two in the list at index 1 in the `Fagus`-object. In line 4, the new element is inserted in the base-list at depth zero in the `Fagus`-object. As another index is defined in `path` (2), another list is created before `"insert_3` is inserted.
+
+```python
+>>> a = Fagus({2: {1: 4, 3: [4, 6]}, "a": "b"})
+>>> a.set("insert_4", (2, 3, 1), list_insert=1)
+{2: {1: 4, 3: [4, 'insert_4', 6]}, 'a': 'b'}
+```
+
+In this last example, there is no list to be traversed at depth one. In that case, the insertion of `insert_4` is performed in the first list that is traversed above the indicated `list_insert`-depth (here one), which is at depth two.
+
+#### node_types
+
+
+
 #### path_split
 * **Default**: `" "`
 * **Type**: `str`
@@ -218,7 +254,6 @@ By default, `path_split` is a single space `" "`, but any other string can be us
 >>> a = Fagus(path_split="__")
 >>> a.example_index__another_index = "q"  # {"example_index": {"another_index": "q"}}
 ```
-
 
 ### Iterating over nested objects
 

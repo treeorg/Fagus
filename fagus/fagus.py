@@ -763,7 +763,7 @@ class Fagus(MutableMapping, MutableSequence, MutableSet, metaclass=FagusMeta):
                         if nodes:
                             node = Fagus._ensure_mutable_node(nodes, l_path[: i + 1])
                             nodes.clear()
-                        if list_insert == 0:
+                        if list_insert <= 0:
                             node.insert(node_key, Fagus._put_value(_None, value, action, index))
                         else:
                             node[node_key] = Fagus._put_value(node[node_key], value, action, index)
