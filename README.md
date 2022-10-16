@@ -213,7 +213,7 @@ The list `[5, 6]` is overridden with the new value `"insert_1"`. In some cases i
 >>> a.set("insert_2", (1, 2), list_insert=1)
 [0, [3, 4, 'insert_2', [5, 6], 2]]
 >>> a.set("insert_3", (1, 2), list_insert=0)
-[0, ['insert_3'], [3, 4, 'insert_3', [5, 6], 2]]
+[0, ['insert_3'], [3, 4, 'insert_2', [5, 6], 2]]
 ```
 
 The parameter `list_insert` defines at which depth a new element should be inserted into the list. In line 2, `list_insert` is set to one, so `"insert_2"` is inserted in position two in the list at index 1 in the `Fagus`-object. In line 4, the new element is inserted in the base-list at depth zero in the `Fagus`-object. As another index is defined in `path` (2), another list is created before `"insert_3` is inserted.
@@ -227,8 +227,43 @@ The parameter `list_insert` defines at which depth a new element should be inser
 In this last example, there is no list to be traversed at depth one. In that case, the insertion of `insert_4` is performed in the first list that is traversed above the indicated `list_insert`-depth (here one), which is at depth two.
 
 #### node_types
+* **Default**: `""`
+* **Type**: `str`
+* **Allowed values**: Any string only containing the characters `"d"`, `"l"` and `" "
 
+This parameter is used to precisely specify which types the new nodes to create when inserting a value at `path` shall have. They are defined in three possible ways: `"l"` for `list`, `"d"` for `dict` or `" "` for "don't care". Don't care means that if the node exists, its type will be preserved if possible, however if a new node needs to be created because it doesn't exist, `default_node_type` will be used if possible. The examples below will make it more clear how this works.
 
+**Example one: creating new nodes inside an empty object**:
+```python
+>>> a = Fagus()
+>>> a.set(False, ("a", 0, 0), node_types="dl")
+{'a': {0: [False]}}
+```
+
+The base node, in the case above a `dict`, can't be changed, so `node_types` only affects the nodes that resign within the base node. Therefore, `node_keys` is only defined for the second until last key in `path`. For the second key in `path`, here 0, it is defined in `node_types` that it should be a `dict`, therefore a dict is created. In that `dict`, a `list` is inserted at key 0 because `node_types` is `"l", and finally `False` is inserted into that list.
+
+**Example two: clearly defined where to put lists and dicts at each level**
+```python
+>>> a = Fagus({3: [[4, {5: "c"}], {"a": "q"}]})
+>>> a.set(True, (3, 0, 7, 4), node_types="ldl")
+{3: [{7: [True]}, {'a': 'q'}]}
+```
+
+In this case, there already are nodes at the base of the position `path` is pointing on. The first key in `path`, 3, is traversed. For the second key in `path`, here 0, it is defined in `node_types` that it should be a `list` (`"l"`), and in this case it actually is a list. The third key in `path` is 7, and in `node_types` it is defined that there should be a `dict` at this level. Therefore, the `list` `[4, {5: "c"}]` is overwritten with a new `dict` with the key 7. The forth and last element in `path` is 4, and in `node_types` it is defined that this node shall be a `list` again. The value `True` is then placed inside that `list`.
+
+**Example three: "don't care" and other special cases**:
+```python
+>>> a = Fagus(default_node_type="l")
+>>> a.set(True, (3, "a", "6"))
+[{'a': [True]}]
+>>> a.set(None, (1, 5), "ddddddddd")
+[{'a': [True]}, {5: None}]
+>>> a.set(False, (1, 1, 1, 1), node_types=" d")
+[{'a': [True]}, {5: None, 1: {1: [False]}}]
+```
+The first example in line two shows the basic case, this is what happens if `node_types` is has not been defined. If `node_types` is not defined, all the new nodes that are to be created are interpreted as "don't care", which means that if possible, new nodes of the type `default_node_type` are created. Here, `default_node_type` is `"l"` (`list`). There is no meaningful easy way to create an `int`-`list`-index from `"a"`, therefore a `dict` is inserted at `"a"`. However, it is possible to create a list index from `"6"` by using `str()`, therefore a `list` is created at key `"a"`, in which `True` finally is inserted.
+
+The second example in line four shows what happens if `node_types` is defined for more than the length of `path`. It's actually no problem to do that, the remaining part of `node_types` is just ignored. The third example in line six shows what happens if `node_types` only is partly defined, in this case it is only defined to be "don't care" for the second key in `path` and `"d"` for the third key in `path`, but not for the last element. For all the keys in `path` where `node_types` is undefined, it is treated as `"don't care"` when new nodes are created.
 
 #### path_split
 * **Default**: `" "`
@@ -254,6 +289,7 @@ By default, `path_split` is a single space `" "`, but any other string can be us
 >>> a = Fagus(path_split="__")
 >>> a.example_index__another_index = "q"  # {"example_index": {"another_index": "q"}}
 ```
+
 
 ### Iterating over nested objects
 

@@ -72,8 +72,9 @@ class FagusMeta(ABCMeta):
             "",
             str,
             lambda x: bool(re.fullmatch("[dl ]*", x)),
-            'The only allowed characters in node_types are d (for dict) and l (for list). " " can also be used. '
-            "In that case, existing nodes are used if possible, and default_node_type is used to create new nodes.",
+            'The only allowed characters in node_types are d (for dict), l (for list) or " " for don\'t care. For " ", '
+            "existing nodes are used if possible, and default_node_type is used to create new nodes. That is the "
+            "default if ~ hasn't been explicitly specified for a key in path",
         ),
         path_split=(" ", str, lambda x: bool(x), 'path_split can\'t be "", as a string can\'t be split by "".'),
     )
