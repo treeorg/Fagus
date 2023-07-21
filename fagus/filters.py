@@ -1,7 +1,7 @@
 """This module contains filter-classes used in Fagus"""
 import re
 from collections.abc import Collection, MutableSequence, Mapping, Set, Sequence
-from typing import Union, Any, Tuple, Optional, Callable
+from typing import Union, Any, Optional, Callable
 
 from .utils import _None, _is
 
@@ -171,7 +171,7 @@ class KFil(FilBase):
         """Set filter-argument at index. Throws IndexError if that index isn't defined"""
         self.args[key] = value
 
-    def match(self, value: Any, index: int = 0, _: Any = None) -> Tuple[bool, Optional["KFil"], int]:
+    def match(self, value: Any, index: int = 0, _: Any = None) -> tuple[bool, Optional["KFil"], int]:
         """match filter at index (matches recursively into subfilters if necessary)
 
         Args:
@@ -209,7 +209,7 @@ class KFil(FilBase):
                 return True, filter_, index_
         return False, self, index + 1
 
-    def match_list(self, value: int, index: int = 0, node_length: int = 0) -> Tuple[bool, Optional["KFil"], int]:
+    def match_list(self, value: int, index: int = 0, node_length: int = 0) -> tuple[bool, Optional["KFil"], int]:
         """match_list: same as match, but optimized to match list-indices (e. g. no regex-matching here)
 
         Args:
@@ -300,13 +300,13 @@ class CFil(KFil):
         Returns:
             bool whether the filter matched
         """
-        match_key: Optional[Callable[[Any, int, Any], Tuple[bool, Optional["KFil"], int]]] = None
+        match_key: Optional[Callable[[Any, int, Any], tuple[bool, Optional["KFil"], int]]] = None
         if isinstance(node, Mapping):
             match_key = self.match
         elif isinstance(node, Sequence):
             match_key = self.match_list
         for k, v in node.items() if isinstance(node, Mapping) else enumerate(node):
-            match_k: Tuple[bool, Optional["KFil"], int] = (
+            match_k: tuple[bool, Optional["KFil"], int] = (
                 match_key(k, index, len(node)) if match_key else (True, self, index)
             )
             if match_k[0] and match_k[1] is not None:

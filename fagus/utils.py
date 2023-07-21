@@ -13,7 +13,7 @@ from collections.abc import (
 from typing import Union, Optional, TYPE_CHECKING, Any, cast, Callable
 
 if TYPE_CHECKING:
-    from .filters import Fil
+    from .filters import KFil
 
 INF = sys.maxsize
 
@@ -115,12 +115,14 @@ class FagusMeta(ABCMeta):
     )
     """Default values for all options used in Fagus"""
 
-    no_node: tuple[type, ...]= (str, bytes, bytearray)  # if this is changed in class, change in __delattr__ as well
+    no_node: tuple[type, ...] = (str, bytes, bytearray)  # if this is changed in class, change in __delattr__ as well
     """Every type of Collection in no_node will not be treated as a node, but as a single value"""
 
     _cls_options: dict[str, FagusOption] = {}
 
-    def options(cls, options: Optional[dict[str, FagusOption]] = None, get_default_options: bool = False, reset: bool = False) -> dict[str, FagusOption]:
+    def options(
+        cls, options: Optional[dict[str, FagusOption]] = None, get_default_options: bool = False, reset: bool = False
+    ) -> dict[str, FagusOption]:
         """Function to set multiple Fagus-options in one line
 
         Args:
@@ -169,7 +171,7 @@ class FagusMeta(ABCMeta):
             raise AttributeError(attr)
 
 
-def _filter_r(node: Collection[Any], copy: bool, filter_: Optional["Fil"], index: int = 0) -> Collection[Any]:
+def _filter_r(node: Collection[Any], copy: bool, filter_: Optional["KFil"], index: int = 0) -> Collection[Any]:
     """Internal recursive method that facilitates filtering
 
     Args:
@@ -191,14 +193,16 @@ def _filter_r(node: Collection[Any], copy: bool, filter_: Optional["Fil"], index
     else:
         new_node, action, match_key = set(), "add", None
     for k, v in node.items() if isinstance(node, Mapping) else enumerate(node):
-        match_k = match_key(k, index, len(node)) if callable(match_key) else (True, filter_, index + 1)
+        match_k: tuple[bool, Optional[KFil], int] = (
+            match_key(k, index, len(node)) if callable(match_key) else (True, filter_, index + 1)
+        )
         if match_k[0]:
             if match_k[1] is None:
                 match_v = True
             elif _is(v, Collection):
                 if match_k[1].match_extra_filters(v, match_k[2]):
                     v_old = v
-                    v = _filter_r(v, copy, *match_k[1:])  # type: ignore
+                    v = _filter_r(v, copy, *match_k[1:])
                     match_v = bool(v_old) == bool(v)
                 else:
                     match_v = False

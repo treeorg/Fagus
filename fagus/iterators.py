@@ -1,11 +1,11 @@
 """This module contains iterator-classes that are used to iterate over Fagus-objects"""
 from collections.abc import Collection, Sequence, Mapping, Iterable
-from typing import TYPE_CHECKING, Union
+from typing import TYPE_CHECKING, Union, Any, Optional, Callable, Iterator, cast
 
 from .utils import _filter_r, _None, INF, _copy_node, _copy_any, _is
 
 if TYPE_CHECKING:
-    from .filters import Fil
+    from .filters import Fil, KFil
     from .fagus import Fagus
 
 
@@ -14,11 +14,11 @@ class FilteredIterator:
 
     @staticmethod
     def optimal_iterator(
-        obj: Collection,
+        obj: Collection[Any],
         filter_value: bool = False,
-        filter_: "Fil" = None,
+        filter_: Optional["Fil"] = None,
         filter_index: int = 0,
-    ):
+    ) -> Iterator[Any]:
         """This method returns the simplest possible Iterator to loop through a given object.
 
         If no filter is present, either items or enumerate are called to loop through the keys, for sets ... is put
@@ -34,10 +34,11 @@ class FilteredIterator:
         else:
             return FilteredIterator(obj, filter_value, filter_, filter_index)
 
-    def __init__(self, obj: Collection, filter_value: bool, filter_: "Fil", filter_index: int = 0):
+    def __init__(self, obj: Collection[Any], filter_value: bool, filter_: "Fil", filter_index: int = 0) -> None:
         self.filter_ = filter_
         self.filter_index = filter_index
         self.filter_value = filter_value
+        self.match_key: Callable[[Any, int, Any], tuple[bool, Optional[KFil], int]]
         if isinstance(obj, Mapping):
             self.match_key = self.filter_.match
         elif isinstance(obj, Sequence):
@@ -47,10 +48,10 @@ class FilteredIterator:
         self.obj = obj
         self.iter = self.optimal_iterator(obj)
 
-    def __iter__(self):
+    def __iter__(self) -> "FilteredIterator":
         return self
 
-    def __next__(self):
+    def __next__(self) -> Any:
         while True:
             k, v = next(self.iter)
             match_k, filter_, index = self.match_key(k, self.filter_index, len(self.obj))
@@ -76,14 +77,14 @@ class FagusIterator:
         self,
         obj: "Fagus",
         max_depth: int = INF,
-        filter_: "Fil" = None,
+        filter_: Optional["Fil"] = None,
         fagus: bool = False,
-        iter_fill=_None,
-        select: Union[int, Iterable] = None,
+        iter_fill: Any = _None,
+        select: Optional[Union[int, Iterable[Any]]] = None,
         iter_nodes: bool = False,
         copy: bool = False,
         filter_ends: bool = False,
-    ):
+    ) -> None:
         """Internal function. Recursively iterates through Fagus-object
 
         Initiate this iterator through Fagus.iter(), there the parameters are discussed as well."""
@@ -108,10 +109,10 @@ class FagusIterator:
         self.iterators = [FilteredIterator.optimal_iterator(obj(), filter_ends and not max_depth, filter_)]
         self.deepest_change = 0
 
-    def __iter__(self):
+    def __iter__(self) -> "FagusIterator":
         return self
 
-    def __next__(self):
+    def __next__(self) -> Any:
         self.deepest_change = len(self.iterators) - 1
         while True:
             try:
@@ -154,14 +155,15 @@ class FagusIterator:
                 except IndexError:
                     raise StopIteration
 
-    def skip(self, level: int, copy: bool = False) -> Collection:
+    def skip(self, level: int, copy: bool = False) -> Any:
         node = self.iter_keys[level * 2]
         if isinstance(self.iterators[-1], FilteredIterator):
+            iterator = cast(FilteredIterator, self.iterators[level])
             node = _filter_r(
                 node,
                 copy,
-                self.iterators[level].filter_,
-                self.iterators[level].filter_index,
+                iterator.filter_,
+                iterator.filter_index,
             )
         else:
             node = _copy_node(node)

@@ -15,7 +15,7 @@ from collections.abc import (
     Container,
 )
 from datetime import datetime, date, time
-from typing import Union, Tuple, Any, Optional, List, Callable
+from typing import Union, Any, Optional, Callable
 
 from .utils import (
     FagusMeta,
@@ -280,7 +280,7 @@ class Fagus(MutableMapping, MutableSequence, MutableSet, metaclass=FagusMeta):
         copy: bool = False,
         default=...,
         path_split: str = ...,
-    ) -> Union[Tuple[Collection, Collection], Tuple[Any, Any]]:
+    ) -> Union[tuple[Collection, Collection], tuple[Any, Any]]:
         """Splits self into nodes that pass the filter, and nodes that don't pass the filter
 
         \\* means that the parameter is a Fagus-Setting, see Fagus-class-docstring for more information about options
@@ -332,7 +332,7 @@ class Fagus(MutableMapping, MutableSequence, MutableSet, metaclass=FagusMeta):
     @staticmethod
     def _split_r(
         node: Collection, copy: bool, filter_: Optional[Fil], index: int = 0
-    ) -> Tuple[Union[MutableMapping, MutableSequence, MutableSet], Union[MutableMapping, MutableSequence, MutableSet]]:
+    ) -> tuple[Union[MutableMapping, MutableSequence, MutableSet], Union[MutableMapping, MutableSequence, MutableSet]]:
         """Internal recursive method that facilitates filtering
 
         Args:
@@ -1798,7 +1798,7 @@ class Fagus(MutableMapping, MutableSequence, MutableSet, metaclass=FagusMeta):
 
     @staticmethod
     def _ensure_mutable_node(
-        nodes: List[Collection], path: Sequence, parent: bool = True
+        nodes: list[Collection], path: Sequence, parent: bool = True
     ) -> Union[MutableMapping, MutableSequence, MutableSet]:
         """Internal function that ensures that the current node (the last in nodes) is mutable
 
@@ -1865,7 +1865,7 @@ class Fagus(MutableMapping, MutableSequence, MutableSet, metaclass=FagusMeta):
         return _None
 
     @staticmethod
-    def _node_type(node: Collection, check_mutable: bool = False) -> Union[Tuple[type, bool], type]:
+    def _node_type(node: Collection, check_mutable: bool = False) -> Union[tuple[type, bool], type]:
         """Internal function. Returns the type of node, and if check_mutable is on also whether the node is mutable
 
         Args:
