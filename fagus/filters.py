@@ -1,7 +1,7 @@
 """This module contains filter-classes used in Fagus"""
 import re
 from collections.abc import Collection, MutableSequence, Mapping, Set, Sequence
-from typing import Union, Any, Tuple, Optional
+from typing import Union, Any, Tuple, Optional, Callable
 
 from .utils import _None, _is
 
@@ -11,7 +11,7 @@ _RE_PATTERN = getattr(re, "Pattern" if hasattr(re, "Pattern") else "_pattern_typ
 class FilBase:
     """FilterBase - base-class for all filters used in Fagus, providing basic functions shared by all filters"""
 
-    def __init__(self, *filter_args, inexclude: str = ""):
+    def __init__(self, *filter_args: Any, inexclude: str = "") -> None:
         """Basic constructor for all filter-classes used in Fagus
 
         Args:
@@ -28,9 +28,9 @@ class FilBase:
                 "If nothing has been specified all filters will be treated as include (+)-filters." % inexclude
             )
         self.inexclude = inexclude
-        self.args = filter_args
+        self.args = list(filter_args)
 
-    def included(self, index) -> bool:
+    def included(self, index: int) -> bool:
         """This function returns if the filter should be an include-filter (+) or an exclude-filter (-) at a given index
 
         Args:
@@ -42,9 +42,9 @@ class FilBase:
         """
         return self.inexclude[index : index + 1] != "-"
 
-    def match_node(self, node: Collection, _=None) -> bool:
+    def match_node(self, node: Collection[Any], _: Any = None) -> bool:
         """This method is overridden by CheckFilter and ValueFilter, and otherwise not in use"""
-        pass
+        return False
 
 
 class VFil(FilBase):
@@ -52,7 +52,7 @@ class VFil(FilBase):
 
     It can be used to e.g. select all the nodes that contain at least 10 elements. See README for an example"""
 
-    def __init__(self, *filter_args, inexclude: str = "", invert: bool = False):
+    def __init__(self, *filter_args: Any, inexclude: str = "", invert: bool = False) -> None:
         """
 
         Args:
@@ -73,7 +73,7 @@ class VFil(FilBase):
         self.invert = invert
         super().__init__(*filter_args, inexclude=inexclude)
 
-    def match_node(self, node: Collection, _=None) -> bool:
+    def match_node(self, node: Collection[Any], _: Any = None) -> bool:
         """Verify that a node matches ValueFilter
 
         Args:
@@ -92,7 +92,7 @@ class VFil(FilBase):
 class KFil(FilBase):
     """KeyFilter - Base class for filters in Fagus that inspect key-values to determine whether the filter matched"""
 
-    def __init__(self, *filter_args, inexclude: str = "", str_as_re: bool = False):
+    def __init__(self, *filter_args: Any, inexclude: str = "", str_as_re: bool = False) -> None:
         """Initializes KeyFilter and verifies the arguments passed to it
 
         Args:
@@ -148,10 +148,10 @@ class KFil(FilBase):
                         "other case it makes no sense to have a filter as a standalone argument in another."
                     )
 
-    def _set_extra_filter(self, index: int, filter_: Union["CFil", VFil]):
-        """Removes VFil / CFil from args and puts it"""
+    def _set_extra_filter(self, index: int, filter_: Union["CFil", VFil]) -> None:
+        """Removes VFil / CFil from args and puts it into extra_filters"""
         if not hasattr(self, "extra_filters"):
-            self.extra_filters = {}
+            self.extra_filters: dict[int, list[Union["CFil", VFil]]] = {}
         if index not in self.extra_filters:
             self.extra_filters[index] = []
         self.extra_filters[index].append(filter_)
@@ -167,11 +167,11 @@ class KFil(FilBase):
         except IndexError:
             return _None
 
-    def __setitem__(self, key, value):
+    def __setitem__(self, key: int, value: Any) -> None:
         """Set filter-argument at index. Throws IndexError if that index isn't defined"""
         self.args[key] = value
 
-    def match(self, value, index: int = 0, _=None) -> Tuple[bool, Optional["KFil"], int]:
+    def match(self, value: Any, index: int = 0, _: Any = None) -> Tuple[bool, Optional["KFil"], int]:
         """match filter at index (matches recursively into subfilters if necessary)
 
         Args:
@@ -243,7 +243,7 @@ class KFil(FilBase):
                 return True, filter_, index_
         return False, self, index + 1
 
-    def match_extra_filters(self, node: Collection, index: int = 0) -> bool:
+    def match_extra_filters(self, node: Collection[Any], index: int = 0) -> bool:
         """Match extra filters on node (CFil and VFil).
 
         Args:
@@ -269,7 +269,7 @@ class Fil(KFil):
 class CFil(KFil):
     """CFil - can be used to select nodes based on values that shall not appear in the result. See README"""
 
-    def __init__(self, *filter_args, inexclude: str = "", str_as_re: bool = False, invert: bool = False):
+    def __init__(self, *filter_args: Any, inexclude: str = "", str_as_re: bool = False, invert: bool = False) -> None:
         """Initializes KeyFilter and verifies the arguments passed to it
 
         Args:
@@ -290,7 +290,7 @@ class CFil(KFil):
         self.invert = invert
         super().__init__(*filter_args, inexclude=inexclude, str_as_re=str_as_re)
 
-    def match_node(self, node: Collection, index: int = 0) -> bool:
+    def match_node(self, node: Collection[Any], index: int = 0) -> bool:
         """Recursive function to completely verify a node and its subnodes in CFil
 
         Args:
@@ -300,14 +300,16 @@ class CFil(KFil):
         Returns:
             bool whether the filter matched
         """
-        match_key = None
+        match_key: Optional[Callable[[Any, int, Any], Tuple[bool, Optional["KFil"], int]]] = None
         if isinstance(node, Mapping):
             match_key = self.match
         elif isinstance(node, Sequence):
             match_key = self.match_list
         for k, v in node.items() if isinstance(node, Mapping) else enumerate(node):
-            match_k = match_key(k, index, len(node)) if match_key else (True, self, index)
-            if match_k[0]:
+            match_k: Tuple[bool, Optional["KFil"], int] = (
+                match_key(k, index, len(node)) if match_key else (True, self, index)
+            )
+            if match_k[0] and match_k[1] is not None:
                 if _is(v, Collection):
                     match_v = match_k[1].match_node(v, match_k[2])
                     if match_v:

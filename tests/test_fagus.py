@@ -1049,7 +1049,7 @@ class TestFagus(unittest.TestCase):
             a.options({"if_": (2, 7), "node_types": "d  ld"}),
             "Options have been overriden where they should, and not overridden where they shouldn't",
         )
-        default_options = {k: v[0] for k, v in Fagus.__default_options__.items()}
+        default_options = {k: v.default for k, v in Fagus.__default_options__.items()}
         self.assertEqual(
             {**default_options, "default": 3, "default_node_type": "l", "if_": (2, 7), "node_types": "d  ld"},
             a.options(get_default_options=True),

@@ -2,6 +2,7 @@
 import copy as cp
 import re
 import sys
+import types
 from abc import ABCMeta
 from collections.abc import (
     Collection,
@@ -9,7 +10,7 @@ from collections.abc import (
     Sequence,
     MutableSet,
 )
-from typing import Union, Optional, TYPE_CHECKING
+from typing import Union, Optional, TYPE_CHECKING, Any, cast, Callable
 
 if TYPE_CHECKING:
     from .filters import Fil
@@ -23,11 +24,39 @@ class _None:
     pass
 
 
+class FagusOption:
+    def __init__(
+        self,
+        name: str,
+        default: Any,
+        type_: type = type(Any),
+        verify_function: Callable[[Any], bool] = lambda x: True,
+        verify_error_msg: Optional[str] = None,
+    ) -> None:
+        self.name = name
+        self.default = default
+        self.type_ = type_
+        self.verify_function = verify_function
+        self.verify_error_msg = verify_error_msg
+
+    def verify(self, value: Any) -> Any:
+        if not isinstance(value, object if self.type_ is type(Any) else self.type_):
+            raise TypeError(
+                f"Can't apply {self.name} because {self.name} needs to be a {self.type_.__name__}, "
+                f"got {value.__class__.__name__}."
+            )
+        if not self.verify_function(value):
+            raise ValueError(
+                self.verify_error_msg if self.verify_error_msg else f"{value} is not a valid value for {self.name}"
+            )
+        return value
+
+
 class FagusMeta(ABCMeta):
     """Metaclass for Fagus-objects to facilitate options at class-level"""
 
     @staticmethod
-    def __verify_option__(option_name: str, option):
+    def __verify_option__(option_name: str, option: Any) -> Any:
         """Verify Fagus-option using the functions / types in __default_options__
 
         Args:
@@ -38,37 +67,41 @@ class FagusMeta(ABCMeta):
             the option-value if it was valid (otherwise the function is left in an error)
         """
         if option_name in FagusMeta.__default_options__:
-            opt_cls = FagusMeta.__default_options__[option_name]
-            if len(opt_cls) > 1 and not isinstance(option, opt_cls[1]):
-                raise TypeError(
-                    f"Can't apply {option_name} because {option_name} needs to be a {opt_cls[1].__name__}, "
-                    f"got {option.__class__.__name__}."
-                )
-            if len(opt_cls) > 3 and not opt_cls[2](option):
-                raise ValueError(opt_cls[3])
-            return option
+            return FagusMeta.__default_options__[option_name].verify(option)
         raise ValueError(f"The option named {option_name} is not defined in Fagus.")
 
-    __default_options__ = dict(
-        default=(None,),
-        default_node_type=(
+    __default_options__: dict[str, FagusOption] = dict(
+        default=FagusOption(
+            "default",
+            None,
+        ),
+        default_node_type=FagusOption(
+            "default_node_type",
             "d",
             str,
             lambda x: x in ("d", "l"),
             'default_node_type must be either "d" for dict or "l" for list.',
         ),
-        fagus=(False, bool),
-        if_=(_None,),
-        iter_fill=(_None,),
-        iter_nodes=(False, bool),
-        list_insert=(
+        fagus=FagusOption("fagus", False, bool),
+        if_=FagusOption(
+            "if_",
+            _None,
+        ),
+        iter_fill=FagusOption(
+            "iter_fill",
+            _None,
+        ),
+        iter_nodes=FagusOption("iter_nodes", False, bool),
+        list_insert=FagusOption(
+            "list_insert",
             INF,
             int,
             lambda x: x >= 0,
             "list-insert must be a positive int. By default (list_insert == INF), all existing list-indices are "
             "traversed. If list-insert < maxsize, earliest at level n a new node is inserted if that node is a list",
         ),
-        node_types=(
+        node_types=FagusOption(
+            "node_types",
             "",
             str,
             lambda x: bool(re.fullmatch("[dl ]*", x)),
@@ -76,16 +109,18 @@ class FagusMeta(ABCMeta):
             "existing nodes are used if possible, and default_node_type is used to create new nodes. That is the "
             "default if ~ hasn't been explicitly specified for a key in path",
         ),
-        path_split=(" ", str, lambda x: bool(x), 'path_split can\'t be "", as a string can\'t be split by "".'),
+        path_split=FagusOption(
+            "path_split", " ", str, lambda x: bool(x), 'path_split can\'t be "", as a string can\'t be split by "".'
+        ),
     )
     """Default values for all options used in Fagus"""
 
-    no_node = (str, bytes, bytearray)  # if this is changed in class, change in __delattr__ as well
+    no_node: tuple[type, ...]= (str, bytes, bytearray)  # if this is changed in class, change in __delattr__ as well
     """Every type of Collection in no_node will not be treated as a node, but as a single value"""
 
-    _cls_options = {}
+    _cls_options: dict[str, FagusOption] = {}
 
-    def options(cls, options: dict = None, get_default_options: bool = False, reset: bool = False) -> dict:
+    def options(cls, options: Optional[dict[str, FagusOption]] = None, get_default_options: bool = False, reset: bool = False) -> dict[str, FagusOption]:
         """Function to set multiple Fagus-options in one line
 
         Args:
@@ -101,10 +136,10 @@ class FagusMeta(ABCMeta):
         if options:
             cls._cls_options.update((k, cls.__verify_option__(k, v)) for k, v in options.items())
         if get_default_options:
-            return {k: cls._cls_options.get(k, v[0]) for k, v in cls.__default_options__.items()}
+            return {k: cls._cls_options.get(k, v.default) for k, v in cls.__default_options__.items()}
         return {k: cls._cls_options[k] for k in cls.__default_options__ if k in cls._cls_options}
 
-    def __setattr__(cls, attr, value):
+    def __setattr__(cls, attr: "str", value: Any) -> None:
         if attr == "no_node":
             if not (isinstance(value, tuple) and all(isinstance(e, type) for e in value)):
                 raise ValueError(
@@ -118,14 +153,14 @@ class FagusMeta(ABCMeta):
         else:
             raise AttributeError(attr)
 
-    def __getattr__(cls, attr):
+    def __getattr__(cls, attr: str) -> Any:
         if attr in cls._cls_options:
             return cls._cls_options[attr]
         elif attr in cls.__default_options__:
-            return cls.__default_options__[attr][0]
+            return cls.__default_options__[attr].default
         return getattr(FagusMeta, attr)
 
-    def __delattr__(cls, attr):
+    def __delattr__(cls, attr: str) -> None:
         if attr == "no_node":
             FagusMeta.no_node = (str, bytes, bytearray)
         elif attr in cls._cls_options:
@@ -134,7 +169,7 @@ class FagusMeta(ABCMeta):
             raise AttributeError(attr)
 
 
-def _filter_r(node: Collection, copy: bool, filter_: Optional["Fil"], index: int = 0):
+def _filter_r(node: Collection[Any], copy: bool, filter_: Optional["Fil"], index: int = 0) -> Collection[Any]:
     """Internal recursive method that facilitates filtering
 
     Args:
@@ -146,6 +181,9 @@ def _filter_r(node: Collection, copy: bool, filter_: Optional["Fil"], index: int
     Returns:
         the filtered node
     """
+    new_node: Collection[Any]
+    action: Optional[str]
+    match_key: Optional[Callable[[Any], Any]]
     if isinstance(node, Mapping):
         new_node, action, match_key = {}, None, filter_.match if filter_ else None
     elif isinstance(node, Sequence):
@@ -160,7 +198,7 @@ def _filter_r(node: Collection, copy: bool, filter_: Optional["Fil"], index: int
             elif _is(v, Collection):
                 if match_k[1].match_extra_filters(v, match_k[2]):
                     v_old = v
-                    v = _filter_r(v, copy, *match_k[1:])
+                    v = _filter_r(v, copy, *match_k[1:])  # type: ignore
                     match_v = bool(v_old) == bool(v)
                 else:
                     match_v = False
@@ -170,11 +208,11 @@ def _filter_r(node: Collection, copy: bool, filter_: Optional["Fil"], index: int
                 if action:
                     getattr(new_node, action)(_copy_any(v) if copy else v)
                 else:
-                    new_node[k] = _copy_any(v) if copy else v
+                    new_node[k] = _copy_any(v) if copy else v  # type: ignore
     return new_node
 
 
-def _copy_node(node: Collection, recursive: bool = False) -> Collection:
+def _copy_node(node: Collection[Any], recursive: bool = False) -> Collection[Any]:
     """Recursive function that creates a recursive shallow copy of node.
 
     This is needed as copy.copy() only creates a shallow copy at the root level, lower levels are just referenced.
@@ -207,10 +245,10 @@ def _copy_node(node: Collection, recursive: bool = False) -> Collection:
         new_node = frozenset(_copy_node(set(node), True))
     else:
         new_node = cp.deepcopy(node)
-    return new_node
+    return cast(Collection[Any], new_node)
 
 
-def _copy_any(value, deep: bool = False):
+def _copy_any(value: Any, deep: bool = False) -> Any:
     """Creates a copy of value. If deep is set, a deep copy is returned, otherwise a shallow copy is returned"""
     if deep:
         return cp.deepcopy(value)
@@ -219,7 +257,7 @@ def _copy_any(value, deep: bool = False):
     return cp.copy(value)
 
 
-def _is(value, *args, is_not: Union[tuple, type] = None):
+def _is(value: Any, *args: type, is_not: Optional[Union[tuple[type], type]] = None) -> bool:
     """Override of isinstance, making sure that Sequence, Iterable or Collection doesn't match on str or bytearray
 
     Args:

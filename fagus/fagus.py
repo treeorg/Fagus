@@ -1781,7 +1781,7 @@ class Fagus(MutableMapping, MutableSequence, MutableSet, metaclass=FagusMeta):
             elif options:
                 self._options.update(options)
         return {
-            **{k: v[0] for k, v in (self.__default_options__ if get_default_options else {}).items()},
+            **{k: v.default for k, v in (self.__default_options__ if get_default_options else {}).items()},
             **Fagus.options(),
             **(self._options if self._options else {}),
         }
