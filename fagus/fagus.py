@@ -15,7 +15,7 @@ from collections.abc import (
     Container,
 )
 from datetime import datetime, date, time
-from typing import Union, Any, Optional, Callable
+from typing import Union, Any, Optional, Callable, cast, Iterator
 
 from .utils import (
     FagusMeta,
@@ -25,12 +25,17 @@ from .utils import (
     _copy_node,
     _is,
     _copy_any,
+    OptStr,
+    OptInt,
+    OptBool,
+    OptAny,
+    EllipsisType,
 )
-from .filters import Fil
+from .filters import Fil, KFil
 from .iterators import FagusIterator
 
 
-class Fagus(MutableMapping, MutableSequence, MutableSet, metaclass=FagusMeta):
+class Fagus(MutableMapping[Any, Any], MutableSequence[Any], MutableSet[Any], metaclass=FagusMeta):
     """Fagus is a wrapper-class for complex, nested objects of dicts and lists in Python
 
     Fagus can be used as an object by instantiating it, but it's also possible to use all methods statically without
@@ -39,6 +44,7 @@ class Fagus(MutableMapping, MutableSequence, MutableSet, metaclass=FagusMeta):
     The root node is always modified directly. If you don't want to change the root node, all the functions where it
     makes sense support to rather modify a copy, and return that modified copy using the copy-parameter.
 
+    **FagusOptions**:
     Several parameters used in functions in Fagus work as options so that you don't have to specify them each time you
     run a function. In the docstrings, these options are marked with a \\*, e.g. the fagus parameter is an option.
     Options can be specified at three levels with increasing precedence: at class-level (Fagus.fagus = True), at
@@ -51,21 +57,21 @@ class Fagus(MutableMapping, MutableSequence, MutableSet, metaclass=FagusMeta):
 
     def __init__(
         self,
-        root: Collection = None,
-        node_types: str = ...,
-        list_insert: int = ...,
-        path_split: str = ...,
-        fagus: bool = ...,
-        default_node_type: str = ...,
-        default=...,
-        if_=...,
-        iter_fill=...,
-        mod_functions: Mapping = ...,
+        root: Optional[Collection[Any]] = None,
+        node_types: OptStr = ...,
+        list_insert: OptInt = ...,
+        path_split: OptStr = ...,
+        fagus: OptBool = ...,
+        default_node_type: OptStr = ...,
+        default: OptAny = ...,
+        if_: OptAny = ...,
+        iter_fill: OptAny = ...,
+        mod_functions: Union[Mapping[Union[type, tuple[type], str], Callable[[Any], Any]], EllipsisType] = ...,
         copy: bool = False,
     ):
         """Constructor for Fagus, a wrapper-class for complex, nested objects of dicts and lists in Python
 
-        \\* means that the parameter is a Fagus-Setting, see Fagus-class-docstring for more information about options
+        \\* means that the parameter is a FagusOption, see Fagus-class-docstring for more information about options
 
         Args:
             root: object (like dict / list) to wrap Fagus around. If this is None, an empty node of the type
@@ -87,6 +93,11 @@ class Fagus(MutableMapping, MutableSequence, MutableSet, metaclass=FagusMeta):
                 a lambda, any value or a tuple of accepted values. Default _None (don't check value)
             iter_fill: \\* Fill up tuples with iter_fill (can be any object, e.g. None) to ensure that all the tuples
                 iter() returns are exactly max_items long. See iter()
+            mod_functions: \\* ~ is used to define how different types of objects are supposed to be serialized. This is
+                defined in a dict. The keys are either a type (like IPAddress) or a tuple of different types
+                (IPv4Address, IPv6Address). The values are function pointers, or lambdas, which are supposed to convert
+                e.g. an IPv4Address into a string. Check out TFunc if you want to call more complicated functions with
+                several arguments. See README for examples
             copy: ~ creates a copy of the root node before Fagus is initialized. Makes sure that changes on this Fagus
                 won't modify the root node that was passed here itself. Default False
         """
@@ -96,7 +107,7 @@ class Fagus(MutableMapping, MutableSequence, MutableSet, metaclass=FagusMeta):
             root = Fagus.__copy__(root)
         if isinstance(root, Fagus):
             self.root = root()
-            self._options = None if root._options is None else root._options.copy()
+            self._options: Optional[dict[str, Any]] = None if root._options is None else root._options.copy()
         else:
             self.root = root
             self._options = None
@@ -107,12 +118,12 @@ class Fagus(MutableMapping, MutableSequence, MutableSet, metaclass=FagusMeta):
                 setattr(self, kw, value)
 
     def get(
-        self: Collection,
+        self: Collection[Any],
         path: Any = "",
-        default=...,
-        fagus: bool = ...,
+        default: OptAny = ...,
+        fagus: OptBool = ...,
         copy: bool = False,
-        path_split: str = ...,
+        path_split: OptStr = ...,
     ) -> Any:
         """Retrieves value at path. If the value doesn't exist, default is returned.
 
@@ -123,7 +134,7 @@ class Fagus(MutableMapping, MutableSequence, MutableSet, metaclass=FagusMeta):
         hashable objects for dicts. For convenience, the keys can also be put in a single string separated by
         path_split (default " "), so a["a 1 c"] also returns "d".
 
-        \\* means that the parameter is a Fagus-Setting, see Fagus-class-docstring for more information about options
+        \\* means that the parameter is a FagusOption, see Fagus-class-docstring for more information about options
 
         Args:
             path: List/Tuple of key-values to recursively traverse self. Can also be specified as string, that is split
@@ -148,7 +159,7 @@ class Fagus(MutableMapping, MutableSequence, MutableSet, metaclass=FagusMeta):
             for node_name in t_path:
                 try:
                     if _is(node, Mapping, Sequence):
-                        node = node[node_name if isinstance(node, Mapping) else int(node_name)]
+                        node = node[node_name if isinstance(node, Mapping) else int(node_name)]  # type: ignore
                     else:
                         node = Fagus._opt(self, "default", default)
                         break
@@ -160,21 +171,21 @@ class Fagus(MutableMapping, MutableSequence, MutableSet, metaclass=FagusMeta):
         return Fagus.child(self, node) if _is(node, Collection) and Fagus._opt(self, "fagus", fagus) else node
 
     def iter(
-        self: Collection,
+        self: Collection[Any],
         max_depth: int = INF,
         path: Any = "",
-        filter_: Fil = None,
-        fagus: bool = ...,
-        iter_fill=...,
-        select: Union[int, Iterable] = None,
+        filter_: Optional[Fil] = None,
+        fagus: OptBool = ...,
+        iter_fill: OptAny = ...,
+        select: Optional[Union[int, Iterable[Any]]] = None,
         copy: bool = False,
-        iter_nodes: bool = ...,
+        iter_nodes: OptBool = ...,
         filter_ends: bool = False,
-        path_split: str = ...,
+        path_split: OptStr = ...,
     ) -> "FagusIterator":
         """Recursively iterate through Fagus-object, starting at path
 
-        \\* means that the parameter is a Fagus-Setting, see Fagus-class-docstring for more information about options
+        \\* means that the parameter is a FagusOption, see Fagus-class-docstring for more information about options
 
         Args:
             max_depth: Can be used to limit how deep the iteration goes. Example: a = {"a": ["b", ["c", "d"]], "e": "f"}
@@ -184,7 +195,7 @@ class Fagus(MutableMapping, MutableSequence, MutableSet, metaclass=FagusMeta):
                 ("e", "f")], effectively the same as dict.items(). Default sys.maxitems (iterate as deeply as possible)
                 A negative number (e.g. -1) is treated as sys.maxitems.
             path: Start iterating at path. Internally calls get(path), and iterates on the node get returns. See get()
-            filter_: Only iterate over specific nodes defined using TFilter (see README.md and TFilter for more info)
+            filter_: Only iterate over specific nodes defined using Fil (see README.md and Fil for more info)
             fagus: \\* If the leaf in the tuple is a dict or list, return it as a Fagus-object. This option has no
                 effect if max_items is sys.maxitems.
             iter_fill: \\* Fill up tuples with iter_fill (can be any object, e.g. None) to ensure that all the tuples
@@ -222,20 +233,20 @@ class Fagus(MutableMapping, MutableSequence, MutableSet, metaclass=FagusMeta):
         )
 
     def filter(
-        self: Collection,
+        self: Collection[Any],
         filter_: Fil,
         path: Any = "",
-        fagus: bool = ...,
+        fagus: OptBool = ...,
         copy: bool = False,
-        default=...,
-        path_split: str = ...,
-    ) -> Collection:
+        default: OptAny = ...,
+        path_split: OptStr = ...,
+    ) -> Collection[Any]:
         """Filters self, only keeping the nodes that pass the filter
 
-        \\* means that the parameter is a Fagus-Setting, see Fagus-class-docstring for more information about options
+        \\* means that the parameter is a FagusOption, see Fagus-class-docstring for more information about options
 
         Args:
-            filter_: TFilter-object in which the filtering-criteria are specified
+            filter_: Fil-object in which the filtering-criteria are specified
             path: at this point in self, the filtering will start (apply filter\\_ relatively from this point).
                 Default "", meaning that the root node is filtered, see get() and README for examples
             fagus: \\* return the filtered self as Fagus-object (default is just to return the filtered node)
@@ -259,11 +270,11 @@ class Fagus(MutableMapping, MutableSequence, MutableSet, metaclass=FagusMeta):
             parent_node = Fagus._get_mutable_node(self, l_path)
         node = _None if parent_node is _None else Fagus.get(parent_node, l_path[-1:], _None, False)
         if node is _None or not _is(node, Collection):
-            filtered = Fagus._opt(self, "default", default)
+            filtered = cast(Collection[Any], Fagus._opt(self, "default", default))
         else:
             filtered = _filter_r(node, copy, filter_)
             if not filter_.match_extra_filters(node):
-                filtered.clear()
+                filtered.clear()  # type: ignore
             if not copy:
                 if path:
                     parent_node[int(l_path[-1]) if isinstance(parent_node, Sequence) else l_path[-1]] = filtered
@@ -273,20 +284,20 @@ class Fagus(MutableMapping, MutableSequence, MutableSet, metaclass=FagusMeta):
         return Fagus.child(self, filtered) if Fagus._opt(self, "fagus", fagus) else filtered
 
     def split(
-        self: Collection,
-        filter_: Fil,
+        self: Collection[Any],
+        filter_: Optional[Fil],
         path: Any = "",
-        fagus: bool = ...,
+        fagus: OptBool = ...,
         copy: bool = False,
-        default=...,
-        path_split: str = ...,
-    ) -> Union[tuple[Collection, Collection], tuple[Any, Any]]:
+        default: OptAny = ...,
+        path_split: OptStr = ...,
+    ) -> Union[tuple[Collection[Any], Collection[Any]], tuple[Any, Any]]:
         """Splits self into nodes that pass the filter, and nodes that don't pass the filter
 
-        \\* means that the parameter is a Fagus-Setting, see Fagus-class-docstring for more information about options
+        \\* means that the parameter is a FagusOption, see Fagus-class-docstring for more information about options
 
         Args:
-            filter_: TFilter-object in which the filtering-criteria are specified
+            filter_: Fil-object in which the filtering-criteria are specified
             path: at this position in self, the splitting will start (apply filter\\_ relatively from this point).
                 Default "", meaning that the root node is split, see get() and README for examples
             fagus: \\* return the filtered self as Fagus-object (default is just to return the filtered node)
@@ -314,7 +325,7 @@ class Fagus(MutableMapping, MutableSequence, MutableSet, metaclass=FagusMeta):
             filter_in, filter_out = 2 * (Fagus._opt(self, "default", default),)
         else:
             filter_in, filter_out = Fagus._split_r(node, copy, filter_)
-            if not filter_.match_extra_filters(node):
+            if filter_ and not filter_.match_extra_filters(node):
                 filter_in.clear()
                 filter_out = node
             if not copy:
@@ -331,19 +342,26 @@ class Fagus(MutableMapping, MutableSequence, MutableSet, metaclass=FagusMeta):
 
     @staticmethod
     def _split_r(
-        node: Collection, copy: bool, filter_: Optional[Fil], index: int = 0
-    ) -> tuple[Union[MutableMapping, MutableSequence, MutableSet], Union[MutableMapping, MutableSequence, MutableSet]]:
+        node: Collection[Any], copy: bool, filter_: Optional[Fil], index: int = 0
+    ) -> tuple[
+        Union[MutableMapping[Any, Any], MutableSequence[Any], MutableSet[Any]],
+        Union[MutableMapping[Any, Any], MutableSequence[Any], MutableSet[Any]],
+    ]:
         """Internal recursive method that facilitates filtering
 
         Args:
             node: the node to filter
             copy: creates copies instead of directly referencing nodes included in the filter
-            filter_: TFilter-object in which the filtering-criteria are specified
+            filter_: Fil-object in which the filtering-criteria are specified
             index: index in the current filter-object
 
         Returns:
             the filtered node
         """
+        filter_in: Union[MutableMapping[Any, Any], MutableSequence[Any], MutableSet[Any]]
+        filter_out: Union[MutableMapping[Any, Any], MutableSequence[Any], MutableSet[Any]]
+        action: Optional[str]
+        match_key: Optional[Callable[[Any, int, Any], tuple[bool, Union[KFil, None], int]]]
         if isinstance(node, Mapping):
             filter_in, filter_out, action, match_key = {}, {}, None, filter_.match if filter_ else None
         elif isinstance(node, Sequence):
@@ -351,7 +369,8 @@ class Fagus(MutableMapping, MutableSequence, MutableSet, metaclass=FagusMeta):
         else:
             filter_in, filter_out, action, match_key = set(), set(), "add", None
         for k, v in node.items() if isinstance(node, Mapping) else enumerate(node):
-            v_in, v_out = _None, _None
+            v_in: Union[type, MutableMapping[Any, Any], MutableSequence[Any], MutableSet[Any]] = _None
+            v_out: Union[type, MutableMapping[Any, Any], MutableSequence[Any], MutableSet[Any]] = _None
             match_k = match_key(k, index, len(node)) if callable(match_key) else (True, filter_, index + 1)
             match_v = False
             if match_k[0]:
@@ -359,7 +378,7 @@ class Fagus(MutableMapping, MutableSequence, MutableSet, metaclass=FagusMeta):
                     match_v = True
                 elif _is(v, Collection):
                     if match_k[1].match_extra_filters(v, match_k[2]):
-                        v_in, v_out = Fagus._split_r(v, copy, *match_k[1:])
+                        v_in, v_out = Fagus._split_r(v, copy, *match_k[1:])  # type: ignore
                         match_v = bool(v) == bool(v_in)
                 else:
                     match_v, *_ = match_k[1].match(v, match_k[2])
@@ -369,7 +388,7 @@ class Fagus(MutableMapping, MutableSequence, MutableSet, metaclass=FagusMeta):
                     if action:
                         getattr(filter_in, action)(_copy_any(v_in) if copy else v_in)
                     else:
-                        filter_in[k] = _copy_any(v_in) if copy else v_in
+                        filter_in[k] = _copy_any(v_in) if copy else v_in  # type: ignore
             if not match_v or v_out is not _None:
                 if v_out is _None:
                     v_out = v
@@ -378,24 +397,24 @@ class Fagus(MutableMapping, MutableSequence, MutableSet, metaclass=FagusMeta):
                 if action:
                     getattr(filter_out, action)(_copy_any(v_out) if copy else v_out)
                 else:
-                    filter_out[k] = _copy_any(v_out) if copy else v_out
+                    filter_out[k] = _copy_any(v_out) if copy else v_out  # type: ignore
         return filter_in, filter_out
 
     def set(
-        self: Collection,
-        value,
-        path: Iterable,
-        node_types: str = ...,
-        list_insert: int = ...,
-        path_split: str = ...,
-        fagus: bool = ...,
-        if_: Any = ...,
-        default_node_type: str = ...,
+        self: Collection[Any],
+        value: Any,
+        path: Iterable[Any],
+        node_types: OptStr = ...,
+        list_insert: OptInt = ...,
+        path_split: OptStr = ...,
+        fagus: OptBool = ...,
+        if_: OptAny = ...,
+        default_node_type: OptStr = ...,
         copy: bool = False,
-    ) -> Collection:
+    ) -> Collection[Any]:
         """Create (if they don't already exist) all sub-nodes in path, and finally set value at leaf-node
 
-        \\* means that the parameter is a Fagus-Setting, see Fagus-class-docstring for more information about options
+        \\* means that the parameter is a FagusOption, see Fagus-class-docstring for more information about options
 
         Args:
             value: ~ is placed at path, after creating new nodes if necessary. An existing value at path is overwritten
@@ -427,23 +446,23 @@ class Fagus(MutableMapping, MutableSequence, MutableSet, metaclass=FagusMeta):
             self, value, path, "set", node_types, list_insert, path_split, fagus, if_, default_node_type, copy
         )
 
-    def append(
-        self: Collection,
-        value,
+    def append(  # type: ignore
+        self: Collection[Any],
+        value: Any,
         path: Any = "",
-        node_types: str = ...,
-        list_insert: int = ...,
-        path_split: str = ...,
-        fagus: bool = ...,
-        if_: Any = ...,
-        default_node_type: str = ...,
+        node_types: OptStr = ...,
+        list_insert: OptInt = ...,
+        path_split: OptStr = ...,
+        fagus: OptBool = ...,
+        if_: OptAny = ...,
+        default_node_type: OptStr = ...,
         copy: bool = False,
-    ) -> Collection:
+    ) -> Collection[Any]:
         """Create (if they don't already exist) all sub-nodes in path, and finally append value to a list at leaf-node
 
         If the leaf-node is a set, tuple or other value it is converted to a list. Then the new value is appended.
 
-        \\* means that the parameter is a Fagus-Setting, see Fagus-class-docstring for more information about options
+        \\* means that the parameter is a FagusOption, see Fagus-class-docstring for more information about options
 
         Args:
             value: ~ is appended to list at path, after creating new nodes along path as necessary
@@ -476,23 +495,23 @@ class Fagus(MutableMapping, MutableSequence, MutableSet, metaclass=FagusMeta):
             self, value, path, "append", node_types, list_insert, path_split, fagus, if_, default_node_type, copy
         )
 
-    def extend(
-        self: Collection,
-        values: Iterable,
+    def extend(  # type: ignore
+        self: Collection[Any],
+        values: Iterable[Any],
         path: Any = "",
-        node_types: str = ...,
-        list_insert: int = ...,
-        path_split: str = ...,
-        fagus: bool = ...,
-        if_: Any = ...,
-        default_node_type: str = ...,
+        node_types: OptStr = ...,
+        list_insert: OptInt = ...,
+        path_split: OptStr = ...,
+        fagus: OptBool = ...,
+        if_: OptAny = ...,
+        default_node_type: OptStr = ...,
         copy: bool = False,
-    ) -> Collection:
+    ) -> Collection[Any]:
         """Create (if they don't already exist) all sub-nodes in path. Then extend list at leaf-node with the new values
 
         If the leaf-node is a set, tuple or other value it is converted to a list, which is extended with the new values
 
-        \\* means that the parameter is a Fagus-Setting, see Fagus-class-docstring for more information about options
+        \\* means that the parameter is a FagusOption, see Fagus-class-docstring for more information about options
 
         Args:
             values: the list at path is extended with ~, after creating new nodes along path as necessary
@@ -526,25 +545,25 @@ class Fagus(MutableMapping, MutableSequence, MutableSet, metaclass=FagusMeta):
             self, values, path, "extend", node_types, list_insert, path_split, fagus, if_, default_node_type, copy
         )
 
-    def insert(
-        self: Collection,
+    def insert(  # type: ignore
+        self: Collection[Any],
         index: int,
-        value,
+        value: Any,
         path: Any = "",
-        node_types: str = ...,
-        list_insert: int = ...,
-        path_split: str = ...,
-        fagus: bool = ...,
-        if_: Any = ...,
-        default_node_type: str = ...,
+        node_types: OptStr = ...,
+        list_insert: OptInt = ...,
+        path_split: OptStr = ...,
+        fagus: OptBool = ...,
+        if_: OptAny = ...,
+        default_node_type: OptStr = ...,
         copy: bool = False,
-    ) -> Collection:
+    ) -> Collection[Any]:
         """Create (if they don't already exist) all sub-nodes in path. Insert new value at index in list at leaf-node
 
         If the leaf-node is a set, tuple or other value it is converted to a list, in which the new value is inserted at
         index
 
-        \\* means that the parameter is a Fagus-Setting, see Fagus-class-docstring for more information about options
+        \\* means that the parameter is a FagusOption, see Fagus-class-docstring for more information about options
 
         Args:
             index: ~ at which the value shall be inserted in the list at path
@@ -589,23 +608,23 @@ class Fagus(MutableMapping, MutableSequence, MutableSet, metaclass=FagusMeta):
             index,
         )
 
-    def add(
-        self: Collection,
-        value,
+    def add(  # type: ignore
+        self: Collection[Any],
+        value: Any,
         path: Any = "",
-        node_types: str = ...,
-        list_insert: int = ...,
-        path_split: str = ...,
-        fagus: bool = ...,
-        if_: Any = ...,
-        default_node_type: str = ...,
+        node_types: OptStr = ...,
+        list_insert: OptInt = ...,
+        path_split: OptStr = ...,
+        fagus: OptBool = ...,
+        if_: OptAny = ...,
+        default_node_type: OptStr = ...,
         copy: bool = False,
-    ) -> Collection:
+    ) -> Collection[Any]:
         """Create (if they don't already exist) all sub-nodes in path, and finally add new value to set at leaf-node
 
         If the leaf-node is a list, tuple or other value it is converted to a set, to which the new value is added
 
-        \\* means that the parameter is a Fagus-Setting, see Fagus-class-docstring for more information about options
+        \\* means that the parameter is a FagusOption, see Fagus-class-docstring for more information about options
 
         Args:
             value: ~ is added to set at path, after creating new nodes along path as necessary
@@ -638,24 +657,24 @@ class Fagus(MutableMapping, MutableSequence, MutableSet, metaclass=FagusMeta):
             self, value, path, "add", node_types, list_insert, path_split, fagus, if_, default_node_type, copy
         )
 
-    def update(
-        self: Collection,
-        values: Iterable,
+    def update(  # type: ignore
+        self: Collection[Any],
+        values: Iterable[Any],
         path: Any = "",
-        node_types: str = ...,
-        list_insert: int = ...,
-        path_split: str = ...,
-        fagus: bool = ...,
-        if_: Any = ...,
-        default_node_type: str = ...,
+        node_types: OptStr = ...,
+        list_insert: OptInt = ...,
+        path_split: OptStr = ...,
+        fagus: OptBool = ...,
+        if_: OptAny = ...,
+        default_node_type: OptStr = ...,
         copy: bool = False,
-    ) -> Collection:
+    ) -> Collection[Any]:
         """Create (if they don't already exist) all sub-nodes in path, then update set at leaf-node with new values
 
         If the leaf-node is a list, tuple or other value it is converted to a set. That set is then updated with the new
         values. If the node at path is a dict, and values also is a dict, the node-dict is updated with the new values.
 
-        \\* means that the parameter is a Fagus-Setting, see Fagus-class-docstring for more information about options
+        \\* means that the parameter is a FagusOption, see Fagus-class-docstring for more information about options
 
         Args:
             values: the set/dict at path is updated with ~, after creating new nodes along path as necessary
@@ -689,19 +708,19 @@ class Fagus(MutableMapping, MutableSequence, MutableSet, metaclass=FagusMeta):
         )
 
     def _build_node(
-        self: Collection,
-        value,
-        path,
+        self: Collection[Any],
+        value: Any,
+        path: Iterable[Any],
         action: str,
-        node_types: str = ...,
-        list_insert: int = ...,
-        path_split: str = ...,
-        fagus: bool = ...,
-        if_: Any = ...,
-        default_node_type: str = ...,
+        node_types: OptStr = ...,
+        list_insert: OptInt = ...,
+        path_split: OptStr = ...,
+        fagus: OptBool = ...,
+        if_: OptAny = ...,
+        default_node_type: OptStr = ...,
         copy: bool = False,
-        index: int = ...,
-    ) -> Collection:
+        index: OptInt = ...,
+    ) -> Collection[Any]:
         """Internal function that is used to _build all necessary subnodes in path"""
         root = self.root if isinstance(self, Fagus) else self
         if_ = Fagus._opt(self, "if_", if_)
@@ -714,12 +733,12 @@ class Fagus(MutableMapping, MutableSequence, MutableSet, metaclass=FagusMeta):
             root = Fagus.__copy__(root)
         node = root
         if isinstance(path, str):
-            l_path = path.split(Fagus._opt(self, "path_split", path_split)) if path else []
+            l_path: list[Any] = path.split(Fagus._opt(self, "path_split", path_split)) if path else []
         else:
             l_path = list(path) if _is(path, Collection) else [path]
         if l_path:
             try:
-                next_index = int(l_path[0])
+                next_index: Union[type, int] = int(l_path[0])
             except (ValueError, TypeError):
                 next_index = _None
             list_insert = Fagus._opt(self, "list_insert", list_insert)
@@ -730,7 +749,7 @@ class Fagus(MutableMapping, MutableSequence, MutableSet, metaclass=FagusMeta):
                 if is_list:
                     if next_index is _None:
                         raise ValueError(f"Can't parse numeric list-index from {l_path[i]}.")
-                    node_key = next_index
+                    node_key = cast(int, next_index)
                 else:
                     node_key = l_path[i]
                 try:
@@ -751,34 +770,34 @@ class Fagus(MutableMapping, MutableSequence, MutableSet, metaclass=FagusMeta):
                         if nodes:
                             node = Fagus._ensure_mutable_node(nodes, l_path[: i + 1])
                             nodes.clear()
-                        node.append([] if next_node is Sequence else {})
+                        node.append([] if next_node is Sequence else {})  # type: ignore
                         node_key = -1
                     elif node_key < -len(node):
                         if nodes:
                             node = Fagus._ensure_mutable_node(nodes, l_path[: i + 1])
                             nodes.clear()
-                        node.insert(0, [] if next_node is Sequence else {})
+                        node.insert(0, [] if next_node is Sequence else {})  # type: ignore
                         node_key = 0
                     if i == len(l_path) - 1:
                         if nodes:
                             node = Fagus._ensure_mutable_node(nodes, l_path[: i + 1])
                             nodes.clear()
                         if list_insert <= 0:
-                            node.insert(node_key, Fagus._put_value(_None, value, action, index))
+                            node.insert(node_key, Fagus._put_value(_None, value, action, index))  # type: ignore
                         else:
-                            node[node_key] = Fagus._put_value(node[node_key], value, action, index)
+                            node[node_key] = Fagus._put_value(node[node_key], value, action, index)  # type: ignore
                     else:
                         if list_insert <= 0:
                             if nodes:
                                 node = Fagus._ensure_mutable_node(nodes, l_path[: i + 1])
                                 nodes.clear()
-                            node.insert(node_key, [] if next_node is Sequence else {})
+                            node.insert(node_key, [] if next_node is Sequence else {})  # type: ignore
                             list_insert = INF
                         else:
                             next_node_type = (
                                 Mapping
-                                if isinstance(node[node_key], Mapping)
-                                else (Sequence if _is(node[node_key], Sequence) else _None)
+                                if isinstance(node[node_key], Mapping)  # type: ignore
+                                else (Sequence if _is(node[node_key], Sequence) else _None)  # type: ignore
                             )
                             if next_node_type is _None or (
                                 next_node != next_node_type
@@ -788,13 +807,15 @@ class Fagus(MutableMapping, MutableSequence, MutableSet, metaclass=FagusMeta):
                                 if nodes:
                                     node = Fagus._ensure_mutable_node(nodes, l_path[: i + 1])
                                     nodes.clear()
-                                node[node_key] = [] if next_node is Sequence else {}
+                                node[node_key] = [] if next_node is Sequence else {}  # type: ignore
                 elif isinstance(node, Mapping):  # isinstance(node, dict)
                     if i == len(l_path) - 1:
                         if nodes:
                             node = Fagus._ensure_mutable_node(nodes, l_path[: i + 1])
                             nodes.clear()
-                        node[node_key] = Fagus._put_value(node.get(node_key, _None), value, action, index)
+                        node[node_key] = Fagus._put_value(  # type: ignore
+                            node.get(node_key, _None), value, action, index  # type: ignore
+                        )
                     else:
                         next_value = node.get(node_key, _None)
                         next_node_type = (
@@ -810,8 +831,8 @@ class Fagus(MutableMapping, MutableSequence, MutableSet, metaclass=FagusMeta):
                             if nodes:
                                 node = Fagus._ensure_mutable_node(nodes, l_path[: i + 1])
                                 nodes.clear()
-                            node[node_key] = [] if next_node is Sequence else {}
-                node = node[node_key]
+                            node[node_key] = [] if next_node is Sequence else {}  # type: ignore
+                node = node[node_key]  # type: ignore
                 if nodes:
                     nodes.append(node)
                 list_insert -= 1
@@ -834,20 +855,20 @@ class Fagus(MutableMapping, MutableSequence, MutableSet, metaclass=FagusMeta):
         return Fagus.child(self, root) if Fagus._opt(self, "fagus", fagus) else root
 
     @staticmethod
-    def _put_value(node: Union[Collection, type], value, action: str, index: int):
+    def _put_value(node: Union[Collection[Any], type], value: Any, action: str, index: int) -> Any:
         """internal function that sets, appends or adds value as the last step in building a node"""
         if action == "set":
             return value
         if action in ("append", "extend", "insert"):
             if not _is(node, MutableSequence):
                 if _is(node, Iterable):
-                    node = list(node)
+                    node = list(cast(Iterable[Any], node))
                 elif node is _None:
                     node = []
                 else:
                     node = [node]
             if action == "insert":
-                node.insert(index, value)
+                node.insert(index, value)  # type: ignore
             else:
                 getattr(node, action)(value)
         elif action in ("add", "update"):
@@ -856,7 +877,7 @@ class Fagus(MutableMapping, MutableSequence, MutableSet, metaclass=FagusMeta):
             else:
                 if not isinstance(node, (MutableSet, MutableMapping)):
                     if _is(node, Iterable):
-                        node = set(node)
+                        node = set(node)  # type: ignore
                     else:
                         node = {node}
                 elif isinstance(node, MutableMapping) and not isinstance(value, Mapping):  # it makes no sense to
@@ -869,18 +890,18 @@ class Fagus(MutableMapping, MutableSequence, MutableSet, metaclass=FagusMeta):
         return node
 
     def setdefault(
-        self: Collection,
+        self: Collection[Any],
         path: Any = "",
-        default=...,
-        fagus: bool = ...,
-        node_types: str = ...,
-        list_insert: int = ...,
-        path_split: str = ...,
-        default_node_type: str = ...,
+        default: OptAny = ...,
+        fagus: OptBool = ...,
+        node_types: OptStr = ...,
+        list_insert: OptInt = ...,
+        path_split: OptStr = ...,
+        default_node_type: OptStr = ...,
     ) -> Any:
         """Get value at path and return it. If there is no value at path, set default at path, and return default
 
-        \\* means that the parameter is a Fagus-Setting, see Fagus-class-docstring for more information about options
+        \\* means that the parameter is a FagusOption, see Fagus-class-docstring for more information about options
 
         Args:
             path: position in self where default shall be set / from where value shall be fetched. See get() and README
@@ -915,33 +936,33 @@ class Fagus(MutableMapping, MutableSequence, MutableSet, metaclass=FagusMeta):
             value = Fagus._opt(self, "default", default)
             Fagus.set(self, value, path, node_types, list_insert, path_split, False, _None, default_node_type)
         else:
-            value = Fagus.get(parent_node, l_path[-1], _None, fagus=False)
+            value = Fagus.get(cast(Collection[Any], parent_node), l_path[-1], _None, fagus=False)
             if value is _None or (list_insert == len(l_path) - 1 and isinstance(parent_node, MutableSequence)):
                 value = Fagus._opt(self, "default", default)
                 if isinstance(parent_node, MutableSequence):
                     parent_node.insert(int(l_path[-1]), value)
                 else:
-                    parent_node[l_path[-1]] = value
+                    parent_node[l_path[-1]] = value  # type: ignore
         return Fagus.child(self, value) if Fagus._opt(self, "fagus", fagus) and _is(value, Collection) else value
 
     def mod(
-        self: Collection,
-        mod_function: Callable,
-        path,
-        default=...,
-        replace_value=True,
-        fagus: bool = ...,
-        node_types: str = ...,
-        list_insert: int = ...,
-        path_split: str = ...,
-        default_node_type: str = ...,
+        self: Collection[Any],
+        mod_function: Callable[[Any], Any],
+        path: Iterable[Any],
+        default: OptAny = ...,
+        replace_value: bool = True,
+        fagus: OptBool = ...,
+        node_types: OptStr = ...,
+        list_insert: OptInt = ...,
+        path_split: OptStr = ...,
+        default_node_type: OptStr = ...,
     ) -> Any:
         """Modifies the value at path using the function-pointer mod_function
 
         mod can be used like this Fagus.mod(obj, "kitchen spoon", lambda x: x + 1, 1) to count the number of spoons in
         the kitchen. If there is no value to modify, the default value (here 1) will be set at the node.
 
-        \\* means that the parameter is a Fagus-Setting, see Fagus-class-docstring for more information about options
+        \\* means that the parameter is a FagusOption, see Fagus-class-docstring for more information about options
 
         Args:
             mod_function: A function pointer or lambda that modifies the existing value at path. TFunc can be used to
@@ -973,7 +994,7 @@ class Fagus(MutableMapping, MutableSequence, MutableSet, metaclass=FagusMeta):
         """
         root = self.root if isinstance(self, Fagus) else self
         if isinstance(path, str):
-            l_path = path.split(Fagus._opt(self, "path_split", path_split)) if path else []
+            l_path: list[Any] = path.split(Fagus._opt(self, "path_split", path_split)) if path else []
         else:
             l_path = list(path) if _is(path, Collection) else [path]
         list_insert = Fagus._opt(self, "list_insert", list_insert)
@@ -1001,20 +1022,20 @@ class Fagus(MutableMapping, MutableSequence, MutableSet, metaclass=FagusMeta):
         return Fagus.child(self, default) if _is(default, Collection) and Fagus._opt(self, "fagus", fagus) else default
 
     def mod_all(
-        self: Collection,
-        mod_function: Callable,
-        filter_: Fil = None,
+        self: Collection[Any],
+        mod_function: Callable[[Any], Any],
+        filter_: Optional[Fil] = None,
         path: Any = "",
-        replace_value=True,
-        default=...,
+        replace_value: bool = True,
+        default: OptAny = ...,
         max_depth: int = INF,
-        fagus: bool = ...,
-        copy=False,
-        path_split: str = ...,
-    ) -> Collection:
+        fagus: OptBool = ...,
+        copy: bool = False,
+        path_split: OptStr = ...,
+    ) -> Any:
         """Modify all the leaf-values that match a certain filter
 
-        \\* means that the parameter is a Fagus-Setting, see Fagus-class-docstring for more information about options
+        \\* means that the parameter is a FagusOption, see Fagus-class-docstring for more information about options
 
         Args:
             mod_function: A function pointer or lambda that modifies the existing value at path. TFunc can be used to
@@ -1055,21 +1076,21 @@ class Fagus(MutableMapping, MutableSequence, MutableSet, metaclass=FagusMeta):
                     parent.remove(old_value)
                     parent.add(mod_function(old_value))
                 else:
-                    parent[key] = mod_function(old_value)
+                    parent[key] = mod_function(old_value)  # type: ignore
         else:
             for *_, old_value in f_iter:
                 mod_function(old_value)
         return Fagus.child(self, base) if Fagus._opt(self, "fagus", fagus) else base
 
-    def serialize(
-        self: Union[dict, list],
-        mod_functions: Mapping = None,
+    def serialize(  # type: ignore
+        self: Union[dict[Any, Any], list[Any]],
+        mod_functions: Optional[Mapping[Union[type, tuple[type], str], Callable[[Any], Any]]] = None,
         path: Any = "",
-        node_types: str = ...,
-        list_insert: int = ...,
-        path_split: str = ...,
+        node_types: OptStr = ...,
+        list_insert: OptInt = ...,
+        path_split: OptStr = ...,
         copy: bool = False,
-    ) -> Union[dict, list]:
+    ) -> Union[dict[Any, Any], list[Any]]:
         """Makes sure the object can be serialized so that it can be converted to JSON, YAML etc.
 
         The only allowed data-types for serialization are: dict, list, bool, float, int, str, None
@@ -1086,7 +1107,7 @@ class Fagus(MutableMapping, MutableSequence, MutableSet, metaclass=FagusMeta):
         types don't appear in mod_functions are modified by the function behind the key "default". By default, this
         function is lambda x: str(x) that replaces the object with its string-representation.
 
-        \\* means that the parameter is a Fagus-Setting, see Fagus-class-docstring for more information about options
+        \\* means that the parameter is a FagusOption, see Fagus-class-docstring for more information about options
 
         Args:
             mod_functions: \\* ~ is used to define how different types of objects are supposed to be serialized. This is
@@ -1126,12 +1147,15 @@ class Fagus(MutableMapping, MutableSequence, MutableSet, metaclass=FagusMeta):
         if node is _None:
             return [] if Fagus._opt(self, "default_node_type") == "l" else {}
         if copy:
-            node = Fagus.__copy__(node)
+            node = cast(
+                MutableMapping[Any, Any] | MutableSequence[Any] | MutableSet[Any],
+                Fagus.__copy__(cast(Collection[Any], node)),
+            )
         if not (
             mod_functions is None
             or all(
                 k in ("default", "tuple_keys")
-                or all(isinstance(e, type) for e in (k if _is(k, Iterable) else (k,)))
+                or all(isinstance(e, type) for e in (k if _is(k, Iterable) else (k,)))  # type: ignore
                 and callable(v)
                 for k, v in mod_functions.items()
             )
@@ -1141,7 +1165,7 @@ class Fagus(MutableMapping, MutableSequence, MutableSet, metaclass=FagusMeta):
                 "(either lambda or wrapped in TFunc-nodeects) as values."
             )
         return Fagus._serialize_r(
-            node,
+            node,  # type: ignore
             {
                 **{
                     datetime: lambda x: x.isoformat(" ", "seconds"),
@@ -1154,10 +1178,14 @@ class Fagus(MutableMapping, MutableSequence, MutableSet, metaclass=FagusMeta):
         )
 
     @staticmethod
-    def _serialize_r(node: Union[dict, list], mod_functions: Mapping):
+    def _serialize_r(
+        node: Union[dict[Any, Any], list[Any]],
+        mod_functions: Mapping[Union[type, tuple[type], str], Callable[[Any], Any]],
+    ) -> Union[dict[Any, Any], list[Any]]:
         """Recursive function that returns a node where all the keys and values are serializable"""
         for k, v in list(node.items() if isinstance(node, MutableMapping) else enumerate(node)):
-            ny_k, ny_v = _None, _None
+            ny_k: Any = _None
+            ny_v: Any = _None
             if not isinstance(k, (bool, float, int, str)) and k is not None:
                 if isinstance(k, tuple):
                     if "tuple_keys" in mod_functions:
@@ -1185,28 +1213,30 @@ class Fagus(MutableMapping, MutableSequence, MutableSet, metaclass=FagusMeta):
         return node
 
     @staticmethod
-    def _serializable_value(value, mod_functions):
+    def _serializable_value(
+        value: Any, mod_functions: Mapping[Union[type, tuple[type], str], Callable[[Any], Any]]
+    ) -> Any:
         """Returns the value modified through the mod-function for its type"""
         for types, mod_function in mod_functions.items():
-            if type(value) == types or (_is(types, Collection) and type(value) in types):
+            if type(value) == types or (_is(types, Collection) and type(value) in types):  # type: ignore
                 return mod_function(value)
         return mod_functions["default"](value)
 
     def merge(
-        self: Collection,
-        obj: Union["FagusIterator", Collection],
+        self: Collection[Any],
+        obj: Union[FagusIterator, Collection[Any]],
         path: Any = "",
         new_value_action: str = "r",
         extend_from: int = INF,
         update_from: int = INF,
-        fagus: bool = ...,
+        fagus: OptBool = ...,
         copy: bool = False,
         copy_obj: bool = False,
-        path_split: str = ...,
-        node_types: str = ...,
-        list_insert: int = ...,
-        default_node_type: str = ...,
-    ) -> Collection:
+        path_split: OptStr = ...,
+        node_types: OptStr = ...,
+        list_insert: OptInt = ...,
+        default_node_type: OptStr = ...,
+    ) -> Collection[Any]:
         """Merges two or more tree-objects to update and extend the root node
 
         Args:
@@ -1277,22 +1307,22 @@ class Fagus(MutableMapping, MutableSequence, MutableSet, metaclass=FagusMeta):
             obj_iter = obj
             obj_iter.__dict__.update(**iter_options)
         elif _is(obj, Collection):
-            obj_iter = FagusIterator(obj if isinstance(obj, Fagus) else Fagus.child(self, obj), **iter_options)
+            obj_iter = FagusIterator(obj if isinstance(obj, Fagus) else Fagus.child(self, obj), **iter_options)  # type: ignore
         else:
             raise TypeError(f"Can merge with FagusIterator or Collection, but not with {type(obj).__name__}")
-        node_type, mutable_node = Fagus._node_type(node, True)
+        node_type, mutable_node = Fagus._mutable_node_type(node)
         obj_type = Fagus._node_type(obj_iter.obj())
         if not extend_from or not update_from or node_type != obj_type or node_type == Set:
             if obj_type == Mapping:
                 if node_type == Mapping and not update_from:
                     node.update(obj_iter.obj())
-                    return Fagus.child(self, node) if Fagus._opt(self, "fagus", fagus) else node
+                    return cast(Collection[Any], Fagus.child(self, node) if Fagus._opt(self, "fagus", fagus) else node)
             elif node_type == Set:
                 node.update(obj_iter.obj())
-                return Fagus.child(self, node) if Fagus._opt(self, "fagus", fagus) else node
+                return cast(Collection[Any], Fagus.child(self, node) if Fagus._opt(self, "fagus", fagus) else node)
             elif node_type == Sequence and not extend_from or obj_type != Sequence:
                 node.extend(obj_iter.obj())
-                return Fagus.child(self, node) if Fagus._opt(self, "fagus", fagus) else node
+                return cast(Collection[Any], Fagus.child(self, node) if Fagus._opt(self, "fagus", fagus) else node)
             raise TypeError(
                 f"Unsupported operand types for merge: {node_type.__name__} and {obj_type.__name__}. The types "
                 "have to be equal, additionally a Sequence can be extended with a Set and a Set can be updated "
@@ -1303,7 +1333,7 @@ class Fagus(MutableMapping, MutableSequence, MutableSet, metaclass=FagusMeta):
             if i < len(base_nodes):
                 del base_nodes[i + 1 :]
                 node = base_nodes[-1]
-                node_type, mutable_node = Fagus._node_type(node, True)
+                node_type, mutable_node = Fagus._mutable_node_type(node)
                 try:
                     for i, k in enumerate(path[1 + i * 2 : -3 : 2], start=i):
                         obj_node_type = Fagus._node_type(path[2 * i])
@@ -1319,7 +1349,7 @@ class Fagus(MutableMapping, MutableSequence, MutableSet, metaclass=FagusMeta):
                                 new_node = node[k]
                                 if _is(new_node, Collection):
                                     node = new_node
-                                    node_type, mutable_node = Fagus._node_type(node, True)
+                                    node_type, mutable_node = Fagus._mutable_node_type(node)
                                     base_nodes.append(node)
                         except (IndexError, KeyError):
                             if not mutable_node:
@@ -1360,12 +1390,16 @@ class Fagus(MutableMapping, MutableSequence, MutableSet, metaclass=FagusMeta):
                     node.add(new_value)
                 elif new_value or not _is(new_value, Collection):
                     node[path[2 * len(base_nodes) - 1]] = new_value
-        return Fagus.child(self, base_nodes[0]) if Fagus._opt(self, "fagus", fagus) else base_nodes[0]
+        return cast(
+            Collection[Any], Fagus.child(self, base_nodes[0]) if Fagus._opt(self, "fagus", fagus) else base_nodes[0]
+        )
 
-    def pop(self: Collection, path: Any = "", default=..., fagus: bool = ..., path_split: str = ...):
+    def pop(
+        self: Collection[Any], path: Any = "", default: OptAny = ..., fagus: OptBool = ..., path_split: OptStr = ...
+    ) -> Any:
         """Deletes the value at path and returns it
 
-        \\* means that the parameter is a Fagus-Setting, see Fagus-class-docstring for more information about options
+        \\* means that the parameter is a FagusOption, see Fagus-class-docstring for more information about options
 
         Args:
             path: pop value at this position in self, or don't do anything if path doesn't exist in self
@@ -1384,7 +1418,7 @@ class Fagus(MutableMapping, MutableSequence, MutableSet, metaclass=FagusMeta):
         else:
             l_path = list(path) if _is(path, Collection) else [path]
         default = Fagus._opt(self, "default", default)
-        node = Fagus._get_mutable_node(self, l_path)
+        node: Union[Collection[Any], type] = Fagus._get_mutable_node(self, l_path)
         try:
             if isinstance(node, MutableMapping):
                 node = node.pop(l_path[-1])
@@ -1397,16 +1431,20 @@ class Fagus(MutableMapping, MutableSequence, MutableSet, metaclass=FagusMeta):
                 node = default
         except (IndexError, ValueError, KeyError):
             node = default
-        return Fagus.child(self, node) if _is(node, Collection) and Fagus._opt(self, "fagus", fagus) else node
+        return (
+            Fagus.child(self, cast(Collection[Any], node))
+            if _is(node, Collection) and Fagus._opt(self, "fagus", fagus)
+            else node
+        )
 
-    def popitem(self):
+    def popitem(self) -> None:  # type: ignore
         """This function is not implemented in Fagus"""
-        pass
+        return None
 
-    def discard(self: Collection, path: Any = "", path_split: str = ...) -> None:
+    def discard(self: Collection[Any], path: Any = "", path_split: OptStr = ...) -> None:
         """Deletes the value at path if it exists
 
-        \\* means that the parameter is a Fagus-Setting, see Fagus-class-docstring for more information about options
+        \\* means that the parameter is a FagusOption, see Fagus-class-docstring for more information about options
 
         Args:
             path: pop value at this position in self, or don't do anything if path doesn't exist in self
@@ -1416,10 +1454,10 @@ class Fagus(MutableMapping, MutableSequence, MutableSet, metaclass=FagusMeta):
         """
         Fagus.pop(self, path, path_split=path_split)
 
-    def remove(self, path: Any = "", path_split: str = ...) -> None:
+    def remove(self, path: Any = "", path_split: OptStr = ...) -> None:
         """Deletes the value at path if it exists, raises KeyError if it doesn't
 
-        \\* means that the parameter is a Fagus-Setting, see Fagus-class-docstring for more information about options
+        \\* means that the parameter is a FagusOption, see Fagus-class-docstring for more information about options
 
         Args:
             path: pop value at this position in self, or don't do anything if path doesn't exist in self
@@ -1433,10 +1471,10 @@ class Fagus(MutableMapping, MutableSequence, MutableSet, metaclass=FagusMeta):
         if Fagus.pop(self, path, _None, path_split=path_split) is _None:
             raise KeyError(f"Couldn't remove {path}: Does not exist")
 
-    def keys(self: Collection, path: Any = "", path_split: str = ...):
+    def keys(self: Collection[Any], path: Any = "", path_split: OptStr = ...) -> Iterable[Any]:  # type: ignore
         """Returns keys for the node at path, or None if that node is a set or doesn't exist / doesn't have keys
 
-        \\* means that the parameter is a Fagus-Setting, see Fagus-class-docstring for more information about options
+        \\* means that the parameter is a FagusOption, see Fagus-class-docstring for more information about options
 
         Args:
             path: get keys for node at this position in self. Default "" (gets values from the root node), See get()
@@ -1454,16 +1492,16 @@ class Fagus(MutableMapping, MutableSequence, MutableSet, metaclass=FagusMeta):
             return (... for _ in node)
         return ()
 
-    def values(
-        self: Collection,
+    def values(  # type: ignore
+        self: Collection[Any],
         path: Any = "",
-        path_split: str = ...,
-        fagus: bool = ...,
+        path_split: OptStr = ...,
+        fagus: OptBool = ...,
         copy: bool = False,
-    ):
+    ) -> Iterable[Any]:
         """Returns values for node at path
 
-        \\* means that the parameter is a Fagus-Setting, see Fagus-class-docstring for more information about options
+        \\* means that the parameter is a FagusOption, see Fagus-class-docstring for more information about options
 
         Args:
             path: get values at this position in self, default "" (gets values from the root node). See get()
@@ -1478,7 +1516,7 @@ class Fagus(MutableMapping, MutableSequence, MutableSet, metaclass=FagusMeta):
         """
         node = Fagus.get(self, path, _None, path_split=path_split, fagus=False, copy=copy)
         if _is(node, Collection):
-            values = node.values() if isinstance(node, Mapping) else node
+            values = cast(Iterable[Any], node.values() if isinstance(node, Mapping) else node)
             if Fagus._opt(self, "fagus", fagus):
                 return (Fagus.child(self, e) if _is(e, Collection) else e for e in values)
             return values
@@ -1486,16 +1524,16 @@ class Fagus(MutableMapping, MutableSequence, MutableSet, metaclass=FagusMeta):
             return ()
         return (node,)
 
-    def items(
-        self: Collection,
+    def items(  # type: ignore
+        self: Collection[Any],
         path: Any = "",
-        path_split: str = ...,
-        fagus: bool = ...,
+        path_split: OptStr = ...,
+        fagus: OptBool = ...,
         copy: bool = False,
-    ):
+    ) -> Iterable[Any]:
         """Returns in iterator of (key, value)-tuples in self, like dict.items()
 
-        \\* means that the parameter is a Fagus-Setting, see Fagus-class-docstring for more information about options
+        \\* means that the parameter is a FagusOption, see Fagus-class-docstring for more information about options
 
         Args:
             path: get items at this position in self, Default "" (gets values from the root node). See get()
@@ -1509,7 +1547,7 @@ class Fagus(MutableMapping, MutableSequence, MutableSet, metaclass=FagusMeta):
         """
         node = Fagus.get(self, path, _None, False, copy, path_split)
         if isinstance(node, Mapping):
-            items = node.items()
+            items: Iterable[Any] = node.items()
         elif _is(node, Sequence):
             items = enumerate(node)
         elif isinstance(node, Set):
@@ -1520,16 +1558,16 @@ class Fagus(MutableMapping, MutableSequence, MutableSet, metaclass=FagusMeta):
             return ((k, Fagus.child(self, v) if _is(v, Collection) else v) for k, v in items)
         return items
 
-    def clear(
-        self: Collection,
+    def clear(  # type: ignore
+        self: Collection[Any],
         path: Any = "",
-        path_split: str = ...,
+        path_split: OptStr = ...,
         copy: bool = False,
-        fagus: bool = ...,
-    ) -> Collection:
+        fagus: OptBool = ...,
+    ) -> Collection[Any]:
         """Removes all elements from node at path.
 
-        \\* means that the parameter is a Fagus-Setting, see Fagus-class-docstring for more information about options
+        \\* means that the parameter is a FagusOption, see Fagus-class-docstring for more information about options
 
         Args:
             path: clear at this position in self, Default "" (gets values from the root node). See get()
@@ -1550,15 +1588,15 @@ class Fagus(MutableMapping, MutableSequence, MutableSet, metaclass=FagusMeta):
             l_path = list(path) if _is(path, Collection) else [path]
         node = Fagus._get_mutable_node(root, l_path, parent=False)
         if node is not _None:
-            node.clear()
+            cast(Union[MutableMapping[Any, Any], MutableSequence[Any], MutableSet[Any]], node).clear()
         if isinstance(root, Fagus):
-            return root if Fagus._opt(self, "fagus", fagus) else root()
+            return root if Fagus._opt(self, "fagus", fagus) else root.root
         return Fagus.child(self, root) if Fagus._opt(self, "fagus", fagus) else root
 
-    def contains(self: Collection, value, path: Any = "", path_split: str = ...) -> bool:
+    def contains(self: Collection[Any], value: Any, path: Any = "", path_split: OptStr = ...) -> bool:
         """Check if value is present in the node at path
 
-        \\* means that the parameter is a Fagus-Setting, see Fagus-class-docstring for more information about options
+        \\* means that the parameter is a FagusOption, see Fagus-class-docstring for more information about options
 
         Args:
             value: value to check
@@ -1569,12 +1607,12 @@ class Fagus(MutableMapping, MutableSequence, MutableSet, metaclass=FagusMeta):
             whether value is in node at path in self. returns value == node if the node isn't iterable, and false if
             path doesn't exit in self"""
         node = Fagus.get(self, path, _None, fagus=False, path_split=path_split)
-        return value in node if _is(node, Collection) else value == node
+        return bool(value in node if _is(node, Collection) else value == node)
 
-    def count(self: Collection, path: Any = "", path_split: str = ...) -> int:
+    def count(self: Collection[Any], path: Any = "", path_split: OptStr = ...) -> int:
         """Check the number of elements in the node at path
 
-        \\* means that the parameter is a Fagus-Setting, see Fagus-class-docstring for more information about options
+        \\* means that the parameter is a FagusOption, see Fagus-class-docstring for more information about options
 
         Args:
             path: position in self where the number of elements shall be found.Default "" (checks root node). See get()
@@ -1587,15 +1625,15 @@ class Fagus(MutableMapping, MutableSequence, MutableSet, metaclass=FagusMeta):
         node = Fagus.get(self, path, _None, fagus=False, path_split=path_split)
         return len(node) if _is(node, Collection) else 0 if node is _None else 1
 
-    def index(
-        self: Collection,
+    def index(  # type: ignore
+        self: Collection[Any],
         value: Any,
-        start: int = ...,
-        stop: int = ...,
+        start: OptInt = ...,
+        stop: OptInt = ...,
         path: Any = "",
         all_: bool = False,
-        path_split: str = ...,
-    ) -> Optional[Union[int, Any, Sequence]]:
+        path_split: OptStr = ...,
+    ) -> Optional[Union[int, Any, Sequence[Any]]]:
         """Returns the index / key of the specified value in the node at path if it exists
 
         Args:
@@ -1614,7 +1652,7 @@ class Fagus(MutableMapping, MutableSequence, MutableSet, metaclass=FagusMeta):
         node = Fagus.get(self, path, None, False, False, path_split)
         if isinstance(node, Set):
             if all_:
-                return
+                return None
             return ((True,) if value in node else ()) if all_ else (True if value in node else None)
         if isinstance(node, Mapping):
             if all_:
@@ -1622,7 +1660,7 @@ class Fagus(MutableMapping, MutableSequence, MutableSet, metaclass=FagusMeta):
             for k, v in node.items():
                 if v == value:
                     return k
-            return
+            return None
         if _is(node, Sequence):
             if all_:
                 indices = []
@@ -1639,13 +1677,14 @@ class Fagus(MutableMapping, MutableSequence, MutableSet, metaclass=FagusMeta):
                 return node.index(value, *((() if start is ... else (start,)) + (() if stop is ... else (stop,))))
             except ValueError:
                 pass
+        return None
 
     def isdisjoint(
-        self: Collection, other: Iterable, path: Any = "", path_split: str = ..., dict_: str = "keys"
+        self: Collection[Any], other: Iterable[Any], path: Any = "", path_split: OptStr = ..., dict_: str = "keys"
     ) -> bool:
         """Returns whether the other iterable is disjoint (has no common items) with the node at path
 
-        \\* means that the parameter is a Fagus-Setting, see Fagus-class-docstring for more information about options
+        \\* means that the parameter is a FagusOption, see Fagus-class-docstring for more information about options
 
         Args:
             other: other object to check
@@ -1665,20 +1704,20 @@ class Fagus(MutableMapping, MutableSequence, MutableSet, metaclass=FagusMeta):
             return node.isdisjoint(other)
         return set(node).isdisjoint(other) if _is(node, Collection) else node not in other
 
-    def child(self: Collection, obj: Collection = None, **kwargs) -> "Fagus":
+    def child(self: Collection[Any], obj: Optional[Collection[Any]] = None, **kwargs) -> "Fagus":  # type: ignore
         """Creates a Fagus-object for obj that has the same options as self"""
         return Fagus(obj, **({**self._options, **kwargs} if isinstance(self, Fagus) and self._options else kwargs))
 
     def reversed(
-        self: Collection,
+        self: Collection[Any],
         path: Any = "",
-        fagus: bool = ...,
-        path_split: str = ...,
+        fagus: OptBool = ...,
+        path_split: OptStr = ...,
         copy: bool = False,
-    ):
+    ) -> Iterator[Any]:
         """Get reversed child-node at path if that node is a list
 
-        \\* means that the parameter is a Fagus-Setting, see Fagus-class-docstring for more information about options
+        \\* means that the parameter is a FagusOption, see Fagus-class-docstring for more information about options
 
         Args:
             path: position in self where a list / tuple shall be returned reversed
@@ -1693,18 +1732,18 @@ class Fagus(MutableMapping, MutableSequence, MutableSet, metaclass=FagusMeta):
         node = Fagus.values(self, path, path_split, fagus, copy)
         if not _is(node, Reversible):
             node = tuple(node) if _is(node, Iterable) else (node,)
-        return reversed(node)
+        return reversed(node)  # type: ignore
 
-    def reverse(
-        self: Collection,
+    def reverse(  # type: ignore
+        self: Collection[Any],
         path: Any = "",
-        fagus: bool = ...,
-        path_split: str = ...,
+        fagus: OptBool = ...,
+        path_split: OptStr = ...,
         copy: bool = False,
-    ) -> Collection:
+    ) -> Collection[Any]:
         """Reverse child-node at path if that node exists and is reversible
 
-        \\* means that the parameter is a Fagus-Setting, see Fagus-class-docstring for more information about options
+        \\* means that the parameter is a FagusOption, see Fagus-class-docstring for more information about options
 
         Args:
             path: position in self where a list / tuple shall be reversed
@@ -1728,13 +1767,15 @@ class Fagus(MutableMapping, MutableSequence, MutableSet, metaclass=FagusMeta):
             l_path = list(path) if _is(path, Collection) else [path]
         if l_path:
             parent = Fagus._get_mutable_node(root, l_path)
-            node = Fagus.get(parent, l_path[-1], _None, fagus=False)
+            if parent is _None:
+                raise TypeError(f"Cannot reverse node as root node of type {type(root).__name__} can't be modified.")
+            node = Fagus.get(cast(Collection[Any], parent), l_path[-1], _None, fagus=False)
             if hasattr(node, "reverse"):
                 node.reverse()
             elif isinstance(node, Mapping):  # if node.items() isn't reversible, the native error is thrown (that's ok)
-                parent[l_path[-1]] = dict(reversed(tuple(node.items())))
+                parent[l_path[-1]] = dict(reversed(tuple(node.items())))  # type: ignore
             elif isinstance(node, Reversible):
-                parent[int(l_path[-1]) if isinstance(parent, Sequence) else l_path[-1]] = list(reversed(node))
+                parent[int(l_path[-1]) if isinstance(parent, Sequence) else l_path[-1]] = list(reversed(node))  # type: ignore
             elif node is not _None:
                 raise TypeError(f"Cannot reverse node of type {type(node).__name__}.")
         else:
@@ -1746,14 +1787,14 @@ class Fagus(MutableMapping, MutableSequence, MutableSet, metaclass=FagusMeta):
                     root.clear()
                     root.update(reversed(tuple(tmp.items())))
                 elif isinstance(root, MutableSequence):
-                    tmp = cp.copy(root)
+                    tmp = cp.copy(root)  # type: ignore
                     root.clear()
                     root.extend(reversed(tmp))
                 else:
                     raise TypeError(f"Cannot reverse root node of type {type(root).__name__}")
         return Fagus.child(self, root) if Fagus._opt(self, "fagus", fagus) else root
 
-    def copy(self: Collection, deep: bool = False):
+    def copy(self: Collection[Any], deep: bool = False) -> Collection[Any]:
         """Creates a copy of self. Creates a recursive shallow copy by default, or a copy.deepcopy() if deep is set."""
         if deep:
             return cp.deepcopy(self)
@@ -1761,10 +1802,10 @@ class Fagus(MutableMapping, MutableSequence, MutableSet, metaclass=FagusMeta):
 
     def __options(  # at runtime, this function is renamed to options (see __init__). That was necessary to not override
         self,  # options in FagusMeta when Fagus.options() is called, instead of a = Fagus(); a.options(). Little hack
-        options: dict = None,
+        options: Optional[dict[str, Any]] = None,
         get_default_options: bool = False,
         reset: bool = False,
-    ) -> dict:
+    ) -> dict[str, Any]:
         """Function to set multiple Fagus-options in one line
 
         Args:
@@ -1786,7 +1827,7 @@ class Fagus(MutableMapping, MutableSequence, MutableSet, metaclass=FagusMeta):
             **(self._options if self._options else {}),
         }
 
-    def _opt(self: Collection, option_name: str, option=...):
+    def _opt(self: Collection[Any], option_name: str, option: OptAny = ...) -> Any:
         """Internal function that is used for Fagus-options (see Fagus-help or README for more information)"""
         if option is not ...:
             return Fagus.__verify_option__(option_name, option)
@@ -1798,8 +1839,8 @@ class Fagus(MutableMapping, MutableSequence, MutableSet, metaclass=FagusMeta):
 
     @staticmethod
     def _ensure_mutable_node(
-        nodes: list[Collection], path: Sequence, parent: bool = True
-    ) -> Union[MutableMapping, MutableSequence, MutableSet]:
+        nodes: list[Collection[Any]], path: Sequence[Any], parent: bool = True
+    ) -> Union[MutableMapping[Any, Any], MutableSequence[Any], MutableSet[Any]]:
         """Internal function that ensures that the current node (the last in nodes) is mutable
 
         Args:
@@ -1810,7 +1851,7 @@ class Fagus(MutableMapping, MutableSequence, MutableSet, metaclass=FagusMeta):
             the node, but modifiable (a tuple will have turned into a list, a frozenset will have turned into a set)
         """
         node = None
-        parent = int(not parent)
+        parent_ = int(not parent)
         i = -1
         for i in range(i, -len(nodes) - 1, -1):
             node = nodes[i]
@@ -1820,16 +1861,20 @@ class Fagus(MutableMapping, MutableSequence, MutableSet, metaclass=FagusMeta):
                 raise TypeError(f"Can't modify root node self having the immutable type {type(node).__name__}.")
         for i in range(i, -1):
             if i == -2 and _is(nodes[i + 1], Set, is_not=MutableSet):
-                node[path[i + parent]] = set(nodes[i + 1])
+                node[path[i + parent_]] = set(nodes[i + 1])  # type: ignore
             else:
-                node[path[i + parent]] = (dict if isinstance(nodes[i + 1], Mapping) else list)(nodes[i + 1])
-            nodes[i] = node
-            node = node[path[i + parent]]
-        return node
+                node[path[i + parent_]] = (dict if isinstance(nodes[i + 1], Mapping) else list)(nodes[i + 1])  # type: ignore
+            nodes[i] = node  # type: ignore
+            node = node[path[i + parent_]]  # type: ignore
+        return cast(Union[MutableMapping[Any, Any], MutableSequence[Any], MutableSet[Any]], node)
 
     def _get_mutable_node(
-        self: Collection, l_path: MutableSequence, list_insert: int = INF, node_types: str = "", parent: bool = True
-    ) -> Union[MutableMapping, MutableSequence, MutableSet, type(_None)]:
+        self: Collection[Any],
+        l_path: MutableSequence[Any],
+        list_insert: int = INF,
+        node_types: str = "",
+        parent: bool = True,
+    ) -> Union[MutableMapping[Any, Any], MutableSequence[Any], MutableSet[Any], type]:
         """Internal function retrieving the parent_node, changing necessary nodes on the way to make it mutable
 
         Args:
@@ -1855,7 +1900,7 @@ class Fagus(MutableMapping, MutableSequence, MutableSet, metaclass=FagusMeta):
                     l_path[i] = int(l_path[i])
                 elif node_types[i - 1 : i] == "l":
                     return _None
-                node = node[l_path[i]]
+                node = node[l_path[i]]  # type: ignore
                 nodes.append(node)
                 list_insert -= 1
             if _is(node, Collection):
@@ -1865,33 +1910,42 @@ class Fagus(MutableMapping, MutableSequence, MutableSet, metaclass=FagusMeta):
         return _None
 
     @staticmethod
-    def _node_type(node: Collection, check_mutable: bool = False) -> Union[tuple[type, bool], type]:
-        """Internal function. Returns the type of node, and if check_mutable is on also whether the node is mutable
+    def _mutable_node_type(node: Collection[Any]) -> tuple[type, bool]:
+        """Internal function. Returns the type of node, and whether the node is mutable
 
         Args:
             node: the node whose type shall be checked
-            check_mutable: if this is on, a tuple is returned of the node-type and whether it is mutable
 
         Returns:
-            Returns the type of node, and if check_mutable is on a tuple: (node-type, mutable) where mutable is a bool
+            Returns a tuple: (node-type, mutable) where mutable is a bool
         """
-        if check_mutable:
-            if isinstance(node, MutableMapping):
-                return Mapping, True
-            elif _is(node, MutableSequence):
-                return Sequence, True
-            elif isinstance(node, MutableSet):
-                return Set, True
-            elif isinstance(node, Mapping):
-                return Mapping, False
-            elif _is(node, Sequence):
-                return Sequence, False
-            elif isinstance(node, Set):
-                return Set, False
-            elif isinstance(node, Iterable):
-                return Iterable, False
-            else:
-                return type(node), False
+        if isinstance(node, MutableMapping):
+            return Mapping, True
+        elif _is(node, MutableSequence):
+            return Sequence, True
+        elif isinstance(node, MutableSet):
+            return Set, True
+        elif isinstance(node, Mapping):
+            return Mapping, False
+        elif _is(node, Sequence):
+            return Sequence, False
+        elif isinstance(node, Set):
+            return Set, False
+        elif isinstance(node, Iterable):
+            return Iterable, False
+        else:
+            return type(node), False
+
+    @staticmethod
+    def _node_type(node: Collection[Any]) -> type:
+        """Internal function. Returns the type of node
+
+        Args:
+            node: the node whose type shall be checked
+
+        Returns:
+            Returns the type of node
+        """
         if isinstance(node, Mapping):
             return Mapping
         elif _is(node, Sequence):
@@ -1907,12 +1961,12 @@ class Fagus(MutableMapping, MutableSequence, MutableSet, metaclass=FagusMeta):
         """Inherited from Set. Overridden to ensure that two equal Fagus's have equal hashes (ignoring options)"""
         return hash(self.root)
 
-    def __copy__(self: Collection, recursive=False):
+    def __copy__(self: Collection[Any], recursive: bool = False) -> Collection[Any]:
         """Recursively creates a shallow-copy of self"""
         new_node = _copy_node(self.root if isinstance(self, Fagus) else self, recursive)
         return Fagus.child(self, new_node) if isinstance(self, Fagus) else new_node
 
-    def __call__(self):
+    def __call__(self) -> Collection[Any]:
         """Calling the Fagus-object returns the root node the Fagus-object is wrapped around (equivalent to .root)
 
         Example:
@@ -1930,7 +1984,7 @@ class Fagus(MutableMapping, MutableSequence, MutableSet, metaclass=FagusMeta):
         """
         return self.root
 
-    def __getattr__(self, attr):  # Enable dot-notation for getting items at a path
+    def __getattr__(self, attr: str) -> Any:  # Enable dot-notation for getting items at a path
         if attr == "root":
             return self.root
         elif hasattr(Fagus, attr):
@@ -1940,23 +1994,25 @@ class Fagus(MutableMapping, MutableSequence, MutableSet, metaclass=FagusMeta):
         else:
             return self.get(attr.lstrip(Fagus._opt(self, "path_split") if isinstance(attr, str) else attr))
 
-    def __getitem__(self, item):  # Enable [] access for dict-keys at the top-level
+    def __getitem__(self, item: Any) -> Any:  # Enable [] access for dict-keys at the top-level
         return self.get(item)
 
-    def __setattr__(self, attr, value):  # Enable dot-notation for setting items at a given path
+    def __setattr__(self, attr: str, value: Any) -> None:  # Enable dot-notation for setting items at a given path
         if attr in ("root", "_options", "options"):
             super(Fagus, self).__setattr__(attr, value)
         elif attr in Fagus.__default_options__:
             if self._options is None:
                 super(Fagus, self).__setattr__("_options", {})
+            if self._options is None:
+                self._options = {}
             self._options[attr] = Fagus.__verify_option__(attr, value)
         else:
             self.set(value, attr.lstrip(Fagus._opt(self, "path_split") if isinstance(attr, str) else attr))
 
-    def __setitem__(self, path, value):  # Enable [] for setting items at a given path
+    def __setitem__(self, path: Any, value: Any) -> None:  # Enable [] for setting items at a given path
         self.set(value, path)
 
-    def __delattr__(self, attr):  # Enable dot-notation for deleting items at a given path
+    def __delattr__(self, attr: str) -> None:  # Enable dot-notation for deleting items at a given path
         if hasattr(Fagus, attr):
             if self._options and attr in self._options:
                 del self._options[attr]
@@ -1965,70 +2021,73 @@ class Fagus(MutableMapping, MutableSequence, MutableSet, metaclass=FagusMeta):
         else:
             self.pop(attr.lstrip(Fagus._opt(self, "path_split") if isinstance(attr, str) else attr))
 
-    def __delitem__(self, path):  # Enable [] for deleting items
+    def __delitem__(self, path: Any) -> None:  # Enable [] for deleting items
         self.pop(path)
 
-    def __iter__(self):
+    def __iter__(self) -> Iterator[Any]:
         return iter(self.root if isinstance(self.root, Mapping) else self.values())
 
-    def __hash__(self):
+    def __hash__(self) -> int:
         return hash(self.root)
 
-    def __eq__(self, other):
+    def __eq__(self, other: Any) -> bool:
         return isinstance(other, Fagus) and self.root == other.root
 
-    def __ne__(self, other):
+    def __ne__(self, other: Any) -> bool:
         return not isinstance(other, Fagus) or self.root != other.root
 
-    def __lt__(self, other):
-        return self.root < (other.root if isinstance(other, Fagus) else other)
+    def __lt__(self, other: Any) -> bool:
+        return bool(self.root < (other.root if isinstance(other, Fagus) else other))
 
-    def __le__(self, other):
-        return self.root <= (other.root if isinstance(other, Fagus) else other)
+    def __le__(self, other: Any) -> bool:
+        return bool(self.root <= (other.root if isinstance(other, Fagus) else other))
 
-    def __gt__(self, other):
-        return self.root > (other.root if isinstance(other, Fagus) else other)
+    def __gt__(self, other: Any) -> bool:
+        return bool(self.root > (other.root if isinstance(other, Fagus) else other))
 
-    def __ge__(self, other):
-        return self.root >= (other.root if isinstance(other, Fagus) else other)
+    def __ge__(self, other: Any) -> bool:
+        return bool(self.root >= (other.root if isinstance(other, Fagus) else other))
 
-    def __contains__(self, value):
-        return value in self.root
+    def __contains__(self, value: Any) -> bool:
+        return bool(value in self.root)
 
-    def __len__(self):
+    def __len__(self) -> int:
         return len(self.root)
 
-    def __bool__(self):
+    def __bool__(self) -> bool:
         return bool(self.root)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return "Fagus(%s)" % ", ".join(
             (repr(self.root), *(f"{e[0]}={repr(e[1])}" for e in (self._options.items() if self._options else ())))
         )
 
-    def __str__(self):
+    def __str__(self) -> str:
         return str(self.root)
 
-    def __iadd__(self, value):
+    def __iadd__(self, value: Any) -> Collection[Any]:  # type: ignore
         self.merge(value)
         return self
 
-    def __add__(self, other):
+    def __add__(self, other: Collection[Any]) -> Collection[Any]:
         res = Fagus.merge(self, other, copy=True)
         return self.child(res) if Fagus._opt(self if isinstance(self, Fagus) else other, "fagus") else res
 
-    def __radd__(self, other):
+    def __radd__(self, other: Collection[Any]) -> Collection[Any]:
         res = Fagus.merge(other if isinstance(other, Fagus) else self.child(other), self, copy=True)
         return self.child(res) if Fagus._opt(self if isinstance(self, Fagus) else other, "fagus") else res
 
-    def __isub__(self, other):
-        if isinstance(self.root, (MutableMapping, MutableSet)):
+    def __isub__(self, other: Collection[Any]) -> Collection[Any]:  # type: ignore
+        if isinstance(self.root, MutableMapping):
             for e in other if _is(other, Iterable) else (other,):
                 self.root.pop(e, None)
         elif isinstance(self.root, MutableSequence):
-            other = set(other() if isinstance(other, Fagus) else other) if _is(other, Iterable) else (other,)
+            other = set(other.root if isinstance(other, Fagus) else other) if _is(other, Iterable) else (other,)
             for i in (k for k, v in enumerate(self.root) if v in other):
                 self.root.pop(i)
+        elif isinstance(self.root, MutableSet):
+            for e in other if _is(other, Iterable) else (other,):
+                self.root.remove(e)
         else:
             raise TypeError(
                 "Unsupported operand types for -=: Can't remove items from self being an immutable "
@@ -2036,44 +2095,49 @@ class Fagus(MutableMapping, MutableSequence, MutableSet, metaclass=FagusMeta):
             )
         return self
 
-    def __sub__(self, other):
+    def __sub__(self, other: Any) -> Collection[Any]:  # type: ignore
         root = self.root if isinstance(self, Fagus) else self
-        other = set(other() if isinstance(other, Fagus) else other) if _is(other, Iterable) else (other,)
+        other = set(other.root if isinstance(other, Fagus) else other) if _is(other, Iterable) else (other,)
         if isinstance(root, Mapping):
             res = {k: v for k, v in root.items() if k not in other}
         else:  # isinstance(self(), (Sequence, Set)):
             res = (set if isinstance(root, Set) else list)(filter(lambda x: x not in other, root))
         return self.child(res) if Fagus._opt(self if isinstance(self, Fagus) else other, "fagus") else res
 
-    def __rsub__(self, other):
-        return Fagus.__sub__(other, self)
+    def __rsub__(self, other: Collection[Any]) -> Collection[Any]:
+        return Fagus.__sub__(cast(Fagus, other), self)
 
-    def __imul__(self, times: int):
+    def __imul__(self, times: int) -> Collection[Any]:
         if not isinstance(times, int):
             raise TypeError(f"Unsupported operand types for *: times must b an int, got {type(times).__name__}.")
         if _is(self.root, MutableSequence):
-            self.root.extend(tuple(self.root) * (times - 1))
+            cast(MutableSequence[Any], self.root).extend(tuple(self.root) * (times - 1))
             return self
         raise TypeError(f"Unsupported operand types for *=: root node must be a list, got {type(self.root).__name__}.")
 
-    def __mul__(self, times: int):
+    def __mul__(self, times: int) -> Union[tuple[Any], list[Any]]:
         if not isinstance(times, int):
             raise TypeError(f"Unsupported operand types for *: times must b an int, got {type(times).__name__}.")
-        if not _is(self(), Sequence):
+        if not _is(self.root, Sequence):
             raise TypeError(
                 "Unsupported operand types for *: root node must a tuple or list to get multiplied, got "
                 f"{type(self.root).__name__}."
             )
-        return self.child(self() * times) if Fagus._opt(self, "fagus") else self() * times
+        return cast(
+            Union[tuple[Any], list[Any]],
+            self.child(cast(Union[list[Any], tuple[Any]], self.root) * times)
+            if Fagus._opt(self, "fagus")
+            else cast(Union[list[Any], tuple[Any]], self.root) * times,
+        )
 
-    def __rmul__(self, times: int):
+    def __rmul__(self, times: int) -> Union[tuple[Any], list[Any]]:
         return Fagus.__mul__(self, times)
 
-    def __reversed__(self):
+    def __reversed__(self) -> Iterator[Any]:
         return self.reversed()
 
-    def __reduce__(self):
+    def __reduce__(self) -> Union[str, tuple[Any, ...]]:
         return self.root.__reduce__()
 
-    def __reduce_ex__(self, protocol):
+    def __reduce_ex__(self, protocol: Any) -> Union[str, tuple[Any, ...]]:
         return self.root.__reduce_ex__(protocol)

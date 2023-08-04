@@ -2,7 +2,6 @@
 import copy as cp
 import re
 import sys
-import types
 from abc import ABCMeta
 from collections.abc import (
     Collection,
@@ -10,7 +9,7 @@ from collections.abc import (
     Sequence,
     MutableSet,
 )
-from typing import Union, Optional, TYPE_CHECKING, Any, cast, Callable
+from typing import Union, Optional, TYPE_CHECKING, Any, cast, Callable, TypeAlias
 
 if TYPE_CHECKING:
     from .filters import KFil
@@ -22,6 +21,19 @@ class _None:
     """Dummy type used internally in TFilter and Fagus to represent non-existing while allowing None as a value"""
 
     pass
+
+
+EllipsisType: TypeAlias = type(...)  # type: ignore
+"""TypeAlias to represent type(...), which cannot be done in a nicer way prior to Python 3.10"""
+
+OptStr: TypeAlias = Union[str, EllipsisType]
+"""TypeAlias for FagusOption requiring a str. Specify custom value as str, or keep ... to use FagusOption default."""
+OptBool: TypeAlias = Union[bool, EllipsisType]
+"""TypeAlias for FagusOption requiring a bool. Specify custom value as bool, or keep ... to use FagusOption default."""
+OptInt: TypeAlias = Union[int, EllipsisType]
+"""TypeAlias for FagusOption requiring an int. Specify custom value as int, or keep ... to use FagusOption default."""
+OptAny: TypeAlias = Any
+"""TypeAlias for FagusOption taking any object. Specify custom value, or keep ... to use FagusOption default."""
 
 
 class FagusOption:

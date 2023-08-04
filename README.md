@@ -229,7 +229,7 @@ In this last example, there is no list to be traversed at depth one. In that cas
 #### node_types
 * **Default**: `""`
 * **Type**: `str`
-* **Allowed values**: Any string only containing the characters `"d"`, `"l"` and `" "
+* **Allowed values**: Any string only containing the characters `"d"`, `"l"` and `" "`
 
 This parameter is used to precisely specify which types the new nodes to create when inserting a value at `path` shall have. They are defined in three possible ways: `"l"` for `list`, `"d"` for `dict` or `" "` for "don't care". Don't care means that if the node exists, its type will be preserved if possible, however if a new node needs to be created because it doesn't exist, `default_node_type` will be used if possible. The examples below will make it more clear how this works.
 
@@ -240,7 +240,7 @@ This parameter is used to precisely specify which types the new nodes to create 
 {'a': {0: [False]}}
 ```
 
-The base node, in the case above a `dict`, can't be changed, so `node_types` only affects the nodes that resign within the base node. Therefore, `node_keys` is only defined for the second until last key in `path`. For the second key in `path`, here 0, it is defined in `node_types` that it should be a `dict`, therefore a dict is created. In that `dict`, a `list` is inserted at key 0 because `node_types` is `"l", and finally `False` is inserted into that list.
+The base node, in the case above a `dict`, can't be changed, so `node_types` only affects the nodes that resign within the base node. Therefore, `node_keys` is only defined for the second until last key in `path`. For the second key in `path`, here 0, it is defined in `node_types` that it should be a `dict`, therefore a `dict` is created. In that `dict`, a `list` is inserted at key 0 as the second letter in `node_types` is `"l"`, and finally `False` is inserted into that `list.
 
 **Example two: clearly defined where to put lists and dicts at each level**
 ```python
@@ -249,7 +249,7 @@ The base node, in the case above a `dict`, can't be changed, so `node_types` onl
 {3: [{7: [True]}, {'a': 'q'}]}
 ```
 
-In this case, there already are nodes at the base of the position `path` is pointing on. The first key in `path`, 3, is traversed. For the second key in `path`, here 0, it is defined in `node_types` that it should be a `list` (`"l"`), and in this case it actually is a list. The third key in `path` is 7, and in `node_types` it is defined that there should be a `dict` at this level. Therefore, the `list` `[4, {5: "c"}]` is overwritten with a new `dict` with the key 7. The forth and last element in `path` is 4, and in `node_types` it is defined that this node shall be a `list` again. The value `True` is then placed inside that `list`.
+In this case, there already are nodes at the base of the position `path` is pointing to. The first key in `path`, 3, is traversed. For the second key in `path`, here 0, it is defined in `node_types` that it should be a `list` (`"l"`), and in this case it actually is a list. The third key in `path` is 7, and in `node_types` it is defined that there should be a `dict` at this level. Therefore, the `list` `[4, {5: "c"}]` is overwritten with a new `dict` with the key 7. The forth and last element in `path` is 4, and in `node_types` it is defined that this node shall be a `list` again. The value `True` is then placed inside that `list`.
 
 **Example three: "don't care" and other special cases**:
 ```python
