@@ -35,6 +35,9 @@ from .filters import Fil, KFil
 from .iterators import FagusIterator
 
 
+__all__ = ("Fagus",)
+
+
 class Fagus(MutableMapping[Any, Any], MutableSequence[Any], MutableSet[Any], metaclass=FagusMeta):
     """Fagus is a wrapper-class for complex, nested objects of dicts and lists in Python
 
@@ -1082,8 +1085,8 @@ class Fagus(MutableMapping[Any, Any], MutableSequence[Any], MutableSet[Any], met
                 mod_function(old_value)
         return Fagus.child(self, base) if Fagus._opt(self, "fagus", fagus) else base
 
-    def serialize(  # type: ignore
-        self: Union[dict[Any, Any], list[Any]],
+    def serialize(
+        self: Union[dict[Any, Any], list[Any], "Fagus"],
         mod_functions: Optional[Mapping[Union[type, tuple[type], str], Callable[[Any], Any]]] = None,
         path: Any = "",
         node_types: OptStr = ...,

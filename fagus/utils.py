@@ -11,6 +11,10 @@ from collections.abc import (
 )
 from typing import Union, Optional, TYPE_CHECKING, Any, cast, Callable, TypeAlias
 
+
+__all__ = ("INF", "FagusOption")
+
+
 if TYPE_CHECKING:
     from .filters import KFil
 

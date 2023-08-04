@@ -9,7 +9,7 @@ import packaging.version
 
 
 @click.group()
-def main():
+def main() -> None:
     if not os.getcwd().endswith("Fagus"):
         raise EnvironmentError(
             f"{sys.argv[0]} must be run from the project directory (Fagus, where this script is placed)"
@@ -32,7 +32,7 @@ def main():
     is_flag=True,
     help="Runs pre-commit to make sure everything is formatted correctly",
 )
-def update(version: str, build: bool, documentation: bool, latex_pdf: bool, pre_commit: bool):
+def update(version: str, build: bool, documentation: bool, latex_pdf: bool, pre_commit: bool) -> None:
     if version:
         new_version = subprocess.run(f"poetry version {version}", shell=True, capture_output=True, text=True)
         if new_version.returncode:
@@ -54,22 +54,28 @@ def update(version: str, build: bool, documentation: bool, latex_pdf: bool, pre_
             shell=True,
         )
         original_files = sphinx_hacks("general")
-        subprocess.run("make clean", shell=True, **({} if os.getcwd().endswith("docs") else {"cwd": "docs"}))
+        subprocess.run(
+            "make clean", shell=True, **({} if os.getcwd().endswith("docs") else {"cwd": "docs"})  # type: ignore
+        )
         if documentation:
             if packaging.version.parse(platform.python_version()) < packaging.version.parse("3.7"):
                 raise EnvironmentError(
                     "Sphinx-documentation can't be built on Python < 3.7 (required by the RTD theme)"
                 )
-            subprocess.run("make html", shell=True, **({} if os.getcwd().endswith("docs") else {"cwd": "docs"}))
+            subprocess.run(
+                "make html", shell=True, **({} if os.getcwd().endswith("docs") else {"cwd": "docs"})  # type: ignore
+            )
         if latex_pdf:
             original_files.update(sphinx_hacks("pdf", original_files))
-            subprocess.run("make latexpdf", shell=True, **({} if os.getcwd().endswith("docs") else {"cwd": "docs"}))
+            subprocess.run(
+                "make latexpdf", shell=True, **({} if os.getcwd().endswith("docs") else {"cwd": "docs"})  # type: ignore
+            )
         sphinx_hacks(restore=original_files)
     if pre_commit:
         subprocess.run("git add -A; pre-commit run; git add -A", shell=True)
 
 
-def sphinx_hacks(hack: str = "", restore: dict = None) -> Optional[dict]:
+def sphinx_hacks(hack: str = "", restore: Optional[dict[str, str]] = None) -> dict[str, str]:
     """Change some files before building, or restore them if restore has been specified
 
     Args:
@@ -116,7 +122,6 @@ def sphinx_hacks(hack: str = "", restore: dict = None) -> Optional[dict]:
             for file, content in restore.items():
                 with open(file, "w") as f:
                     f.write(content)
-            return
     except (FileNotFoundError, ValueError, KeyError) as e:
         for file, content in {**files, **(restore if restore else {})}.items():
             with open(file, "w") as f:

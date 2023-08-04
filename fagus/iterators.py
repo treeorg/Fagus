@@ -4,6 +4,10 @@ from typing import TYPE_CHECKING, Union, Any, Optional, Callable, Iterator, cast
 
 from .utils import _filter_r, _None, INF, _copy_node, _copy_any, _is
 
+
+__all__ = ("FilteredIterator", "FagusIterator")
+
+
 if TYPE_CHECKING:
     from .filters import Fil, KFil
     from .fagus import Fagus

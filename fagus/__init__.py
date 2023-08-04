@@ -19,3 +19,5 @@ __version__ = "1.0.1"
 from .fagus import Fagus
 from .filters import Fil, CFil, VFil
 from .utils import INF
+
+__all__ = ("Fagus", "Fil", "CFil", "VFil", "INF")
