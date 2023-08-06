@@ -1,7 +1,7 @@
 """This module contains filter-classes used in Fagus"""
 import re
-from collections.abc import Collection, MutableSequence, Mapping, Set, Sequence
-from typing import Union, Any, Optional, Callable
+import collections.abc as c_abc
+from typing import Union, Any, Optional, Callable, Tuple, Collection, MutableSequence, Mapping, Set, Sequence
 
 from .utils import _None, _is
 
@@ -69,7 +69,7 @@ class VFil(FilBase):
             invert: Invert this whole filter to match if it doesn't match. E.g. if you want to select all the nodes
                 that don't have a certain property.
         """
-        if not all(callable(arg) or _is(arg, Collection) for arg in filter_args):
+        if not all(callable(arg) or _is(arg, c_abc.Collection) for arg in filter_args):
             raise TypeError(
                 "The args of a value-filter must either be lambdas, "
                 "or dicts / lists / sets the whole node is compared with."
@@ -119,11 +119,11 @@ class KFil(FilBase):
         for i, arg in enumerate(self.args):
             if str_as_re and isinstance(arg, str) and arg != re.escape(arg):
                 self[i] = re.compile(arg)
-            elif _is(arg, Collection, is_not=Mapping):
+            elif _is(arg, c_abc.Collection, is_not=c_abc.Mapping):
                 j = 0
                 for e in arg:
                     if str_as_re and isinstance(e, str) and e != re.escape(e):
-                        if not isinstance(self[i], MutableSequence):
+                        if not isinstance(self[i], c_abc.MutableSequence):
                             self[i] = list(arg)
                         self[i][j] = re.compile(e)
                     elif isinstance(e, FilBase):
@@ -133,8 +133,8 @@ class KFil(FilBase):
                             raise TypeError(  # Fil into a CFil, as that makes no sense.
                                 "All subfilters of CFil must be either CFil or Fil."
                             )
-                        if not isinstance(self, e.__class__):  # Move
-                            if not isinstance(self[i], MutableSequence):
+                        if not isinstance(self, type(e)):  # Move
+                            if not isinstance(self[i], c_abc.MutableSequence):
                                 self[i] = list(arg)  # make self[i] a mutable list if necessary
                             self._set_extra_filter(i, self[i].pop(j))  # to be able to pop out the filter-arg
                             j -= 1
@@ -175,7 +175,7 @@ class KFil(FilBase):
         """Set filter-argument at index. Throws IndexError if that index isn't defined"""
         self.args[key] = value
 
-    def match(self, value: Any, index: int = 0, _: Any = None) -> tuple[bool, Optional["KFil"], int]:
+    def match(self, value: Any, index: int = 0, _: Any = None) -> Tuple[bool, Optional["KFil"], int]:
         """match filter at index (matches recursively into subfilters if necessary)
 
         Args:
@@ -194,7 +194,7 @@ class KFil(FilBase):
                 None,
                 index + 1,
             )  # return True, and None as next filter to prevent unnecessary filtering
-        for e in filter_arg if _is(filter_arg, Collection, is_not=Set) else (filter_arg,):
+        for e in filter_arg if _is(filter_arg, c_abc.Collection, is_not=c_abc.Set) else (filter_arg,):
             if e is ...:
                 return True, self, index + 1
             if isinstance(e, KFil):
@@ -213,7 +213,7 @@ class KFil(FilBase):
                 return True, filter_, index_
         return False, self, index + 1
 
-    def match_list(self, value: int, index: int = 0, node_length: int = 0) -> tuple[bool, Optional["KFil"], int]:
+    def match_list(self, value: int, index: int = 0, node_length: int = 0) -> Tuple[bool, Optional["KFil"], int]:
         """match_list: same as match, but optimized to match list-indices (e. g. no regex-matching here)
 
         Args:
@@ -230,7 +230,7 @@ class KFil(FilBase):
         filter_arg, included = self[index], self.included(index)
         if filter_arg is _None:
             return True, None, index + 1
-        for e in filter_arg if _is(filter_arg, Collection, is_not=Set) else (filter_arg,):
+        for e in filter_arg if _is(filter_arg, c_abc.Collection, is_not=c_abc.Set) else (filter_arg,):
             if e is ...:
                 return True, self, index + 1
             if isinstance(e, KFil):
@@ -238,7 +238,7 @@ class KFil(FilBase):
             else:
                 if callable(e):
                     match = e(value)
-                elif isinstance(e, Set):
+                elif isinstance(e, c_abc.Set):
                     match = value in e
                 else:
                     match = e == value
@@ -304,17 +304,17 @@ class CFil(KFil):
         Returns:
             bool whether the filter matched
         """
-        match_key: Optional[Callable[[Any, int, Any], tuple[bool, Optional["KFil"], int]]] = None
-        if isinstance(node, Mapping):
+        match_key: Optional[Callable[[Any, int, Any], Tuple[bool, Optional["KFil"], int]]] = None
+        if isinstance(node, c_abc.Mapping):
             match_key = self.match
-        elif isinstance(node, Sequence):
+        elif isinstance(node, c_abc.Sequence):
             match_key = self.match_list
-        for k, v in node.items() if isinstance(node, Mapping) else enumerate(node):
-            match_k: tuple[bool, Optional["KFil"], int] = (
+        for k, v in node.items() if isinstance(node, c_abc.Mapping) else enumerate(node):
+            match_k: Tuple[bool, Optional["KFil"], int] = (
                 match_key(k, index, len(node)) if match_key else (True, self, index)
             )
             if match_k[0] and match_k[1] is not None:
-                if _is(v, Collection):
+                if _is(v, c_abc.Collection):
                     match_v = match_k[1].match_node(v, match_k[2])
                     if match_v:
                         match_v = match_k[1].match_extra_filters(v, match_k[2] - 1)

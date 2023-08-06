@@ -3,16 +3,22 @@ import copy as cp
 import re
 import sys
 from abc import ABCMeta
-from collections.abc import (
+import collections.abc as c_abc
+from typing import (
+    Union,
+    Optional,
+    TYPE_CHECKING,
+    Any,
+    cast,
+    Callable,
+    Tuple,
+    Dict,
     Collection,
-    Mapping,
-    Sequence,
-    MutableSet,
 )
-from typing import Union, Optional, TYPE_CHECKING, Any, cast, Callable, TypeAlias
+from typing_extensions import TypeAlias
 
 
-__all__ = ("INF", "FagusOption")
+__all__ = ("INF", "FagusOption", "EllipsisType", "OptStr", "OptBool", "OptInt", "OptAny")
 
 
 if TYPE_CHECKING:
@@ -59,7 +65,7 @@ class FagusOption:
         if not isinstance(value, object if self.type_ is type(Any) else self.type_):
             raise TypeError(
                 f"Can't apply {self.name} because {self.name} needs to be a {self.type_.__name__}, "
-                f"got {value.__class__.__name__}."
+                f"got {type(value).__name__}."
             )
         if not self.verify_function(value):
             raise ValueError(
@@ -86,7 +92,7 @@ class FagusMeta(ABCMeta):
             return FagusMeta.__default_options__[option_name].verify(option)
         raise ValueError(f"The option named {option_name} is not defined in Fagus.")
 
-    __default_options__: dict[str, FagusOption] = dict(
+    __default_options__: Dict[str, FagusOption] = dict(
         default=FagusOption(
             "default",
             None,
@@ -131,14 +137,14 @@ class FagusMeta(ABCMeta):
     )
     """Default values for all options used in Fagus"""
 
-    no_node: tuple[type, ...] = (str, bytes, bytearray)  # if this is changed in class, change in __delattr__ as well
+    no_node: Tuple[type, ...] = (str, bytes, bytearray)  # if this is changed in class, change in __delattr__ as well
     """Every type of Collection in no_node will not be treated as a node, but as a single value"""
 
-    _cls_options: dict[str, FagusOption] = {}
+    _cls_options: Dict[str, FagusOption] = {}
 
     def options(
-        cls, options: Optional[dict[str, FagusOption]] = None, get_default_options: bool = False, reset: bool = False
-    ) -> dict[str, FagusOption]:
+        cls, options: Optional[Dict[str, FagusOption]] = None, get_default_options: bool = False, reset: bool = False
+    ) -> Dict[str, FagusOption]:
         """Function to set multiple Fagus-options in one line
 
         Args:
@@ -157,7 +163,7 @@ class FagusMeta(ABCMeta):
             return {k: cls._cls_options.get(k, v.default) for k, v in cls.__default_options__.items()}
         return {k: cls._cls_options[k] for k in cls.__default_options__ if k in cls._cls_options}
 
-    def __setattr__(cls, attr: "str", value: Any) -> None:
+    def __setattr__(cls, attr: str, value: Any) -> None:
         if attr == "no_node":
             if not (isinstance(value, tuple) and all(isinstance(e, type) for e in value)):
                 raise ValueError(
@@ -166,7 +172,7 @@ class FagusMeta(ABCMeta):
             FagusMeta.no_node = value
         elif attr in cls.__default_options__:
             FagusMeta._cls_options[attr] = cls.__verify_option__(attr, value)
-        elif attr in ("__abstractmethods__", "__annotations__") or attr.startswith("_abc_"):
+        elif attr in ("__abstractmethods__", "__annotations__", "__parameters__") or attr.startswith("_abc_"):
             super(FagusMeta, cls).__setattr__(attr, value)
         else:
             raise AttributeError(attr)
@@ -202,20 +208,20 @@ def _filter_r(node: Collection[Any], copy: bool, filter_: Optional["KFil"], inde
     new_node: Collection[Any]
     action: Optional[str]
     match_key: Optional[Callable[[Any], Any]]
-    if isinstance(node, Mapping):
+    if isinstance(node, c_abc.Mapping):
         new_node, action, match_key = {}, None, filter_.match if filter_ else None
-    elif isinstance(node, Sequence):
+    elif isinstance(node, c_abc.Sequence):
         new_node, action, match_key = [], "append", filter_.match_list if filter_ else None
     else:
         new_node, action, match_key = set(), "add", None
-    for k, v in node.items() if isinstance(node, Mapping) else enumerate(node):
-        match_k: tuple[bool, Optional[KFil], int] = (
+    for k, v in node.items() if isinstance(node, c_abc.Mapping) else enumerate(node):
+        match_k: Tuple[bool, Optional[KFil], int] = (
             match_key(k, index, len(node)) if callable(match_key) else (True, filter_, index + 1)
         )
         if match_k[0]:
             if match_k[1] is None:
                 match_v = True
-            elif _is(v, Collection):
+            elif _is(v, c_abc.Collection):
                 if match_k[1].match_extra_filters(v, match_k[2]):
                     v_old = v
                     v = _filter_r(v, copy, *match_k[1:])
@@ -246,18 +252,18 @@ def _copy_node(node: Collection[Any], recursive: bool = False) -> Collection[Any
     """
     if hasattr(node, "copy"):
         new_node = node if recursive else node.copy()
-        if isinstance(node, (Mapping, Sequence)):
-            for k, v in node.items() if isinstance(node, Mapping) else enumerate(node):
-                collection = _is(v, Collection)
+        if isinstance(node, (c_abc.Mapping, c_abc.Sequence)):
+            for k, v in node.items() if isinstance(node, c_abc.Mapping) else enumerate(node):
+                collection = _is(v, c_abc.Collection)
                 if collection or hasattr(v, "copy"):
                     new_node[k] = _copy_node(v) if collection else v.copy()
-        elif isinstance(new_node, MutableSet):  # must be a set or similar
+        elif isinstance(new_node, c_abc.MutableSet):  # must be a set or similar
             for v in node:
-                collection = _is(v, Collection)
+                collection = _is(v, c_abc.Collection)
                 if collection or hasattr(v, "copy"):
                     new_node.remove(v)
                     new_node.add(_copy_node(v) if collection else v.copy())
-    elif not any(_is(v, Collection) or hasattr(v, "copy") for v in node):
+    elif not any(_is(v, c_abc.Collection) or hasattr(v, "copy") for v in node):
         new_node = node
     elif isinstance(node, tuple):
         new_node = tuple(_copy_node(list(node), True))
@@ -272,12 +278,12 @@ def _copy_any(value: Any, deep: bool = False) -> Any:
     """Creates a copy of value. If deep is set, a deep copy is returned, otherwise a shallow copy is returned"""
     if deep:
         return cp.deepcopy(value)
-    elif _is(value, Collection):
+    elif _is(value, c_abc.Collection):
         return _copy_node(value)
     return cp.copy(value)
 
 
-def _is(value: Any, *args: type, is_not: Optional[Union[tuple[type], type]] = None) -> bool:
+def _is(value: Any, *args: type, is_not: Optional[Union[Tuple[type], type]] = None) -> bool:
     """Override of isinstance, making sure that Sequence, Iterable or Collection doesn't match on str or bytearray
 
     Args:

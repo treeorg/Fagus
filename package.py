@@ -2,7 +2,7 @@ import subprocess
 import platform
 import os
 import sys
-from typing import Optional
+from typing import Optional, Dict
 
 import click
 import packaging.version
@@ -75,7 +75,7 @@ def update(version: str, build: bool, documentation: bool, latex_pdf: bool, pre_
         subprocess.run("git add -A; pre-commit run; git add -A", shell=True)
 
 
-def sphinx_hacks(hack: str = "", restore: Optional[dict[str, str]] = None) -> dict[str, str]:
+def sphinx_hacks(hack: str = "", restore: Optional[Dict[str, str]] = None) -> Dict[str, str]:
     """Change some files before building, or restore them if restore has been specified
 
     Args:

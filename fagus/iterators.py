@@ -1,6 +1,17 @@
 """This module contains iterator-classes that are used to iterate over Fagus-objects"""
-from collections.abc import Collection, Sequence, Mapping, Iterable
-from typing import TYPE_CHECKING, Union, Any, Optional, Callable, Iterator, cast
+from typing import (
+    TYPE_CHECKING,
+    Union,
+    Any,
+    Optional,
+    Callable,
+    Iterator,
+    cast,
+    Collection,
+    Iterable,
+    Tuple,
+)
+import collections.abc as c_abc
 
 from .utils import _filter_r, _None, INF, _copy_node, _copy_any, _is
 
@@ -29,9 +40,9 @@ class FilteredIterator:
         as key for each value (as sets have no meaningful keys). If you additionally need filtering, this class is
         initialized to support iteration on only the keys and values that pass the filter"""
         if filter_ is None:
-            if isinstance(obj, Sequence):
+            if isinstance(obj, c_abc.Sequence):
                 return iter(enumerate(obj))
-            elif isinstance(obj, Mapping):
+            elif isinstance(obj, c_abc.Mapping):
                 return iter(obj.items())
             else:
                 return ((..., e) for e in obj)
@@ -42,10 +53,10 @@ class FilteredIterator:
         self.filter_ = filter_
         self.filter_index = filter_index
         self.filter_value = filter_value
-        self.match_key: Callable[[Any, int, Any], tuple[bool, Optional[KFil], int]]
-        if isinstance(obj, Mapping):
+        self.match_key: Callable[[Any, int, Any], Tuple[bool, Optional[KFil], int]]
+        if isinstance(obj, c_abc.Mapping):
             self.match_key = self.filter_.match
-        elif isinstance(obj, Sequence):
+        elif isinstance(obj, c_abc.Sequence):
             self.match_key = self.filter_.match_list
         else:
             self.match_key = lambda *_: (True, self.filter_, self.filter_index + 1)
@@ -64,8 +75,8 @@ class FilteredIterator:
             if filter_ is not None:
                 if not filter_.match_extra_filters(v, index):
                     continue
-            if _is(v, Collection):  # filter v if it is a leaf, either because it is a set or because
-                if self.filter_value if isinstance(v, (Mapping, Sequence)) else True:  # of the limiting max_items
+            if _is(v, c_abc.Collection):  # filter v if it is a leaf, either because it is a set or because of the
+                if self.filter_value if isinstance(v, (c_abc.Mapping, c_abc.Sequence)) else True:  # limiting max_items
                     v = _filter_r(v, False, filter_, index)
             elif filter_ and not filter_.match(v, index)[0]:
                 continue
@@ -101,7 +112,7 @@ class FagusIterator:
         if not (
             select is None
             or isinstance(select, int)
-            or isinstance(select, Iterable)
+            or isinstance(select, c_abc.Iterable)
             and all(isinstance(e, int) for e in select)
         ):
             raise TypeError(
@@ -124,7 +135,7 @@ class FagusIterator:
                     k, v, *filter_ = next(self.iterators[-1])
                 except IndexError:
                     raise StopIteration
-                if len(self.iterators) - 1 < self.max_depth and v and _is(v, Collection):
+                if len(self.iterators) - 1 < self.max_depth and v and _is(v, c_abc.Collection):
                     self.iter_keys.extend((k, self.obj.child(v) if self.fagus else v))
                     self.iterators.append(
                         FilteredIterator.optimal_iterator(
@@ -134,7 +145,7 @@ class FagusIterator:
                         )
                     )
                 else:
-                    if self.fagus and _is(v, Collection):
+                    if self.fagus and _is(v, c_abc.Collection):
                         v = self.obj.child(v)
                     iter_list = (
                         *(self.iter_keys if self.iter_nodes else self.iter_keys[1::2]),

@@ -907,7 +907,7 @@ class TestFagus(unittest.TestCase):
         self.assertEqual(
             ("", 6),
             tuple(Fagus.index({2: 7, "": 3, 6: 3, 4: 9}, 3, all_=True)),  # type: ignore
-            "All matching dict-keys"
+            "All matching dict-keys",
         )
         self.assertFalse(Fagus.index(self.a, "p", path="1 0 3 1"), "True if the element exists in set")
         self.assertTrue(Fagus.index(self.a, "q", path="1 0 3 1"), "True if the element exists in set")
@@ -985,12 +985,12 @@ class TestFagus(unittest.TestCase):
         self.assertEqual(b, a.reverse("1 0"), "Reversing list inside tree")
         b["1"][0][0] = list(reversed(b["1"][0][0]))  # type: ignore
         self.assertEqual(b, a.reverse("1 0 0"), "Reversing tuple (which converts it to a list)")
-        b["1"].reverse() # type: ignore
-        self.assertEqual(b["1"], Fagus.reverse(a["1"]), "Reversing root list") # type: ignore
-        a = {"a": {"b": 1, "c": {"f": 4, "g": 3}}, "d": 3} # type: ignore
+        b["1"].reverse()  # type: ignore
+        self.assertEqual(b["1"], Fagus.reverse(a["1"]), "Reversing root list")  # type: ignore
+        a = {"a": {"b": 1, "c": {"f": 4, "g": 3}}, "d": 3}  # type: ignore
         self.assertEqual(a, Fagus.reverse(Fagus.reverse(a, "a"), "a"), "Double reversing a dict inside a tree")
         b = Fagus.copy(a)
-        b["a"]["c"] = {"g": 3, "f": 4} # type: ignore
+        b["a"]["c"] = {"g": 3, "f": 4}  # type: ignore
         self.assertEqual(b, Fagus.reverse(a, "a c"), "Reversing a dict inside a tree")
 
     def test_child(self) -> None:
@@ -1007,7 +1007,7 @@ class TestFagus(unittest.TestCase):
         b = Fagus(a, copy=True)
         b["f"] = 2
         self.assertNotEqual(a, b(), "Can add at root level without affecting the original object")
-        b = Fagus(a).copy() # type: ignore
+        b = Fagus(a).copy()  # type: ignore
         b["1 0 0"] = 100
         self.assertNotEqual(a, b(), "Can change node deeply in the original object without affecting original object")
         b = Fagus(a, copy=True)
@@ -1029,7 +1029,7 @@ class TestFagus(unittest.TestCase):
         self.assertEqual(Fagus({"a": [[3, 4], {"b": 1}]}), a - "1", "Removing key from root dict, with fagus")
         self.assertEqual(self.a, a(), "a was not modified by these operations")
         b = Fagus(a["1 0"], copy=True)
-        b -= [1, "a"] # type: ignore
+        b -= [1, "a"]  # type: ignore
         self.assertEqual([True, ("f", {"a", "q"})], b(), "isub removes items as it should")
         self.assertRaisesRegex(TypeError, "Unsupported operand types for -=", Fagus(("a", "b")).__isub__, ("a",))
         self.assertEqual([8, 9], (6, 8, 7, 9, 11) - Fagus({6, 7, 11}), "rsub with a set on a tuple gives a list")
@@ -1137,7 +1137,7 @@ def main() -> None:
 
 def run_doctests(verbose: bool, test_type: str) -> bool:
     fagus_dir = Path(__file__).parents[1]
-    tested: dict[str, dict[str, bool]] = {}
+    tested: Dict[str, Dict[str, bool]] = {}
     if test_type in ("all", "modules"):
         tested["modules"] = {}
         modules_to_check = [fagus]
