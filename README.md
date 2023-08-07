@@ -1,5 +1,5 @@
 # Fagus
-These days most data is converted to and from `json` and `yaml` while it is sent back and forth to and from API's. Often this data is deeply nested. `Fagus` is a Python-library that makes it easier to work with nested dicts and lists. It allows you to traverse and edit these tree-objects with simple function-calls that handle the most common errors and exceptions internally. The name fagus is actually the latin name for the genus of beech-trees.
+These days most data is converted to and from `json` and `yaml` while it is sent back and forth to and from API's. Often this data is deeply nested. `Fagus` is a Python-library that makes it easier to work with nested dicts and lists. It allows you to traverse and edit these tree-objects with simple function calls that handle the most common errors and exceptions internally. The name fagus is actually the latin name for the genus of beech-trees.
 
 ### Code and tests ready, documentation still WORK IN PROGRESS
 This documentation is still Work in Progress. I have some more ideas for features, but most of the coding is done. The code is tested as good as possible, but of course there still might be bugs as this library has just been released. Just report them so we get them away ;). Even though this README is not done yet, you should be able to use most of the functions based on the docstrings and some trial and error. Just ask questions [here](https://github.com/treeorg/Fagus/discussions/categories/q-a) if sth is unclear. The documentation will be filled in and completed as soon as possible.
@@ -9,7 +9,7 @@ This documentation is still Work in Progress. I have some more ideas for feature
 ## Basic principles
 
 ### Introduction -- What it solves
-Imagine you want to fetch values from a nested dict like shown below:
+Imagine you want to fetch values from a nested dict as shown below:
 
 ```python
 >>> a = {"a1": {"b1": {"c1": 2}, "b2": 4}, "a2": {"d1": 6}}
@@ -43,7 +43,7 @@ The whole `Fagus` library is built around these principles. It provides:
 ```
 * **Line 3**: The path-parameter is the tuple in the second argument of the get-function. The first and third element in that tuple are list-indices, whereas the second and fourth element are dict-keys.
 
-* **Line 5**: In many cases, the dict-keys that are traversed are strings. For convenience, it's also possible to provide the whole path-parameter as one string that is split up into the different keys. In the example above, `" "` is used to split the path-string, this can be customized using `path_split`.
+* **Line 5**: In many cases, the dict-keys that are traversed are strings. For convenience, it's also possible to provide the whole path-parameter as one string that is split up into the different keys. In the example above, `" "` is used to split the path-string, this can be customized using the [`path_split`](#path_split) `FagusOption`.
 
 ### Static and instance usage
 All functions in `Fagus` can be used statically, or on a `Fagus`-instance, so the following two calls of `get()` give the same result:
@@ -63,7 +63,7 @@ While it's not necessary to instantiate `Fagus`, there are some neat shortcuts t
 >>> a["x y z"] = 6  # a = {"x": {"y": {"z": 6}}}
 >>> a.x  # returns the whole subnode at a["x"]
 {'y': {'z': 6}}
->>> del a[("x", "y", "z")]  # Delete the z-subnode in a["x y"]
+>>> del a[("x", "y", "z")]  # Delete the z-subnode in a["x y z"]
 >>> a()
 {'x': {'y': {}}}
 ```
@@ -73,9 +73,14 @@ While it's not necessary to instantiate `Fagus`, there are some neat shortcuts t
 `Fagus` is a wrapper-class around a tree of `dict`- or `list`-objects. To get back the root-object inside the instance, use `()` to call the object -- this is shown in line 7.
 
 ### Fagus options
-There are several parameters used across many functions in `Fagus` which steer the behaviour of that function. Often, similar behaviour is intended across a whole application or parts of it, and this is where options come in handy allowing to only specify these parameters once.
+There are several parameters used across many functions in `Fagus` steering the behaviour of that function. Often, similar behaviour is intended across a whole application or parts of it, and this is where options come in handy allowing to only specify these parameters once.
 
-One example of a `Fagus`-option is [`default`](#default). This option contains the value that is returned e.g. in `get()` if a `path` doesn't exist, see [Introduction](#introduction----what-it-solves), code block two for an example.
+One example of a `Fagus`-option is [`default`](#default). This option contains the value that is returned e.g. in `get()` if a [`path`](#the-path-parameter) doesn't exist, see [Introduction](#introduction----what-it-solves), code block two for an example. 
+
+
+
+
+
 
 **The four levels of `Fagus`-options**:
 1. **Argument**: The highest level - if an option is specified directly as an argument to a function, that value takes precedence over all other levels.
@@ -231,7 +236,7 @@ In this last example, there is no list to be traversed at depth one. In that cas
 * **Type**: `str`
 * **Allowed values**: Any string only containing the characters `"d"`, `"l"` and `" "`
 
-This parameter is used to precisely specify which types the new nodes to create when inserting a value at `path` shall have. They are defined in three possible ways: `"l"` for `list`, `"d"` for `dict` or `" "` for "don't care". Don't care means that if the node exists, its type will be preserved if possible, however if a new node needs to be created because it doesn't exist, `default_node_type` will be used if possible. The examples below will make it more clear how this works.
+This parameter is used to precisely specify which types the new nodes to create when inserting a value at `path` shall have. They are defined in three possible ways: `"l"` for `list`, `"d"` for `dict` or `" "` for "don't care". Don't care means that if the node exists, its type will be preserved if possible, however if a new node needs to be created because it doesn't exist, [`default_node_type`](#default-node-type) will be used if possible. The examples below will make it more clear how this works.
 
 **Example one: creating new nodes inside an empty object**:
 ```python
