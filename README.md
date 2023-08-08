@@ -43,7 +43,7 @@ The whole `Fagus` library is built around these principles. It provides:
 ```
 * **Line 3**: The path-parameter is the tuple in the second argument of the get-function. The first and third element in that tuple are list-indices, whereas the second and fourth element are dict-keys.
 
-* **Line 5**: In many cases, the dict-keys that are traversed are strings. For convenience, it's also possible to provide the whole path-parameter as one string that is split up into the different keys. In the example above, `" "` is used to split the path-string, this can be customized using the [`path_split`](#path_split) `FagusOption`.
+* **Line 5**: In many cases, the dict-keys that are traversed are strings. For convenience, it's also possible to provide the whole path-parameter as one string that is split up into the different keys. In the example above, `" "` is used to split the path-string, this can be customized using the [`path_split`](#path_split) [`FagusOption`](#fagus-options).
 
 ### Static and instance usage
 All functions in `Fagus` can be used statically, or on a `Fagus`-instance, so the following two calls of `get()` give the same result:
@@ -68,35 +68,32 @@ While it's not necessary to instantiate `Fagus`, there are some neat shortcuts t
 {'x': {'y': {}}}
 ```
 * **Square bracket notation**: On `Fagus`-instances, the square-bracket notation can be used for easier access of data if no further customization is needed. Line 3 is equivalent to `a.set(6, "x y z")`. It can be used for getting, setting and deleting items (line 6).
-* **Dot notation**: The dot-notation is activated for setting, getting and deleting items as well (line 4). It can be used to access `str`-keys in `dict`s and `list`-indices, the index must then be preceded with an underscore due to Python naming limitations (`a._4`). This can be further customized using [`path_split`](#path_split)
+* **Dot notation**: The dot-notation is activated for setting, getting and deleting items as well (line 4). It can be used to access `str`-keys in `dict`s and `list`-indices, the index must then be preceded with an underscore due to Python naming limitations (`a._4`). This can be further customized using the [`path_split`](#path_split) [`FagusOption`](#fagus-options).
 
-`Fagus` is a wrapper-class around a tree of `dict`- or `list`-objects. To get back the root-object inside the instance, use `()` to call the object -- this is shown in line 7.
+`Fagus` is a wrapper-class around a tree of `dict`- or `list`-objects. To get back the root-object inside the instance, use `()` to call the object -- this is shown in line 7. Alternatively you can get the root-object through `.root`.
 
 ### Fagus options
-There are several parameters used across many functions in `Fagus` steering the behaviour of that function. Often, similar behaviour is intended across a whole application or parts of it, and this is where options come in handy allowing to only specify these parameters once.
+There are several parameters used across many functions in `Fagus` steering the behaviour of that function. Often, similar behaviour is intended across a whole application or parts of it, and this is where options come in handy allowing to only specify these parameters once instead of each time a function is called.
 
-One example of a `Fagus`-option is [`default`](#default). This option contains the value that is returned e.g. in `get()` if a [`path`](#the-path-parameter) doesn't exist, see [Introduction](#introduction----what-it-solves), code block two for an example. 
+One example of a `Fagus`-option is [`default`](#default). This option contains the value that is returned e.g. in `get()` if a [`path`](#the-path-parameter) doesn't exist, see [Introduction](#introduction----what-it-solves), code block two for an example of [`default`](#default). 
 
-
-
-
-
+There are four levels at which an option can be set, where the higher levels take precedence over the lower levels:
 
 **The four levels of `Fagus`-options**:
-1. **Argument**: The highest level - if an option is specified directly as an argument to a function, that value takes precedence over all other levels.
-2. **Instance**: If an option is set for an instance, it will apply to all function calls at that instance where level one has not been specified.
-3. **Class**: If an option is set at class level (i.e. `Fagus.option`), it applies to all function calls and all instances where level one and two of that option aren't defined. Options at this level apply for the whole file `Fagus` has been imported in.
-4. **Default**: If no other level is specified, the hardcoded default for that option is used.
+1. **Default**: If no other level is specified, the hardcoded default for that option is used.
+2. **Class**: If an option is set at class level (i.e. `Fagus.option`), it applies to all function calls and all instances where level one and two of that option aren't defined. Options at this level apply for the whole file `Fagus` has been imported in.
+3. **Instance**: If an option is set for an instance, it will apply to all function calls at that instance where the option wasn't overriden by an argument.
+4. **Argument**: The highest level - if an option is specified directly as an argument to a function, that value takes precedence over all other levels.
 
 Below is an example of how the different levels take precedence over one another:
 ```python
 >>> a = Fagus({"a": 1})
 >>> print(a.get("b"))  # b does not exist in a - default is None by default
 None
->>> Fagus.default = "class"  # Overriding default at class level
+>>> Fagus.default = "class"  # Overriding default at class level (level 2)
 >>> a.get("b")  # now 'class' is returned, as None was overridden
 'class'
->>> a.default = 'instance'  # setting the default option at instance level
+>>> a.default = 'instance'  # setting the default option at instance level (level 3)
 >>> a.get("b")  # for a default is set to 'instance' -- return 'instance'
 'instance'
 >>> b = Fagus({"a": 1})
@@ -108,17 +105,29 @@ None
 >>> a.get("b", default='arg')  # passing an option as a parameter always wins
 'arg'
 ```
-All `Fagus`-options at level two can be set in the constructor of `Fagus`, so they don't have to be set one by one like in line 8. You can also use `options()` on an instance or on the `Fagus`-class to set several options in one line, or get all the options that apply to an instance.
 
-Some `Fagus`-functions return child-`Fagus`-objects in their result. These child-objects inherit the options at level two from their parent.
+All `Fagus`-options at level three can be set in the constructor of `Fagus`, so they don't have to be set one by one like in line 8. You can also use `options()` on an instance or on the `Fagus`-class to set several options in one line, or get all the options that apply to an instance.
 
-The remaining part of this section explains the options one by one.
+Some `Fagus`-functions return child-`Fagus`-objects in their result. These child-objects inherit the options at level three from their parent.
+
+The remaining part of this section explains the `FagusOption`s one by one.
 
 #### default
 * **Default**: `None`
 * **Type**: `Any`
 
-This value is returned if the requested [`path`](#the-path-parameter) does not exist. Example in [Introduction](#introduction----what-it-solves), code block two.
+This value is returned if the requested [`path`](#the-path-parameter) does not exist, for example in `get()`. 
+
+```python
+>>> from fagus import Fagus
+>>> a = {"b": 3}
+>>> Fagus.get(a, "b", default=8)  # return 3, as "b" exists
+3
+>>> Fagus.get(a, "q", default=8)  # return default 8, as "q" does not exist
+8
+>>> print(Fagus.get(a, "q"))  # "q" does not exist -- return None being default if it hasn't been specified as arg
+None
+```
 
 #### default_node_type
 * **Default**: `"d"`
