@@ -457,7 +457,7 @@ class TestFagus(unittest.TestCase):
         a.set("wurst", "1 -40 5")
         self.assertEqual(a(), b, "Add to list at beginning / end by using indexes higher than len / lower than - len")
         a = Fagus((((1, 0), 2), (3, 4, (5, (6, 7)), 8)))
-        self.assertRaisesRegex(TypeError, "Can't modify root node self having the immutable typ", a.set, 5, "1 2 1 1")
+        self.assertRaisesRegex(TypeError, "Can't modify root node self having the immutable type", a.set, 5, "1 2 1 1")
         a = Fagus(list(a))
         self.assertEqual([((1, 0), 2), [3, 4, [5, [6, 5]], 8]], a.set(5, "1 2 1 1"), "Converting right tuples to lists")
         a = Fagus((((1, 0), 2), [3, 4, (5, (6, 7)), 8]))

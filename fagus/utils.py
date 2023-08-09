@@ -47,6 +47,7 @@ OptAny: TypeAlias = Any
 
 
 class FagusOption:
+    """Helper class to facilitate Fagus options."""
     def __init__(
         self,
         name: str,
@@ -55,6 +56,23 @@ class FagusOption:
         verify_function: Callable[[Any], bool] = lambda x: True,
         verify_error_msg: Optional[str] = None,
     ) -> None:
+        """Initializes FagusOption with the given parameters
+
+        Args:
+            name (str): The name of the option.
+            default (Any): The default value for the option if it hasn't been set explicitly at class- or instance 
+                level or in the function.
+            type_ (type): The expected type for the input to the option. Defaults to Any. In case the provided
+                input to the option doesn't have the type indicated here, an error-message is thrown.
+            verify_function (Callable[[Any], bool]): A function to verify the input value to the option. Returns a bool
+                whether the input was valid or not. An error is thrown if the input isn't valid with the error message
+                defined in verify_error_message. Defaults to `lambda x: True`, meaning that any input is valid
+            verify_error_msg (Optional[str]): An error message to display when the verify_function returns False. 
+                Defaults to f"{value} is not a valid value for {self.name}"
+
+        Returns:
+            None
+        """
         self.name = name
         self.default = default
         self.type_ = type_
@@ -62,6 +80,18 @@ class FagusOption:
         self.verify_error_msg = verify_error_msg
 
     def verify(self, value: Any) -> Any:
+        """Verifies if the input value to the option has the correct type and passes the validation function.
+
+        Args:
+            value (Any): The option input value to be verified.
+
+        Raises:
+            TypeError: If the input value is not of the expected type.
+            ValueError: If the input value does not pass the custom validation function.
+
+        Returns:
+            Any: The input value if it meets the requirements.
+        """
         if not isinstance(value, object if self.type_ is type(Any) else self.type_):
             raise TypeError(
                 f"Can't apply {self.name} because {self.name} needs to be a {self.type_.__name__}, "
@@ -85,6 +115,9 @@ class FagusMeta(ABCMeta):
             option_name: name of the option to verify
             option: the value to be verified
 
+        Raises:
+            ValueError: If the option name is not defined in Fagus.
+            
         Returns:
             the option-value if it was valid (otherwise the function is left in an error)
         """
