@@ -36,9 +36,9 @@ The whole `Fagus` library is built around these principles. It provides:
 `Fagus` is built around the concept of a Mapping or dict, where there are keys that are used to refer to values. For lists, the indices are used as keys. In opposition to a simple dict, in `Fagus` the key can consist of multiple values -- one for each layer.
 ```python
 >>> a = [5, {6: ["b", 4, {"c": "v1"}]}, ["e", {"fg": "v2"}]]
->>> Fagus.get(a, (1, 6, 2, "c"))
+>>> Fagus.get(a, (1, 6, -1, "c"))
 'v1'
->>> Fagus.get(a, "2 1 fg")
+>>> Fagus.get(a, "2 -1 fg")
 'v2'
 ```
 * **Line 3**: The path-parameter is the tuple in the second argument of the get-function. The first and third element in that tuple are list-indices, whereas the second and fourth element are dict-keys.
@@ -46,7 +46,7 @@ The whole `Fagus` library is built around these principles. It provides:
 * **Line 5**: In many cases, the dict-keys that are traversed are strings. For convenience, it's also possible to provide the whole path-parameter as one string that is split up into the different keys. In the example above, `" "` is used to split the path-string, this can be customized using the [`path_split`](#path_split) [`FagusOption`](#fagus-options).
 
 ### Static and instance usage
-All functions in `Fagus` can be used statically, or on a `Fagus`-instance, so the following two calls of `get()` give the same result:
+All functions in `Fagus` can be used statically, or on a `Fagus`-instance, so the following two calls of [`get()`](#the-path-parameter) give the same result:
 ```python
 >>> a = [5, {6: ["b", 4, {"c": "v1"}]}, ["e", {"fg": "v2"}]]
 >>> Fagus.get(a, "2 0")
@@ -55,7 +55,7 @@ All functions in `Fagus` can be used statically, or on a `Fagus`-instance, so th
 >>> b.get("2 0")
 'e'
 ```
-The first call of `get()` in line 3 is static, as we have seen before. No `Fagus` instance is required, the object `a` is just passed as the first parameter. In line 5, `b` is created as a `Fagus`-instance -- calling `get()` on `b` also yields `e`.
+The first call of [`get()`](#the-path-parameter) in line 3 is static, as we have seen before. No `Fagus` instance is required, the object `a` is just passed as the first parameter. In line 5, `b` is created as a `Fagus`-instance -- calling [`get()`](#the-path-parameter) on `b` also yields `e`.
 
 While it's not necessary to instantiate `Fagus`, there are some neat shortcuts that are only available to `Fagus`-instances:
 ```python
@@ -72,10 +72,11 @@ While it's not necessary to instantiate `Fagus`, there are some neat shortcuts t
 
 `Fagus` is a wrapper-class around a tree of `dict`- or `list`-objects. To get back the root-object inside the instance, use `()` to call the object -- this is shown in line 7. Alternatively you can get the root-object through `.root`.
 
+
 ### Fagus options
 There are several parameters used across many functions in `Fagus` steering the behaviour of that function. Often, similar behaviour is intended across a whole application or parts of it, and this is where options come in handy allowing to only specify these parameters once instead of each time a function is called.
 
-One example of a `Fagus`-option is [`default`](#default). This option contains the value that is returned e.g. in `get()` if a [`path`](#the-path-parameter) doesn't exist, see [Introduction](#introduction----what-it-solves), code block two for an example of [`default`](#default). 
+One example of a `Fagus`-option is [`default`](#default). This option contains the value that is returned e.g. in [`get()`](#the-path-parameter) if a [`path`](#the-path-parameter) doesn't exist, see [Introduction](#introduction----what-it-solves), code block two for an example of [`default`](#default). 
 
 There are four levels at which an option can be set, where the higher levels take precedence over the lower levels:
 
@@ -116,7 +117,7 @@ The remaining part of this section explains the `FagusOption`s one by one.
 * **Default**: `None`
 * **Type**: `Any`
 
-This value is returned if the requested [`path`](#the-path-parameter) does not exist, for example in `get()`. 
+This value is returned if the requested [`path`](#the-path-parameter) does not exist, for example in [`get()`](#the-path-parameter). 
 
 ```python
 >>> from fagus import Fagus
@@ -144,7 +145,16 @@ Can be either `"d"` for `dict` or `"l"` for `list`. A new node of this type is c
 >>> b = Fagus()
 >>> b()  # the root node of b is a dict (default for default_node_type)
 {}
+>>> c = Fagus([])
+>>> c()  # the root node of c is now also a list
+[]
 ```
+
+If new nodes have to be generated
+
+
+More information about how `default_node_type` is used when new nodes need to be generated can be found in the documentation of the `FagusOption` [`node_types`](#node_types).
+
 
 #### if_
 * **Default**: `_None`, meaning that the value is not checked
@@ -212,7 +222,7 @@ Sometimes in loops it can be helpful to actually have access to the whole node c
 * **Default**: `INF` (infinity, defined as `sys.maxsize`, the max value of an `int` in Python)
 * **Type**: `int`
 
-By default, lists are traversed in Fagus when new items are inserted. New lists are only created if necessary. Consider the following example: 
+By default, `list`-objects are traversed in Fagus when new items are inserted. New `list`-objects are only created if necessary. Consider the following example: 
 
 ```python
 >>> a = Fagus([0, [3, 4, [5, 6], 2]])
@@ -220,7 +230,7 @@ By default, lists are traversed in Fagus when new items are inserted. New lists 
 [0, [3, 4, 'insert_1', 2]]
 ```
 
-The list `[5, 6]` is overridden with the new value `"insert_1"`. In some cases it is desirable to insert a new value into one of the lists rather than just overwriting the existing value. This is where `list_insert` comes into the picture.
+The list `[5, 6]` is overridden with the new value `"insert_1"`. In some cases it is desirable to insert a new value into one of the lists rather than just overwriting the existing value. This is where `list_insert` comes into the picture. For an overview of how `list`-indices work in `Fagus`, you can check out [this section](#correctly-handling-list-indices).
 
 ```python
 >>> a = Fagus([0, [3, 4, [5, 6], 2]], default_node_type="l")
@@ -250,11 +260,13 @@ This parameter is used to precisely specify which types the new nodes to create 
 **Example one: creating new nodes inside an empty object**:
 ```python
 >>> a = Fagus()
+>>> a()  # a is a dict, as default_node_type by default generates a dict
+{}
 >>> a.set(False, ("a", 0, 0), node_types="dl")
 {'a': {0: [False]}}
 ```
 
-The base node, in the case above a `dict`, can't be changed, so `node_types` only affects the nodes that resign within the base node. Therefore, `node_keys` is only defined for the second until last key in `path`. For the second key in `path`, here 0, it is defined in `node_types` that it should be a `dict`, therefore a `dict` is created. In that `dict`, a `list` is inserted at key 0 as the second letter in `node_types` is `"l"`, and finally `False` is inserted into that `list.
+The root node, in the case above a `dict`, can't be changed, so `node_types` only affects the nodes that resign within the root node. Therefore, `node_types` is only defined for the second until last key in [`path`](#the-path-parameter). For the second key in `path`, here 0, it is defined in `node_types` that it should be a `dict`, therefore a `dict` is created. In that `dict`, a `list` is inserted at key 0 as the second letter in `node_types` is `"l"`, and finally `False` is inserted into that `list.
 
 **Example two: clearly defined where to put lists and dicts at each level**
 ```python
@@ -275,7 +287,7 @@ In this case, there already are nodes at the base of the position `path` is poin
 >>> a.set(False, (1, 1, 1, 1), node_types=" d")
 [{'a': [True]}, {5: None, 1: {1: [False]}}]
 ```
-The first example in line two shows the basic case, this is what happens if `node_types` is has not been defined. If `node_types` is not defined, all the new nodes that are to be created are interpreted as "don't care", which means that if possible, new nodes of the type `default_node_type` are created. Here, `default_node_type` is `"l"` (`list`). There is no meaningful easy way to create an `int`-`list`-index from `"a"`, therefore a `dict` is inserted at `"a"`. However, it is possible to create a list index from `"6"` by using `str()`, therefore a `list` is created at key `"a"`, in which `True` finally is inserted.
+The first example in line two shows what happens if `node_types` is has not been defined. In that case, all the new nodes that are to be created are interpreted as "don't care", which means that if possible, new nodes of the type `default_node_type` are created. Here, `default_node_type` is `"l"` (`list`). There is no meaningful easy way to create an `int`-`list`-index from `"a"`, therefore a `dict` is inserted at `"a"`. However, it is possible to create a list index from `"6"` by using `str()`, therefore a `list` is created at key `"a"`, in which `True` finally is inserted.
 
 The second example in line four shows what happens if `node_types` is defined for more than the length of `path`. It's actually no problem to do that, the remaining part of `node_types` is just ignored. The third example in line six shows what happens if `node_types` only is partly defined, in this case it is only defined to be "don't care" for the second key in `path` and `"d"` for the third key in `path`, but not for the last element. For all the keys in `path` where `node_types` is undefined, it is treated as `"don't care"` when new nodes are created.
 
@@ -303,8 +315,109 @@ By default, `path_split` is a single space `" "`, but any other string can be us
 >>> a = Fagus(path_split="__")
 >>> a.example_index__another_index = "q"  # {"example_index": {"another_index": "q"}}
 ```
+## Modifying the tree
+`Fagus` does not only allow to easily retrieve elements deeply inside a tree of nested `dict`- and `list`-objects using [`get()`](#the-path-parameter). The tree can also be modified using the different functions shown below. Make sure to read [set()](#set----adding-and-overwriting-elements) first as its basic principles apply to all the other modifying functions.
+
+### Basic principles for modifying the tree
+The following subsections show the logic behind the creation of new nodes in `Fagus`. It is implemented in such a way that the tree is always modified as little as possible to perform the requested change.
+
+#### Correctly handling list indices
+As demonstrated in the examples for the [`path`](#the-path-parameter)-parameter, `list` indices can be positive and negative `int`-objects to access specific values in the list:
+
+```python
+>>> a = Fagus([[[0, 1], 2], [3, 4, [5, [6, 7]], 8]])  # some nested lists to demonstrate indices
+>>> a["-1 2 1 1"]  # positive and negative indices can be used to get a value
+7
+>>> a["0 -1"] = "two"  # the value at index -1 is replaced with the new string
+>>> a()
+[[[0, 1], 'two'], [3, 4, [5, [6, 7]], 8]]
+```
+
+When lists are modified, in many cases it might be desirable to append or prepend a value to the `list` instead of overriding it as shown above. This can be done as shown below:
+
+```python
+>>> a.set(9, (1, 10000))  # 9 is appended as 10000 is bigger than len([3, 4, [5, [6, 7]], 8])
+[[[0, 1], 'two'], [3, 4, [5, [6, 7]], 8, 9]]
+>>> a.set(2.5, "1 -6")  # 2.5 is prepended before 3 as -6 is smaller than -len([3, 4, [5, [6, 7]], 8, 9])
+[[[0, 1], 'two'], [2.5, 3, 4, [5, [6, 7]], 8, 9]]
+```
+This shows how elements easily can be appended and prepended just by specifying an index which is bigger than the length of the list to append, or smaller than minus the length of the list to prepend. In order to make sure that a value is always appended / prepended without knowing the length of the list, `INF` can be imported from the `fagus`-module, it is just a reference to `sys.maxsize`. The `FagusOption` [`list_insert`](#list_insert) can be used to insert a new value at an index in the middle of the `list`.
+
+#### Create the correct type of node
+`Fagus` is built around the concept of values being assigned to keys to build nested trees of `dict`- and `list`-objects. The only supported operation in `set`-objects is checking whether it `contains` a certain value, therefore `set`-objects cannot be traversed by [`get()`](#the-path-parameter) and are thus treated as leaf-nodes. Consequently, the only available nodes to create in the tree are `dict` `"d"` and `list` `"l"`. 
+
+The `FagusOption` `node_types` can be used to clearly which types the nodes at each level of the tree should have, see [`node_types`](#node_types) example one. If `node_types` is not specified clearly or set to `" "` (don't care), [`default_node_type`](#default_node_type) determines which type of node will be created:
+
+```python
+>>> a = Fagus({})
+>>> a.set(True, "0 0 0", default_node_type="l")  # only lists were created, as default_node_type="l"
+{'0': [[True]]}
+>>> a.set(True, "0 0 0")  # Only dicts are created, as default_node_type is "d" by default
+{'0': {'0': {'0': True}}}
+```
 
 
-### Iterating over nested objects
+#### Ensure that the required node can be modified
+In a nested structure of `dict`- and `list`-objects, there can also be unmodifyable `list`-objects called `tuple`. As values can't be changed in a `tuple`, it has to be converted into a `list`. The following example shows how this is done in case of nested `tuple`-objects:
 
-#### Skipping nodes in iteration.
+```python
+>>> a = Fagus((((1, 0), 2), [3, 4, (5, (6, 7)), 8]))
+>>> a.set("seven", "1 2 1 1")  # replacing the value 7 with the string "seven"
+(((1, 0), 2), [3, 4, [5, [6, 'seven']], 8])
+```
+
+In order to replace the 7 with `"seven"` in the `tuple` `(6, 7)`, it has to be converted into a modifyable `list` first. `(6, 7)` however resides in another `tuple` `(5, (6, 7))`, so that outer `tuple` also has to be converted into a `list`. As `(5, (6, 7))` already lies in a `list`, it can be  replaced with `[5, [6, "seven"]]`. The key point is that `tuple`-objects are converted to `list`-objects as deeply as necessary. The outermost `tuple` containing the whole tree `(((1, 0), 2), [3, 4, (5, (6, 7)), 8])` is not touched, and thus remains a `tuple`
+
+
+
+
+
+
+
+
+
+### set() -- adding and overwriting elements
+The `set()` function can be used to add or replace a value anywhere in the tree. There are two `FagusOption`-parameters which mainly influence how new nodes are generated: [`node_types`](#node_types) and [`default_node_type`](#default_node_type). `node_types` can be used to clearly specify if a `list` or a `dict` should be generated at each level. `default_node_type` defines if a `dict` or `list` should be generated if it wasn't clearly defined for the given level in `node_types`.
+
+### serialize()
+
+
+
+
+
+
+
+```python
+>>> a = Fagus()
+>>> a()  # a's root node is a dict, as default_node_type wasn't modified
+{}
+>>> a.set(True, "0 a 0")  # all the newly generated nodes are dicts
+{'0': {'a': {'0': True}}}
+>>> a.default_node_type = "l"
+>>> a.set(False, "1 a 0")
+```
+
+
+
+
+
+
+If the base nodes needed to put the value in the indicated position don't exist yet, the missing nodes are generated using the following principles:
+
+
+
+
+1. If [`default_node_type`](#default_node_type) is `"d"` for `dict`, new nodes will always be `dict`-objects.
+2. If 
+
+
+
+
+
+
+
+
+## Iterating over nested objects
+
+### Skipping nodes in iteration.
+
