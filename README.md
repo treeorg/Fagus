@@ -150,10 +150,7 @@ Can be either `"d"` for `dict` or `"l"` for `list`. A new node of this type is c
 []
 ```
 
-If new nodes have to be generated
-
-
-More information about how `default_node_type` is used when new nodes need to be generated can be found in the documentation of the `FagusOption` [`node_types`](#node_types).
+More information about how `default_node_type` is used when new nodes need to be generated can be found in [Basic principles for modifying the tree](#basic-principles-for-modifying-the-tree) and the documentation of the `FagusOption` [`node_types`](#node_types).
 
 
 #### if_
@@ -230,7 +227,7 @@ By default, `list`-objects are traversed in Fagus when new items are inserted. N
 [0, [3, 4, 'insert_1', 2]]
 ```
 
-The list `[5, 6]` is overridden with the new value `"insert_1"`. In some cases it is desirable to insert a new value into one of the lists rather than just overwriting the existing value. This is where `list_insert` comes into the picture. For an overview of how `list`-indices work in `Fagus`, you can check out [this section](#correctly-handling-list-indices).
+The list `[5, 6]` is overridden with the new value `"insert_1"`. In some cases it is desirable to insert a new value into one of the lists rather than just overwriting the existing value. This is where `list_insert` comes into the picture. For some background of how `list`-indices work in `Fagus`, you can check out [this section](#correctly-handling-list-indices).
 
 ```python
 >>> a = Fagus([0, [3, 4, [5, 6], 2]], default_node_type="l")
@@ -255,7 +252,7 @@ In this last example, there is no list to be traversed at depth one. In that cas
 * **Type**: `str`
 * **Allowed values**: Any string only containing the characters `"d"`, `"l"` and `" "`
 
-This parameter is used to precisely specify which types the new nodes to create when inserting a value at `path` shall have. They are defined in three possible ways: `"l"` for `list`, `"d"` for `dict` or `" "` for "don't care". Don't care means that if the node exists, its type will be preserved if possible, however if a new node needs to be created because it doesn't exist, [`default_node_type`](#default-node-type) will be used if possible. The examples below will make it more clear how this works.
+This parameter is used to precisely specify which types the new nodes to create when inserting a value at [`path`](#the-path-parameter) shall have. There are defined in three possible ways: `"l"` for `list`, `"d"` for `dict` or `" "` for "don't care". Don't care means that if the node exists, its type will be preserved if possible, however if a new node needs to be created because it doesn't exist, [`default_node_type`](#default-node-type) will be used if possible. The examples below will make it more clear how this works. For an overview, also check the [basic principles for modifying the tree](#basic-principles-for-modifying-the-tree).
 
 **Example one: creating new nodes inside an empty object**:
 ```python
@@ -346,16 +343,39 @@ This shows how elements easily can be appended and prepended just by specifying 
 #### Create the correct type of node
 `Fagus` is built around the concept of values being assigned to keys to build nested trees of `dict`- and `list`-objects. The only supported operation in `set`-objects is checking whether it `contains` a certain value, therefore `set`-objects cannot be traversed by [`get()`](#the-path-parameter) and are thus treated as leaf-nodes. Consequently, the only available nodes to create in the tree are `dict` `"d"` and `list` `"l"`. 
 
-The `FagusOption` `node_types` can be used to clearly which types the nodes at each level of the tree should have, see [`node_types`](#node_types) example one. If `node_types` is not specified clearly or set to `" "` (don't care), [`default_node_type`](#default_node_type) determines which type of node will be created:
+The `FagusOption` [`node_types`](#node_types) can be used to clearly specify which types the nodes at each level of the tree should have, see [`node_types`](#node_types) example one. If `node_types` is not specified clearly or set to `" "` (don't care), [`default_node_type`](#default_node_type) determines which type of node will be created:
 
 ```python
->>> a = Fagus({})
->>> a.set(True, "0 0 0", default_node_type="l")  # only lists were created, as default_node_type="l"
+>>> a = Fagus()
+>>> a.set(True, "0 0 0", default_node_type="l")  # only lists are created, as default_node_type="l"
 {'0': [[True]]}
->>> a.set(True, "0 0 0")  # Only dicts are created, as default_node_type is "d" by default
+>>> a.clear()
+{}
+>>> a.set(True, "0 a 0", default_node_type="l")  # a dict is created at level 1 --> can't convert "a" to a list-index
+{'0': {'a': [True]}}
+>>> a = Fagus()
+>>> a.set(True, "0 0 0")  # only create dicts, as default_node_type is "d" by default
 {'0': {'0': {'0': True}}}
 ```
 
+From the example above, we can see the following two rules on how new nodes are created:
+1. `list` nodes are created when `default_node_type` is `"l"` and the key can be converted to an `int` --> create `list` for keys like `8` or `"-10"`
+2. `dict` nodes are always created when `default_node_type` is `d`, even if the key could be converted to an `int` --> create `dict` also for keys like `8` or `"-10"`
+
+But what happens if there already are existing nodes?
+```python
+>>> a = Fagus([{"a": [True]}])
+>>> a.set(False, (0, "a", 1))  # the new value False is appended to the list
+[{'a': [True, False]}]
+>>> a.set(7, "0 a b")  # could not convert "b" to list index, so [True, False] was replaced with {"b": 7}
+[{'a': {'b': 7}}]
+>>> a.set(3, "0 a 2", default_node_type="l")  # did not convert {"b": 7} to list --> if possible always try to keep node
+[{'a': {'b': 7, '2': 3}}]
+```
+
+This shows that as far as possible, `Fagus` will keep the existing node and not change it like in line 6. An existing node is only overridden and changed if it is not possible to convert the provided key to a list-index.
+
+It is possible to manually override this behaviour by clearly specifying if each node should be a `dict` `"d"` or a `list` `"l"`, check out the section about [`node_types`](#node_types) for examples on this.
 
 #### Ensure that the required node can be modified
 In a nested structure of `dict`- and `list`-objects, there can also be unmodifyable `list`-objects called `tuple`. As values can't be changed in a `tuple`, it has to be converted into a `list`. The following example shows how this is done in case of nested `tuple`-objects:
@@ -368,51 +388,82 @@ In a nested structure of `dict`- and `list`-objects, there can also be unmodifya
 
 In order to replace the 7 with `"seven"` in the `tuple` `(6, 7)`, it has to be converted into a modifyable `list` first. `(6, 7)` however resides in another `tuple` `(5, (6, 7))`, so that outer `tuple` also has to be converted into a `list`. As `(5, (6, 7))` already lies in a `list`, it can be  replaced with `[5, [6, "seven"]]`. The key point is that `tuple`-objects are converted to `list`-objects as deeply as necessary. The outermost `tuple` containing the whole tree `(((1, 0), 2), [3, 4, (5, (6, 7)), 8])` is not touched, and thus remains a `tuple`
 
-
-
-
-
-
-
-
-
 ### set() -- adding and overwriting elements
-The `set()` function can be used to add or replace a value anywhere in the tree. There are two `FagusOption`-parameters which mainly influence how new nodes are generated: [`node_types`](#node_types) and [`default_node_type`](#default_node_type). `node_types` can be used to clearly specify if a `list` or a `dict` should be generated at each level. `default_node_type` defines if a `dict` or `list` should be generated if it wasn't clearly defined for the given level in `node_types`.
-
-### serialize()
-
-
-
-
-
-
+The `set()` function can be used to add or replace a value anywhere in the tree. This function is also used internally in `Fagus` whereever new nodes need to be created. See [Basic principles for modifying the tree](#basic-principles-for-modifying-the-tree) and [`node_types`](#node_types) for examples of how `set()` can be fine-tuned. In case no further fine-tuning is used, the `set()`-operation can also be done as shown below:
 
 ```python
->>> a = Fagus()
->>> a()  # a's root node is a dict, as default_node_type wasn't modified
-{}
->>> a.set(True, "0 a 0")  # all the newly generated nodes are dicts
-{'0': {'a': {'0': True}}}
->>> a.default_node_type = "l"
->>> a.set(False, "1 a 0")
+>>> a = Fagus([], path_split="_")
+>>> a.set("hello", "0_good_morning") 
+[{'good': {'morning': 'hello'}}]
+>>> a._1_ciao = "byebye"  # the dot-notation for set() is available when path_split is set to "_" or "__"
+>>> a()  # note that the first index 1 above was prefixed with _, as variable names can't start with a digit in Python
+[{'good': {'morning': 'hello'}}, {'ciao': 'byebye'}]
+>>> a["0 evening"] = "night"  # the []-notation is always available for set(), a[(0, "evening")] would do the same
+>>> a()
+[{'good': {'morning': 'hello', 'evening': 'night'}}, {'ciao': 'byebye'}]
 ```
 
+### append() -- adding a new element to a `list`
+There might be cases where it is desirable to collect all elements of a certain type in a `list`. This can be done in only one step using `append()`:
 
+```python
+>>> plants = Fagus()
+>>> plants.append("daffodil", "flowers")  # a new list is created in the node flowers
+{'flowers': ['daffodil']}
+>>> plants.append("pine", "trees softwood")  # another list is created in the category trees softwood
+{'flowers': ['daffodil'], 'trees': {'softwood': ['pine']}}
+>>> plants.append("rose", "flowers")  # rose is added to the existing flowers list
+{'flowers': ['daffodil', 'rose'], 'trees': {'softwood': ['pine']}}
+>>> plants.append("oak", "trees hardwood")  # a new list is created for hardwood trees
+{'flowers': ['daffodil', 'rose'], 'trees': {'softwood': ['pine'], 'hardwood': ['oak']}}
+>>> plants.append("beech", "trees hardwood")  # beech is appended to the hardwood trees list
+{'flowers': ['daffodil', 'rose'], 'trees': {'softwood': ['pine'], 'hardwood': ['oak', 'beech']}}
+```
+As you can see, this function makes it easy to combine elements belonging to the same category in a `list` inside the tree. The pratical thing here is that it isn't necessary to worry about creating the `list` initially -- if there already is a `list`, the new element is appended and if there is no `list`, a new one is created.
 
+```python
+>>> plants.set("pine", ("trees", "softwood"))  # removing pine from list to put it as a single element (for next step)
+{'flowers': ['daffodil', 'rose'], 'trees': {'softwood': 'pine', 'hardwood': ['oak', 'beech']}}
+>>> plants.append("fir", ("trees", "softwood"))  # pine is in this position already -> put pine in list, then append fir
+{'flowers': ['daffodil', 'rose'], 'trees': {'softwood': ['pine', 'fir'], 'hardwood': ['oak', 'beech']}}
+>>> plants.append("forest", "trees")  # node trees already present at path -> convert node to list -> append element
+{'flowers': ['daffodil', 'rose'], 'trees': ['softwood', 'hardwood', 'forest']}
+>>> plants = Fagus({"flowers": {"rose", "daffodil", "tulip"}})  # preparing the next step - flowers are now in a set
+>>> plants.append("sunflower", "flowers")  # other type of node already at path -> convert it to a list and then append
+{'flowers': ['tulip', 'daffodil', 'rose', 'sunflower']}
+```
 
+The examples above show that `append()` is agile and makes the best out of any situation in the tree where it is called. If there is a single element already present at the node, that element is put in a `list` before the new element is added. If there already is another type of node or another `Collection` at the requested `path`, convert that node into a `list` and then append the new element.
 
+```python
+>>> plants.set("lily", "flowers 4")  # set() with an index bigger than the length of the list can also be used to append
+{'flowers': ['tulip', 'daffodil', 'rose', 'sunflower', 'lily']}
+```
+The example above shows that `set()` can also be used to append an element to a `list`. However, note that `set()` in this case won't create a new list if the node doesn't exist yet. It won't convert another node already present at `path` into a `list` neither.
 
-If the base nodes needed to put the value in the indicated position don't exist yet, the missing nodes are generated using the following principles:
+### extend() -- extending a `list` with multiple elements
+The `extend()` function works very similar to [`append()`](#append----adding-a-new-element-to-a-list), the main difference here is that instead of appending one additional element, the list is extended with a collection of elements. 
 
+```python
+>>> plants.extend(("lavender", "daisy", "orchid"), "flowers")  # extend() works like append(), just adding more elements
+{'flowers': ['tulip', 'daffodil', 'rose', 'sunflower', 'lily', 'lavender', 'daisy', 'orchid']}
+```
 
+For further reading about when and how new `list`-objects are created, refer to the documentatioin of [`append()`](#append----adding-a-new-element-to-a-list) as `extend()` works similar except from the fact that several new elements are added instead of one.
 
+### insert() -- insert an element at a given index in a `list`
 
-1. If [`default_node_type`](#default_node_type) is `"d"` for `dict`, new nodes will always be `dict`-objects.
-2. If 
+### add() -- adding a new element to a `set`
 
+### update() -- update multiple elements in a `set` or `dict`
 
+--> sjekk om det er en liste / generator av tupler. I så fall kan det også godtas for å utvide en dict. Vurder evt en ny parameter dersom det ikke går å finne ut automatisk
 
+### serialize() -- ensure that a tree is json- or yaml-serializable
 
+### mod() -- modifying elements
+
+### remove(), delete() and pop()
 
 
 
@@ -420,4 +471,6 @@ If the base nodes needed to put the value in the indicated position don't exist 
 ## Iterating over nested objects
 
 ### Skipping nodes in iteration.
+
+## Filtering nested objects
 

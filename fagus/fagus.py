@@ -1461,7 +1461,10 @@ class Fagus(c_abc.MutableMapping, c_abc.MutableSequence, c_abc.MutableSet, metac
         )
 
     def popitem(self) -> None:  # type: ignore
-        """This function is not implemented in Fagus"""
+        """This function is not implemented in Fagus
+        
+        Implementing this would require to cache the value, which was not prioritized to keep memory usage low.
+        """
         return None
 
     def discard(self: Collection[Any], path: Any = "", path_split: OptStr = ...) -> None:
