@@ -1,7 +1,7 @@
 """This module contains filter-classes used in Fagus"""
 import re
 import collections.abc as c_abc
-from typing import Union, Any, Optional, Callable, Tuple, Collection, MutableSequence, Mapping, Set, Sequence
+from typing import Union, Any, Optional, Callable, Tuple, Collection, Set
 
 from .utils import _None, _is
 

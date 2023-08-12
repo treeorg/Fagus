@@ -76,7 +76,7 @@ While it's not necessary to instantiate `Fagus`, there are some neat shortcuts t
 ### Fagus options
 There are several parameters used across many functions in `Fagus` steering the behaviour of that function. Often, similar behaviour is intended across a whole application or parts of it, and this is where options come in handy allowing to only specify these parameters once instead of each time a function is called.
 
-One example of a `Fagus`-option is [`default`](#default). This option contains the value that is returned e.g. in [`get()`](#the-path-parameter) if a [`path`](#the-path-parameter) doesn't exist, see [Introduction](#introduction----what-it-solves), code block two for an example of [`default`](#default). 
+One example of a `Fagus`-option is [`default`](#default). This option contains the value that is returned e.g. in [`get()`](#the-path-parameter) if a [`path`](#the-path-parameter) doesn't exist, see [Introduction](#introduction----what-it-solves), code block two for an example of [`default`](#default).
 
 There are four levels at which an option can be set, where the higher levels take precedence over the lower levels:
 
@@ -117,7 +117,7 @@ The remaining part of this section explains the `FagusOption`s one by one.
 * **Default**: `None`
 * **Type**: `Any`
 
-This value is returned if the requested [`path`](#the-path-parameter) does not exist, for example in [`get()`](#the-path-parameter). 
+This value is returned if the requested [`path`](#the-path-parameter) does not exist, for example in [`get()`](#the-path-parameter).
 
 ```python
 >>> from fagus import Fagus
@@ -219,7 +219,7 @@ Sometimes in loops it can be helpful to actually have access to the whole node c
 * **Default**: `INF` (infinity, defined as `sys.maxsize`, the max value of an `int` in Python)
 * **Type**: `int`
 
-By default, `list`-objects are traversed in Fagus when new items are inserted. New `list`-objects are only created if necessary. Consider the following example: 
+By default, `list`-objects are traversed in Fagus when new items are inserted. New `list`-objects are only created if necessary. Consider the following example:
 
 ```python
 >>> a = Fagus([0, [3, 4, [5, 6], 2]])
@@ -341,7 +341,7 @@ When lists are modified, in many cases it might be desirable to append or prepen
 This shows how elements easily can be appended and prepended just by specifying an index which is bigger than the length of the list to append, or smaller than minus the length of the list to prepend. In order to make sure that a value is always appended / prepended without knowing the length of the list, `INF` can be imported from the `fagus`-module, it is just a reference to `sys.maxsize`. The `FagusOption` [`list_insert`](#list_insert) can be used to insert a new value at an index in the middle of the `list`.
 
 #### Create the correct type of node
-`Fagus` is built around the concept of values being assigned to keys to build nested trees of `dict`- and `list`-objects. The only supported operation in `set`-objects is checking whether it `contains` a certain value, therefore `set`-objects cannot be traversed by [`get()`](#the-path-parameter) and are thus treated as leaf-nodes. Consequently, the only available nodes to create in the tree are `dict` `"d"` and `list` `"l"`. 
+`Fagus` is built around the concept of values being assigned to keys to build nested trees of `dict`- and `list`-objects. The only supported operation in `set`-objects is checking whether it `contains` a certain value, therefore `set`-objects cannot be traversed by [`get()`](#the-path-parameter) and are thus treated as leaf-nodes. Consequently, the only available nodes to create in the tree are `dict` `"d"` and `list` `"l"`.
 
 The `FagusOption` [`node_types`](#node_types) can be used to clearly specify which types the nodes at each level of the tree should have, see [`node_types`](#node_types) example one. If `node_types` is not specified clearly or set to `" "` (don't care), [`default_node_type`](#default_node_type) determines which type of node will be created:
 
@@ -393,12 +393,12 @@ The `set()` function can be used to add or replace a value anywhere in the tree.
 
 ```python
 >>> a = Fagus([], path_split="_")
->>> a.set("hello", "0_good_morning") 
+>>> a.set("hello", "0_good_morning")
 [{'good': {'morning': 'hello'}}]
 >>> a._1_ciao = "byebye"  # the dot-notation for set() is available when path_split is set to "_" or "__"
 >>> a()  # note that the first index 1 above was prefixed with _, as variable names can't start with a digit in Python
 [{'good': {'morning': 'hello'}}, {'ciao': 'byebye'}]
->>> a["0 evening"] = "night"  # the []-notation is always available for set(), a[(0, "evening")] would do the same
+>>> a["0_good_evening"] = "night"  # the []-notation is always available for set(), a[(0, "evening")] would do the same
 >>> a()
 [{'good': {'morning': 'hello', 'evening': 'night'}}, {'ciao': 'byebye'}]
 ```
@@ -429,24 +429,26 @@ As you can see, this function makes it easy to combine elements belonging to the
 >>> plants.append("forest", "trees")  # node trees already present at path -> convert node to list -> append element
 {'flowers': ['daffodil', 'rose'], 'trees': ['softwood', 'hardwood', 'forest']}
 >>> plants = Fagus({"flowers": {"rose", "daffodil", "tulip"}})  # preparing the next step - flowers are now in a set
->>> plants.append("sunflower", "flowers")  # other type of node already at path -> convert it to a list and then append
-{'flowers': ['tulip', 'daffodil', 'rose', 'sunflower']}
+>>> # below another type of node is already at path (here a set) -> convert it to a list and then append the element
+>>> plants.append("sunflower", "flowers")["flowers"].sort()  # sort list of flowers for doctest, irrelevant for example
+>>> plants()  # as you can see, {"rose", "daffodil", "tulip"} was converted to a list, then sunflower was added
+{'flowers': ['daffodil', 'rose', 'sunflower', 'tulip']}
 ```
 
 The examples above show that `append()` is agile and makes the best out of any situation in the tree where it is called. If there is a single element already present at the node, that element is put in a `list` before the new element is added. If there already is another type of node or another `Collection` at the requested `path`, convert that node into a `list` and then append the new element.
 
 ```python
 >>> plants.set("lily", "flowers 4")  # set() with an index bigger than the length of the list can also be used to append
-{'flowers': ['tulip', 'daffodil', 'rose', 'sunflower', 'lily']}
+{'flowers': ['daffodil', 'rose', 'sunflower', 'tulip', 'lily']}
 ```
 The example above shows that `set()` can also be used to append an element to a `list`. However, note that `set()` in this case won't create a new list if the node doesn't exist yet. It won't convert another node already present at `path` into a `list` neither.
 
 ### extend() -- extending a `list` with multiple elements
-The `extend()` function works very similar to [`append()`](#append----adding-a-new-element-to-a-list), the main difference here is that instead of appending one additional element, the list is extended with a collection of elements. 
+The `extend()` function works very similar to [`append()`](#append----adding-a-new-element-to-a-list), the main difference here is that instead of appending one additional element, the list is extended with a collection of elements.
 
 ```python
 >>> plants.extend(("lavender", "daisy", "orchid"), "flowers")  # extend() works like append(), just adding more elements
-{'flowers': ['tulip', 'daffodil', 'rose', 'sunflower', 'lily', 'lavender', 'daisy', 'orchid']}
+{'flowers': ['daffodil', 'rose', 'sunflower', 'tulip', 'lily', 'lavender', 'daisy', 'orchid']}
 ```
 
 For further reading about when and how new `list`-objects are created, refer to the documentatioin of [`append()`](#append----adding-a-new-element-to-a-list) as `extend()` works similar except from the fact that several new elements are added instead of one.
@@ -473,4 +475,3 @@ For further reading about when and how new `list`-objects are created, refer to 
 ### Skipping nodes in iteration.
 
 ## Filtering nested objects
-

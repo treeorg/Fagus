@@ -15,7 +15,11 @@ from typing import (
     Dict,
     Collection,
 )
-from typing_extensions import TypeAlias
+
+if sys.version_info < (3, 10):
+    from typing_extensions import TypeAlias
+else:
+    from typing import TypeAlias
 
 
 __all__ = ("INF", "FagusOption", "EllipsisType", "OptStr", "OptBool", "OptInt", "OptAny")
@@ -48,6 +52,7 @@ OptAny: TypeAlias = Any
 
 class FagusOption:
     """Helper class to facilitate Fagus options."""
+
     def __init__(
         self,
         name: str,
@@ -60,14 +65,14 @@ class FagusOption:
 
         Args:
             name (str): The name of the option.
-            default (Any): The default value for the option if it hasn't been set explicitly at class- or instance 
+            default (Any): The default value for the option if it hasn't been set explicitly at class- or instance
                 level or in the function.
             type_ (type): The expected type for the input to the option. Defaults to Any. In case the provided
                 input to the option doesn't have the type indicated here, an error-message is thrown.
             verify_function (Callable[[Any], bool]): A function to verify the input value to the option. Returns a bool
                 whether the input was valid or not. An error is thrown if the input isn't valid with the error message
                 defined in verify_error_message. Defaults to `lambda x: True`, meaning that any input is valid
-            verify_error_msg (Optional[str]): An error message to display when the verify_function returns False. 
+            verify_error_msg (Optional[str]): An error message to display when the verify_function returns False.
                 Defaults to f"{value} is not a valid value for {self.name}"
 
         Returns:
@@ -117,7 +122,7 @@ class FagusMeta(ABCMeta):
 
         Raises:
             ValueError: If the option name is not defined in Fagus.
-            
+
         Returns:
             the option-value if it was valid (otherwise the function is left in an error)
         """

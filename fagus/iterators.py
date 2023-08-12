@@ -171,6 +171,17 @@ class FagusIterator:
                     raise StopIteration
 
     def skip(self, level: int, copy: bool = False) -> Any:
+        """Skip the remaining iterations of a node at a given level if you're done handling it
+
+        Args:
+            level (int): which node to skip. Level 0 is the root node, the next node is level 1 etc.
+            copy (bool): Whether to skip a copy of the node. Can be useful when the tree is modified during iteration
+
+        Returns:
+            The node that was skipped
+        """
+
+        # """Skip the remaining iterations of a node at a given level if you're done handling it"""
         node = self.iter_keys[level * 2]
         if isinstance(self.iterators[-1], FilteredIterator):
             iterator = cast(FilteredIterator, self.iterators[level])

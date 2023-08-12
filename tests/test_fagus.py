@@ -10,7 +10,8 @@ import doctest
 from ipaddress import IPv6Address, IPv4Network, IPv6Network, ip_address
 from pathlib import Path
 from types import ModuleType
-from typing import Any, Dict, Optional, cast
+from typing import Any, Dict, cast, Collection, Set
+import collections.abc as c_abc
 
 from fagus import Fagus, Fil, CFil, VFil
 from datetime import datetime, date, time
@@ -1158,7 +1159,7 @@ def run_doctests(verbose: bool, test_type: str) -> bool:
         test_parser = doctest.DocTestParser()
         for dir_, file in ((dir_, file) for dir_, _, fls in os.walk(fagus_dir) for file in fls if file.endswith(".md")):
             file_path = os.path.join(dir_, file)
-            with open(file_path) as f:
+            with open(file_path, encoding="utf-8") as f:
                 lines = tuple(
                     line for lines in (("\n", li) if li == "```\n" else (li,) for li in f.readlines()) for line in lines
                 )
@@ -1169,6 +1170,36 @@ def run_doctests(verbose: bool, test_type: str) -> bool:
     res = all(sum(test_type.values()) == len(test_type) for test_type in tested.values())
     print(f"Doctests ok for {' and '.join(f'{sum(v.values())}/{len(v)} {k}' for k, v in tested.items())}")
     return res
+
+
+class SortedSet(Set):
+    """Helper class to be able to always print a set sorted and thus predictable (used internally for doctests)"""
+
+    def __str__(self):
+        return f"{{{str(sorted(self))[1:-1]}}}"
+
+    def __repr__(self):
+        return str(self)
+
+
+def sprint(obj: Collection[Any]) -> str:
+    """Helper function making sure that all the sets in a Fagus-tree are printed sorted (for doctests to be predictable)
+
+    Args:
+        obj: the object to be used and printed in a doctest
+
+    Returns:
+        The str of the object, but with all the contained sets being alphabetically sorted
+    """
+    if isinstance(obj, c_abc.Set):
+        return str(SortedSet(obj))
+    root = Fagus(obj, copy=True)
+    iterator = Fagus.iter(root, iter_nodes=True, copy=True)
+    for nodes in iterator:
+        node = iterator.skip((len(nodes) - 2) // 2)
+        if isinstance(nodes[-3], c_abc.Set):
+            root[nodes[1:-3:2]] = SortedSet(node)
+    return str(root)
 
 
 if __name__ == "__main__":

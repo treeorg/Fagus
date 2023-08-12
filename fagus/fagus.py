@@ -1330,7 +1330,9 @@ class Fagus(c_abc.MutableMapping, c_abc.MutableSequence, c_abc.MutableSet, metac
             obj_iter = obj
             obj_iter.__dict__.update(**iter_options)
         elif _is(obj, c_abc.Collection):
-            obj_iter = FagusIterator(obj if isinstance(obj, Fagus) else Fagus.child(self, obj), **iter_options)  # type: ignore
+            obj_iter = FagusIterator(
+                obj if isinstance(obj, Fagus) else Fagus.child(self, obj), **iter_options  # type: ignore
+            )
         else:
             raise TypeError(f"Can merge with FagusIterator or Collection, but not with {type(obj).__name__}")
         node_type, mutable_node = Fagus._mutable_node_type(node)
@@ -1462,7 +1464,7 @@ class Fagus(c_abc.MutableMapping, c_abc.MutableSequence, c_abc.MutableSet, metac
 
     def popitem(self) -> None:  # type: ignore
         """This function is not implemented in Fagus
-        
+
         Implementing this would require to cache the value, which was not prioritized to keep memory usage low.
         """
         return None

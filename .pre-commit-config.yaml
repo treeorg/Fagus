@@ -5,7 +5,7 @@ repos:
     rev: 22.3.0
     hooks:
     -   id: black
--   repo: https://gitlab.com/pycqa/flake8
+-   repo: https://github.com/pycqa/flake8
     rev: 3.9.2
     hooks:
     -   id: flake8
@@ -27,6 +27,18 @@ repos:
         entry: python3 -m tests.test_fagus doctest
         pass_filenames: false
         language: python
+        additional_dependencies:
+            - typing_extensions
+    -   id: mypy
+        name: mypy
+        description: ''
+        entry: mypy
+        language: python
+        'types_or': [ python, pyi ]
+        args: [ "--ignore-missing-imports", "--scripts-are-modules" ]
+        require_serial: true
+        additional_dependencies: [tokenize-rt]
+        minimum_pre_commit_version: '2.9.2'
 -   repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v4.1.0
     hooks:
