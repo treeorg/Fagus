@@ -886,22 +886,20 @@ class Fagus(c_abc.MutableMapping, c_abc.MutableSequence, c_abc.MutableSet, metac
                 getattr(node, action)(value)
         elif action in ("add", "update"):
             if node is _None:
-                return (
-                    dict(value)
-                    if isinstance(value, c_abc.Mapping)
-                    else set(value)
-                    if _is(value, c_abc.Iterable)
-                    else {value}
-                )
+                try:
+                    return dict(value)
+                except (TypeError, ValueError):
+                    return set(value) if _is(value, c_abc.Iterable) else {value}
             else:
                 if not isinstance(node, (c_abc.MutableSet, c_abc.MutableMapping)):
                     if _is(node, c_abc.Iterable):
                         node = set(node)  # type: ignore
                     else:
                         node = {node}
-                elif isinstance(node, c_abc.MutableMapping) and not isinstance(value, c_abc.Mapping):  # makes no sense
-                    return set(value)  # to convert existing node to a set if it's a Mapping, so just return set(value)
-                getattr(node, action)(value)
+                try:
+                    getattr(node, action)(value)
+                except (TypeError, ValueError):
+                    return set(value) if _is(value, c_abc.Iterable) else {value}
         else:
             raise ValueError(
                 f"Invalid action for _build_node(): {action}, must be one of add, append, extend, insert, set, update"
