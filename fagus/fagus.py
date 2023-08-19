@@ -886,20 +886,29 @@ class Fagus(c_abc.MutableMapping, c_abc.MutableSequence, c_abc.MutableSet, metac
                 getattr(node, action)(value)
         elif action in ("add", "update"):
             if node is _None:
-                try:
-                    return dict(value)
-                except (TypeError, ValueError):
-                    return set(value) if _is(value, c_abc.Iterable) else {value}
+                return (
+                    dict(value)
+                    if isinstance(value, c_abc.Mapping)
+                    else set(value)
+                    if _is(value, c_abc.Iterable)
+                    else {value}
+                )
             else:
                 if not isinstance(node, (c_abc.MutableSet, c_abc.MutableMapping)):
-                    if _is(node, c_abc.Iterable):
-                        node = set(node)  # type: ignore
-                    else:
-                        node = {node}
-                try:
-                    getattr(node, action)(value)
-                except (TypeError, ValueError):
+                    try:
+                        node = (  # type: ignore
+                            dict(node)
+                            if action == "update" and isinstance(node, c_abc.Mapping)
+                            else set(node)  # type: ignore
+                            if _is(node, c_abc.Iterable)
+                            else {node}
+                        )
+                    except (TypeError, ValueError):
+                        node = set(node) if _is(node, c_abc.Iterable) else {node}  # type: ignore
+                if isinstance(node, c_abc.MutableMapping) and not isinstance(value, c_abc.Mapping):
                     return set(value) if _is(value, c_abc.Iterable) else {value}
+                    # makes no sense to convert existing node to a set if it's a Mapping, so just return set(value)
+                getattr(node, action)(value)
         else:
             raise ValueError(
                 f"Invalid action for _build_node(): {action}, must be one of add, append, extend, insert, set, update"

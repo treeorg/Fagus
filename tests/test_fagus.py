@@ -16,6 +16,7 @@ import collections.abc as c_abc
 from fagus import Fagus, Fil, CFil, VFil
 from datetime import datetime, date, time
 import fagus
+from fagus.utils import _is
 
 
 class HashableDict(Dict[Any, Any]):
@@ -1176,13 +1177,14 @@ class SortedSet(Set):
     """Helper class to be able to always print a set sorted and thus predictable (used internally for doctests)"""
 
     def __str__(self):
-        return f"{{{str(sorted(self))[1:-1]}}}"
+        return f"{{{str(sorted(list(self)))[1:-1]}}}"
 
     def __repr__(self):
-        return str(self)
+        return str(self)  # f"SortedSet({str(self)})"
+        # return f"SortedSet({str(self)})"
 
 
-def sprint(obj: Collection[Any]) -> str:
+def sorted_set(obj: Collection[Any]) -> Collection[Any]:
     """Helper function making sure that all the sets in a Fagus-tree are printed sorted (for doctests to be predictable)
 
     Args:
@@ -1191,15 +1193,25 @@ def sprint(obj: Collection[Any]) -> str:
     Returns:
         The str of the object, but with all the contained sets being alphabetically sorted
     """
-    if isinstance(obj, c_abc.Set):
+    if isinstance(obj.root if isinstance(obj, Fagus) else obj, c_abc.Set):
         return str(SortedSet(obj))
     root = Fagus(obj, copy=True)
     iterator = Fagus.iter(root, iter_nodes=True, copy=True)
     for nodes in iterator:
-        node = iterator.skip((len(nodes) - 2) // 2)
-        if isinstance(nodes[-3], c_abc.Set):
-            root[nodes[1:-3:2]] = SortedSet(node)
-    return str(root)
+        if ... in nodes:
+            node_index = -nodes[::-1].index(...) - 1
+            root[nodes[1:node_index:2]] = SortedSet(iterator.skip((len(nodes) + node_index) // 2))
+        elif not _is(nodes[-1], c_abc.Iterable):
+            iterator.skip((len(nodes) - 2) // 2)
+
+        # nodes.index()
+        # list(nodes[:-3:2]).
+        # print(nodes[:-3:2])
+        # node = iterator.skip((len(nodes) - 2) // 2)
+        # if isinstance(nodes[-3], c_abc.Set):
+        # root[nodes[1:-3:2]] = SortedSet(nodes[-3])
+    # print(repr(root))
+    return root if isinstance(obj, Fagus) and obj.fagus else root.root
 
 
 if __name__ == "__main__":

@@ -70,7 +70,7 @@ While it's not necessary to instantiate `Fagus`, there are some neat shortcuts t
 * **Square bracket notation**: On `Fagus`-instances, the square-bracket notation can be used for easier access of data if no further customization is needed. Line 3 is equivalent to `a.set(6, "x y z")`. It can be used for getting, setting and deleting items (line 6).
 * **Dot notation**: The dot-notation is activated for setting, getting and deleting items as well (line 4). It can be used to access `str`-keys in `dict`s and `list`-indices, the index must then be preceded with an underscore due to Python naming limitations (`a._4`). This can be further customized using the [`path_split`](#path_split) [`FagusOption`](#fagus-options).
 
-`Fagus` is a wrapper-class around a tree of `dict`- or `list`-objects. To get back the root-object inside the instance, use `()` to call the object -- this is shown in line 7. Alternatively you can get the root-object through `.root`.
+`Fagus` is a wrapper-class around a tree of `dict`- or `list`-nodes. To get back the root-object inside the instance, use `()` to call the object -- this is shown in line 7. Alternatively you can get the root-object through `.root`.
 
 
 ### Fagus options
@@ -219,7 +219,7 @@ Sometimes in loops it can be helpful to actually have access to the whole node c
 * **Default**: `INF` (infinity, defined as `sys.maxsize`, the max value of an `int` in Python)
 * **Type**: `int`
 
-By default, `list`-objects are traversed in Fagus when new items are inserted. New `list`-objects are only created if necessary. Consider the following example:
+By default, `list`-nodes are traversed in Fagus when new items are inserted. New `list`-nodes are only created if necessary. Consider the following example:
 
 ```python
 >>> a = Fagus([0, [3, 4, [5, 6], 2]])
@@ -231,9 +231,9 @@ The list `[5, 6]` is overridden with the new value `"insert_1"`. In some cases i
 
 ```python
 >>> a = Fagus([0, [3, 4, [5, 6], 2]], default_node_type="l")
->>> a.set("insert_2", (1, 2), list_insert=1)
+>>> a.set("insert_2", (1, 2), list_insert=1)  # [5, 6] was not overridden here, insert_2 is inserted before
 [0, [3, 4, 'insert_2', [5, 6], 2]]
->>> a.set("insert_3", (1, 2), list_insert=0)
+>>> a.set("insert_3", (1, 2), list_insert=0)  # here, insert_3 is inserted at the base level 0, again without overriding
 [0, ['insert_3'], [3, 4, 'insert_2', [5, 6], 2]]
 ```
 
@@ -313,13 +313,13 @@ By default, `path_split` is a single space `" "`, but any other string can be us
 >>> a.example_index__another_index = "q"  # {"example_index": {"another_index": "q"}}
 ```
 ## Modifying the tree
-`Fagus` does not only allow to easily retrieve elements deeply inside a tree of nested `dict`- and `list`-objects using [`get()`](#the-path-parameter). The tree can also be modified using the different functions shown below. Make sure to read [set()](#set----adding-and-overwriting-elements) first as its basic principles apply to all the other modifying functions.
+`Fagus` does not only allow to easily retrieve elements deeply inside a tree of nested `dict`- and `list`-nodes using [`get()`](#the-path-parameter). The tree can also be modified using the different functions shown below. Make sure to read [set()](#set----adding-and-overwriting-elements) first as its basic principles apply to all the other modifying functions.
 
 ### Basic principles for modifying the tree
 The following subsections show the logic behind the creation of new nodes in `Fagus`. It is implemented in such a way that the tree is always modified as little as possible to perform the requested change.
 
 #### Correctly handling list indices
-As demonstrated in the examples for the [`path`](#the-path-parameter)-parameter, `list` indices can be positive and negative `int`-objects to access specific values in the list:
+As demonstrated in the examples for the [`path`](#the-path-parameter)-parameter, `list` indices can be positive and negative `int`-nodes to access specific values in the list:
 
 ```python
 >>> a = Fagus([[[0, 1], 2], [3, 4, [5, [6, 7]], 8]])  # some nested lists to demonstrate indices
@@ -341,7 +341,7 @@ When lists are modified, in many cases it might be desirable to append or prepen
 This shows how elements easily can be appended and prepended just by specifying an index which is bigger than the length of the list to append, or smaller than minus the length of the list to prepend. In order to make sure that a value is always appended / prepended without knowing the length of the list, `INF` can be imported from the `fagus`-module, it is just a reference to `sys.maxsize`. The `FagusOption` [`list_insert`](#list_insert) can be used to insert a new value at an index in the middle of the `list`.
 
 #### Create the correct type of node
-`Fagus` is built around the concept of values being assigned to keys to build nested trees of `dict`- and `list`-objects. The only supported operation in `set`-objects is checking whether it `contains` a certain value, therefore `set`-objects cannot be traversed by [`get()`](#the-path-parameter) and are thus treated as leaf-nodes. Consequently, the only available nodes to create in the tree are `dict` `"d"` and `list` `"l"`.
+`Fagus` is built around the concept of values being assigned to keys to build nested trees of `dict`- and `list`-nodes. The only supported operation in `set`-nodes is checking whether it `contains` a certain value, therefore `set`-nodes cannot be traversed by [`get()`](#the-path-parameter) and are thus treated as leaf-nodes. Consequently, the only available nodes to create in the tree are `dict` `"d"` and `list` `"l"`.
 
 The `FagusOption` [`node_types`](#node_types) can be used to clearly specify which types the nodes at each level of the tree should have, see [`node_types`](#node_types) example one. If `node_types` is not specified clearly or set to `" "` (don't care), [`default_node_type`](#default_node_type) determines which type of node will be created:
 
@@ -378,7 +378,7 @@ This shows that as far as possible, `Fagus` will keep the existing node and not 
 It is possible to manually override this behaviour by clearly specifying if each node should be a `dict` `"d"` or a `list` `"l"`, check out the section about [`node_types`](#node_types) for examples on this.
 
 #### Ensure that the required node can be modified
-In a nested structure of `dict`- and `list`-objects, there can also be unmodifyable `list`-objects called `tuple`. As values can't be changed in a `tuple`, it has to be converted into a `list`. The following example shows how this is done in case of nested `tuple`-objects:
+In a nested structure of `dict`- and `list`-nodes, there can also be unmodifyable `list`-nodes called `tuple`. As values can't be changed in a `tuple`, it has to be converted into a `list`. The following example shows how this is done in case of nested `tuple`-nodes:
 
 ```python
 >>> a = Fagus((((1, 0), 2), [3, 4, (5, (6, 7)), 8]))
@@ -386,7 +386,7 @@ In a nested structure of `dict`- and `list`-objects, there can also be unmodifya
 (((1, 0), 2), [3, 4, [5, [6, 'seven']], 8])
 ```
 
-In order to replace the 7 with `"seven"` in the `tuple` `(6, 7)`, it has to be converted into a modifyable `list` first. `(6, 7)` however resides in another `tuple` `(5, (6, 7))`, so that outer `tuple` also has to be converted into a `list`. As `(5, (6, 7))` already lies in a `list`, it can be  replaced with `[5, [6, "seven"]]`. The key point is that `tuple`-objects are converted to `list`-objects as deeply as necessary. The outermost `tuple` containing the whole tree `(((1, 0), 2), [3, 4, (5, (6, 7)), 8])` is not touched, and thus remains a `tuple`
+In order to replace the 7 with `"seven"` in the `tuple` `(6, 7)`, it has to be converted into a modifyable `list` first. `(6, 7)` however resides in another `tuple` `(5, (6, 7))`, so that outer `tuple` also has to be converted into a `list`. As `(5, (6, 7))` already lies in a `list`, it can be  replaced with `[5, [6, "seven"]]`. The key point is that `tuple`-nodes are converted to `list`-nodes as deeply as necessary. The outermost `tuple` containing the whole tree `(((1, 0), 2), [3, 4, (5, (6, 7)), 8])` is not touched, and thus remains a `tuple`
 
 ### set() -- adding and overwriting elements
 The `set()` function can be used to add or replace a value anywhere in the tree. This function is also used internally in `Fagus` whereever new nodes need to be created. See [Basic principles for modifying the tree](#basic-principles-for-modifying-the-tree) and [`node_types`](#node_types) for examples of how `set()` can be fine-tuned. In case no further fine-tuning is used, the `set()`-operation can also be done as shown below:
@@ -451,15 +451,69 @@ The `extend()` function works very similar to [`append()`](#append----adding-a-n
 {'flowers': ['daffodil', 'rose', 'sunflower', 'tulip', 'lily', 'lavender', 'daisy', 'orchid']}
 ```
 
-For further reading about when and how new `list`-objects are created, refer to the documentatioin of [`append()`](#append----adding-a-new-element-to-a-list) as `extend()` works similar except from the fact that several new elements are added instead of one.
+For further reading about when and how new `list`-nodes are created, refer to the documentation of [`append()`](#append----adding-a-new-element-to-a-list) as `extend()` works similar except from the fact that several new elements are added instead of one.
 
 ### insert() -- insert an element at a given index in a `list`
+The `insert()` function works similar to [`append()`](#append----adding-a-new-element-to-a-list), the main difference is just that instead of appending the new element to the end of the `list`, it can be inserted at any position. For an overview of how and when new `list`-nodes are created before insertion, check out [`append()`](#append----adding-a-new-element-to-a-list).
+
+```python
+>>> plants = Fagus({'flowers': ['daffodil', 'rose', 'sunflower']})
+>>> plants.insert(1, "tulip", "flowers")  # index parameter comes first, so the order if args is like in list().insert()
+{'flowers': ['daffodil', 'tulip', 'rose', 'sunflower']}
+```
+
+The normal indexation of `list`-nodes in `Fagus` only allows appending or prepending elements if it is necessary to do so anywhere in [`path`](#the-path-parameter), this is documented [`here`](#correctly-handling-list-indices). Check out the [`list_insert`](#listinsert) `FagusOption` for examples on how to insert new nodes at any index in the list anywhere in `path`.
 
 ### add() -- adding a new element to a `set`
+The `add()` function works similar to [`append()`](#append----adding-a-new-element-to-a-list), the main difference is just that instead of creating and appending to `list`-nodes, `set`-nodes are used. For detailed examples of the rules when and how new `set`-nodes are created by this function, check out [`append()`](#append----adding-a-new-element-to-a-list) just replacing occurrences of `list` with `set`.
+
+```python
+>>> from tests.test_fagus import sorted_set  # function needed for doctests to work with sets -> print the set sorted
+>>> sorted_set(plants.add("daisy", "flowers"))  # list is converted into a set, and then "daisy" is added to that set
+{'flowers': {'daffodil', 'daisy', 'rose', 'sunflower', 'tulip'}}
+>>> sorted_set(plants.add("oak", "trees"))  # node does not exist yet - create new empty set and add the new value to it
+{'flowers': {'daffodil', 'daisy', 'rose', 'sunflower', 'tulip'}, 'trees': {'oak'}}
+```
 
 ### update() -- update multiple elements in a `set` or `dict`
+This function works similar to [`extend()`](#extend----extending-a-list-with-multiple-elements) explained above, however the difference here is that the new elements now are added to a `set` or `dict`. As the function has the same name for `set` and `dict`-nodes, it has to determine what kind of node to create. Consider the following examples:
 
---> sjekk om det er en liste / generator av tupler. I så fall kan det også godtas for å utvide en dict. Vurder evt en ny parameter dersom det ikke går å finne ut automatisk
+```python
+>>> plants = Fagus()  # sorted_set() is used to always print sets deterministic, this is needed internally for doctests
+>>> sorted_set(plants.update(dict(softwood="pine", hardwood="oak"), "trees"))  # creating and updating dict
+{'trees': {'softwood': 'pine', 'hardwood': 'oak'}}
+>>> sorted_set(plants.update(("tulip", "daisy", "daffodil"), "flowers"))  # create set from tuple
+{'trees': {'softwood': 'pine', 'hardwood': 'oak'}, 'flowers': {'daffodil', 'daisy', 'tulip'}}
+>>> plants.clear("flowers")  # emptying this set to keep the example easily readable
+{'trees': {'softwood': 'pine', 'hardwood': 'oak'}, 'flowers': set()}
+>>> sorted_set(plants.update({"garden flowers": "sunflower", "flower trees": "apple tree"}, "flowers"))  # comment below
+{'trees': {'softwood': 'pine', 'hardwood': 'oak'}, 'flowers': {'flower trees', 'garden flowers'}}
+>>> # as you can see, even though a dict was sent in as a parameter, the flowers node stayed a set, so only "flower
+>>> # trees" and "garden flowers" were added, but not "apple tree" and "sunflower"
+```
+
+The examples above illustrate first two of the principles `update()` operates after:
+1. If there already is a `dict`- or `set` object at [`path`](#the-path-parameter), keep that node if possible.
+2. If there already exists a `set`, and a `dict` is passed to `update()`, the `set` is updated with the keys from the dict only (line 8).
+
+```python
+>>> sorted_set(plants.set({"fruit trees": ["apple tree", "lemon tree"]}, "trees"))  # prepare the next example
+{'trees': {'fruit trees': ['apple tree', 'lemon tree']}, 'flowers': {'flower trees', 'garden flowers'}}
+>>> sorted_set(plants.update((("hardwood", "oak"), ("softwood", "fir")), "trees"))  # comment below
+{'trees': {('hardwood', 'oak'), ('softwood', 'fir')}, 'flowers': {'flower trees', 'garden flowers'}}
+>>> # it is not possible to update a dict from these tuples -> replace the previous dict with a new set with the tuples
+>>> plants = Fagus({"trees": {"hardwood": "beech", "softwood": "fir"}})  # making "trees" a dict again for next example
+>>> sorted_set(plants.update(dict((("hardwood", "oak"), ("softwood", "pine"))), "trees"))  # comment below
+{'trees': {'hardwood': 'oak', 'softwood': 'pine'}}
+>>> # Here it is shown how a dict can be updated based on a list of tuples with two elements, or e.g. the iterator
+>>> # dict.items() returns. By passing the list of tuples to the dict() function first, Fagus detects your intention
+>>> # to update a dict instead of overwriting it with a set
+```
+
+The third principle `update()` operates after is the following:
+3. If you would like to update a `dict`, you must pass a `Mapping` (the type of key-value containers like `dict`). If you just pass e.g. a `tuple` of `tuple`-nodes with two elements or `dict.items()`, the `dict` will be overwritten with a `set`. To update the dict, just pass e.g. the `tuple` of `tuple`-nodes through `dict()` before passing it to `update()`. For any `Iterable` that is not a `Mapping`, the `Mapping` will be removed and a `set` will be created.
+
+Especially this last principle may seem tedious, however it was chosen to implement it that way to prevent ambiguity, and the main reason for that is the `update()` function being used in `set`-nodes as well as `dict`-nodes.
 
 ### serialize() -- ensure that a tree is json- or yaml-serializable
 
