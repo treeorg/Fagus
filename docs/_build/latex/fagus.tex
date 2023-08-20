@@ -57,7 +57,7 @@
 
 
 \title{Fagus}
-\date{May 16, 2022}
+\date{Aug 17, 2022}
 \release{1.0.1}
 \author{Lukas Neuenschwander}
 \newcommand{\sphinxlogo}{\vbox{}}
@@ -168,7 +168,7 @@ The whole \sphinxcode{\sphinxupquote{Fagus}} library is built around these princ
 
 \item {}
 \sphinxAtStartPar
-\sphinxstylestrong{Line 5}: In many cases, the dict\sphinxhyphen{}keys that are traversed are strings. For convenience, it’s also possible to provide the whole path\sphinxhyphen{}parameter as one string that is split up into the different keys. In the example above, \sphinxcode{\sphinxupquote{" "}} is used to split the path\sphinxhyphen{}string, this can be customized using \sphinxcode{\sphinxupquote{value\_split}}.
+\sphinxstylestrong{Line 5}: In many cases, the dict\sphinxhyphen{}keys that are traversed are strings. For convenience, it’s also possible to provide the whole path\sphinxhyphen{}parameter as one string that is split up into the different keys. In the example above, \sphinxcode{\sphinxupquote{" "}} is used to split the path\sphinxhyphen{}string, this can be customized using \sphinxcode{\sphinxupquote{path\_split}}.
 
 \end{itemize}
 
@@ -209,7 +209,7 @@ While it’s not necessary to instantiate \sphinxcode{\sphinxupquote{Fagus}}, th
 
 \item {}
 \sphinxAtStartPar
-\sphinxstylestrong{Dot notation}: The dot\sphinxhyphen{}notation is activated for setting, getting and deleting items as well (line 4). It can be used to access \sphinxcode{\sphinxupquote{str}}\sphinxhyphen{}keys in \sphinxcode{\sphinxupquote{dict}}s and \sphinxcode{\sphinxupquote{list}}\sphinxhyphen{}indices, the index must then be preceded with an underscore due to Python naming limitations (\sphinxcode{\sphinxupquote{a.\_4}}). This can be further customized using {\hyperref[\detokenize{README:value-split}]{\sphinxcrossref{\DUrole{std,std-doc}{\sphinxcode{\sphinxupquote{value\_split}}}}}}
+\sphinxstylestrong{Dot notation}: The dot\sphinxhyphen{}notation is activated for setting, getting and deleting items as well (line 4). It can be used to access \sphinxcode{\sphinxupquote{str}}\sphinxhyphen{}keys in \sphinxcode{\sphinxupquote{dict}}s and \sphinxcode{\sphinxupquote{list}}\sphinxhyphen{}indices, the index must then be preceded with an underscore due to Python naming limitations (\sphinxcode{\sphinxupquote{a.\_4}}). This can be further customized using {\hyperref[\detokenize{README:path-split}]{\sphinxcrossref{\DUrole{std,std-doc}{\sphinxcode{\sphinxupquote{path\_split}}}}}}
 
 \end{itemize}
 
@@ -440,8 +440,41 @@ As you can see, the node itself is included as the first element in both tuples.
 Sometimes in loops it can be helpful to actually have access to the whole node containing other relevant information. This can be especially useful combined with {\hyperref[\detokenize{README:skipping-nodes-in-iteration}]{\sphinxcrossref{\DUrole{std,std-doc}{\sphinxcode{\sphinxupquote{skip()}}}}}}.
 
 
-\subsubsection{value\_split}
-\label{\detokenize{README:value-split}}
+\subsubsection{path\_split}
+\label{\detokenize{README:path-split}}\begin{itemize}
+\item {}
+\sphinxAtStartPar
+\sphinxstylestrong{Default}: \sphinxcode{\sphinxupquote{" "}}
+
+\item {}
+\sphinxAtStartPar
+\sphinxstylestrong{Type}: \sphinxcode{\sphinxupquote{str}}
+
+\end{itemize}
+
+\sphinxAtStartPar
+The keys needed to traverse a \sphinxcode{\sphinxupquote{Fagus}}\sphinxhyphen{}object for getting or setting a value are passed as a \sphinxcode{\sphinxupquote{tuple}} or \sphinxcode{\sphinxupquote{list}} (line 2). \sphinxcode{\sphinxupquote{path\_split}} allows to alternatively specify all the keys in a single string, split by \sphinxcode{\sphinxupquote{path\_split}} (line 4). As shown in line 4, list indices can be specified in the path\sphinxhyphen{}string, they are automatically converted back to \sphinxcode{\sphinxupquote{int}}.
+
+\begin{sphinxVerbatim}[commandchars=\\\{\},numbers=left,firstnumber=1,stepnumber=1]
+\PYG{g+gp}{\PYGZgt{}\PYGZgt{}\PYGZgt{} }\PYG{n}{a} \PYG{o}{=} \PYG{n}{Fagus}\PYG{p}{(}\PYG{p}{\PYGZob{}}\PYG{l+s+s2}{\PYGZdq{}}\PYG{l+s+s2}{a}\PYG{l+s+s2}{\PYGZdq{}}\PYG{p}{:} \PYG{p}{\PYGZob{}}\PYG{l+s+s2}{\PYGZdq{}}\PYG{l+s+s2}{b}\PYG{l+s+s2}{\PYGZdq{}}\PYG{p}{:} \PYG{p}{[}\PYG{k+kc}{True}\PYG{p}{,} \PYG{l+s+s2}{\PYGZdq{}}\PYG{l+s+s2}{q}\PYG{l+s+s2}{\PYGZdq{}}\PYG{p}{]}\PYG{p}{\PYGZcb{}}\PYG{p}{\PYGZcb{}}\PYG{p}{)}
+\PYG{g+gp}{\PYGZgt{}\PYGZgt{}\PYGZgt{} }\PYG{n}{a}\PYG{p}{[}\PYG{p}{(}\PYG{l+s+s2}{\PYGZdq{}}\PYG{l+s+s2}{a}\PYG{l+s+s2}{\PYGZdq{}}\PYG{p}{,} \PYG{l+s+s2}{\PYGZdq{}}\PYG{l+s+s2}{b}\PYG{l+s+s2}{\PYGZdq{}}\PYG{p}{,} \PYG{l+m+mi}{0}\PYG{p}{)}\PYG{p}{]}
+\PYG{g+go}{True}
+\PYG{g+gp}{\PYGZgt{}\PYGZgt{}\PYGZgt{} }\PYG{n}{a}\PYG{p}{[}\PYG{l+s+s2}{\PYGZdq{}}\PYG{l+s+s2}{a b 0}\PYG{l+s+s2}{\PYGZdq{}}\PYG{p}{]}
+\PYG{g+go}{True}
+\end{sphinxVerbatim}
+
+\sphinxAtStartPar
+By default, \sphinxcode{\sphinxupquote{path\_split}} is a single space \sphinxcode{\sphinxupquote{" "}}, but any other string can be used as a split character. If path string is set to \sphinxcode{\sphinxupquote{"\_"}}, the dot\sphinxhyphen{}notation can be used to get or set a node deeply inside a \sphinxcode{\sphinxupquote{Fagus}}\sphinxhyphen{}object.
+
+\begin{sphinxVerbatim}[commandchars=\\\{\},numbers=left,firstnumber=1,stepnumber=1]
+\PYG{g+gp}{\PYGZgt{}\PYGZgt{}\PYGZgt{} }\PYG{n}{a} \PYG{o}{=} \PYG{n}{Fagus}\PYG{p}{(}\PYG{n}{path\PYGZus{}split}\PYG{o}{=}\PYG{l+s+s2}{\PYGZdq{}}\PYG{l+s+s2}{\PYGZus{}}\PYG{l+s+s2}{\PYGZdq{}}\PYG{p}{)}
+\PYG{g+gp}{\PYGZgt{}\PYGZgt{}\PYGZgt{} }\PYG{n}{a}\PYG{o}{.}\PYG{n}{a\PYGZus{}c\PYGZus{}1} \PYG{o}{=} \PYG{l+m+mi}{4}  \PYG{c+c1}{\PYGZsh{} \PYGZob{}\PYGZdq{}a\PYGZdq{}: \PYGZob{}\PYGZdq{}c\PYGZdq{}: \PYGZob{}\PYGZdq{}1\PYGZdq{}: 4\PYGZcb{}\PYGZcb{}\PYGZcb{}}
+\PYG{g+gp}{\PYGZgt{}\PYGZgt{}\PYGZgt{} }\PYG{n}{a} \PYG{o}{=} \PYG{n}{Fagus}\PYG{p}{(}\PYG{n}{path\PYGZus{}split}\PYG{o}{=}\PYG{l+s+s2}{\PYGZdq{}}\PYG{l+s+s2}{\PYGZus{}}\PYG{l+s+s2}{\PYGZdq{}}\PYG{p}{,} \PYG{n}{default\PYGZus{}node\PYGZus{}type}\PYG{o}{=}\PYG{l+s+s2}{\PYGZdq{}}\PYG{l+s+s2}{l}\PYG{l+s+s2}{\PYGZdq{}}\PYG{p}{)}
+\PYG{g+gp}{\PYGZgt{}\PYGZgt{}\PYGZgt{} }\PYG{n}{a}\PYG{o}{.}\PYG{n}{\PYGZus{}0\PYGZus{}2} \PYG{o}{=} \PYG{l+m+mi}{6}  \PYG{c+c1}{\PYGZsh{} [[6]], note that the str after . is prefixed with a \PYGZus{} for a list index}
+\PYG{g+gp}{\PYGZgt{}\PYGZgt{}\PYGZgt{} }\PYG{n}{a} \PYG{o}{=} \PYG{n}{Fagus}\PYG{p}{(}\PYG{n}{path\PYGZus{}split}\PYG{o}{=}\PYG{l+s+s2}{\PYGZdq{}}\PYG{l+s+s2}{\PYGZus{}\PYGZus{}}\PYG{l+s+s2}{\PYGZdq{}}\PYG{p}{)}
+\PYG{g+gp}{\PYGZgt{}\PYGZgt{}\PYGZgt{} }\PYG{n}{a}\PYG{o}{.}\PYG{n}{example\PYGZus{}index\PYGZus{}\PYGZus{}another\PYGZus{}index} \PYG{o}{=} \PYG{l+s+s2}{\PYGZdq{}}\PYG{l+s+s2}{q}\PYG{l+s+s2}{\PYGZdq{}}  \PYG{c+c1}{\PYGZsh{} \PYGZob{}\PYGZdq{}example\PYGZus{}index\PYGZdq{}: \PYGZob{}\PYGZdq{}another\PYGZus{}index\PYGZdq{}: \PYGZdq{}q\PYGZdq{}\PYGZcb{}\PYGZcb{}}
+\end{sphinxVerbatim}
+
 
 \subsection{Iterating over nested objects}
 \label{\detokenize{README:iterating-over-nested-objects}}
@@ -509,7 +542,7 @@ Base\sphinxhyphen{}module that contains the \sphinxcode{\sphinxupquote{Fagus}}\s
 \begin{fulllineitems}
 \phantomsection\label{\detokenize{fagus.fagus:fagus.fagus.Fagus}}
 \pysigstartsignatures
-\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{class\DUrole{w}{  }}}\sphinxcode{\sphinxupquote{fagus.fagus.}}\sphinxbfcode{\sphinxupquote{Fagus}}}{\emph{\DUrole{n}{root}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{Optional\DUrole{p}{{[}}collections.abc.Collection\DUrole{p}{{]}}}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{None}}, \emph{\DUrole{n}{node\_types}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{str}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{Ellipsis}}, \emph{\DUrole{n}{list\_insert}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{int}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{Ellipsis}}, \emph{\DUrole{n}{value\_split}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{str}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{Ellipsis}}, \emph{\DUrole{n}{fagus}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{bool}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{Ellipsis}}, \emph{\DUrole{n}{default\_node\_type}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{str}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{Ellipsis}}, \emph{\DUrole{n}{default}\DUrole{o}{=}\DUrole{default_value}{Ellipsis}}, \emph{\DUrole{n}{if\_}\DUrole{o}{=}\DUrole{default_value}{Ellipsis}}, \emph{\DUrole{n}{iter\_fill}\DUrole{o}{=}\DUrole{default_value}{Ellipsis}}, \emph{\DUrole{n}{mod\_functions}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{collections.abc.Mapping}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{Ellipsis}}, \emph{\DUrole{n}{copy}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{bool}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{False}}}{}
+\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{class\DUrole{w}{  }}}\sphinxcode{\sphinxupquote{fagus.fagus.}}\sphinxbfcode{\sphinxupquote{Fagus}}}{\emph{\DUrole{n}{root}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{Optional\DUrole{p}{{[}}collections.abc.Collection\DUrole{p}{{]}}}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{None}}, \emph{\DUrole{n}{node\_types}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{str}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{Ellipsis}}, \emph{\DUrole{n}{list\_insert}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{int}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{Ellipsis}}, \emph{\DUrole{n}{path\_split}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{str}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{Ellipsis}}, \emph{\DUrole{n}{fagus}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{bool}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{Ellipsis}}, \emph{\DUrole{n}{default\_node\_type}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{str}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{Ellipsis}}, \emph{\DUrole{n}{default}\DUrole{o}{=}\DUrole{default_value}{Ellipsis}}, \emph{\DUrole{n}{if\_}\DUrole{o}{=}\DUrole{default_value}{Ellipsis}}, \emph{\DUrole{n}{iter\_fill}\DUrole{o}{=}\DUrole{default_value}{Ellipsis}}, \emph{\DUrole{n}{mod\_functions}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{collections.abc.Mapping}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{Ellipsis}}, \emph{\DUrole{n}{copy}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{bool}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{False}}}{}
 \pysigstopsignatures
 \sphinxAtStartPar
 Bases: \sphinxcode{\sphinxupquote{collections.abc.MutableMapping}}, \sphinxcode{\sphinxupquote{collections.abc.MutableSequence}}, \sphinxcode{\sphinxupquote{collections.abc.MutableSet}}
@@ -539,7 +572,7 @@ found in README.md.
 \begin{fulllineitems}
 \phantomsection\label{\detokenize{fagus.fagus:fagus.fagus.Fagus.__init__}}
 \pysigstartsignatures
-\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{\_\_init\_\_}}}{\emph{\DUrole{n}{root}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{Optional\DUrole{p}{{[}}collections.abc.Collection\DUrole{p}{{]}}}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{None}}, \emph{\DUrole{n}{node\_types}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{str}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{Ellipsis}}, \emph{\DUrole{n}{list\_insert}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{int}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{Ellipsis}}, \emph{\DUrole{n}{value\_split}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{str}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{Ellipsis}}, \emph{\DUrole{n}{fagus}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{bool}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{Ellipsis}}, \emph{\DUrole{n}{default\_node\_type}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{str}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{Ellipsis}}, \emph{\DUrole{n}{default}\DUrole{o}{=}\DUrole{default_value}{Ellipsis}}, \emph{\DUrole{n}{if\_}\DUrole{o}{=}\DUrole{default_value}{Ellipsis}}, \emph{\DUrole{n}{iter\_fill}\DUrole{o}{=}\DUrole{default_value}{Ellipsis}}, \emph{\DUrole{n}{mod\_functions}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{collections.abc.Mapping}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{Ellipsis}}, \emph{\DUrole{n}{copy}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{bool}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{False}}}{}
+\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{\_\_init\_\_}}}{\emph{\DUrole{n}{root}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{Optional\DUrole{p}{{[}}collections.abc.Collection\DUrole{p}{{]}}}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{None}}, \emph{\DUrole{n}{node\_types}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{str}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{Ellipsis}}, \emph{\DUrole{n}{list\_insert}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{int}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{Ellipsis}}, \emph{\DUrole{n}{path\_split}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{str}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{Ellipsis}}, \emph{\DUrole{n}{fagus}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{bool}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{Ellipsis}}, \emph{\DUrole{n}{default\_node\_type}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{str}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{Ellipsis}}, \emph{\DUrole{n}{default}\DUrole{o}{=}\DUrole{default_value}{Ellipsis}}, \emph{\DUrole{n}{if\_}\DUrole{o}{=}\DUrole{default_value}{Ellipsis}}, \emph{\DUrole{n}{iter\_fill}\DUrole{o}{=}\DUrole{default_value}{Ellipsis}}, \emph{\DUrole{n}{mod\_functions}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{collections.abc.Mapping}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{Ellipsis}}, \emph{\DUrole{n}{copy}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{bool}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{False}}}{}
 \pysigstopsignatures
 \sphinxAtStartPar
 Constructor for Fagus, a wrapper\sphinxhyphen{}class for complex, nested objects of dicts and lists in Python
@@ -567,7 +600,7 @@ existing node in the list at that index. See README
 
 \item {}
 \sphinxAtStartPar
-\sphinxstyleliteralstrong{\sphinxupquote{value\_split}} \textendash{} * used to split path into a list if path is a string, default ” “
+\sphinxstyleliteralstrong{\sphinxupquote{path\_split}} \textendash{} * used to split path into a list if path is a string, default ” “
 
 \item {}
 \sphinxAtStartPar
@@ -610,7 +643,7 @@ won’t modify the root node that was passed here itself. Default False
 \begin{fulllineitems}
 \phantomsection\label{\detokenize{fagus.fagus:fagus.fagus.Fagus.get}}
 \pysigstartsignatures
-\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{get}}}{\emph{\DUrole{n}{path}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{Any}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{\textquotesingle{}\textquotesingle{}}}, \emph{\DUrole{n}{default}\DUrole{o}{=}\DUrole{default_value}{Ellipsis}}, \emph{\DUrole{n}{fagus}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{bool}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{Ellipsis}}, \emph{\DUrole{n}{copy}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{bool}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{False}}, \emph{\DUrole{n}{value\_split}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{str}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{Ellipsis}}}{{ $\rightarrow$ Any}}
+\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{get}}}{\emph{\DUrole{n}{path}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{Any}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{\textquotesingle{}\textquotesingle{}}}, \emph{\DUrole{n}{default}\DUrole{o}{=}\DUrole{default_value}{Ellipsis}}, \emph{\DUrole{n}{fagus}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{bool}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{Ellipsis}}, \emph{\DUrole{n}{copy}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{bool}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{False}}, \emph{\DUrole{n}{path\_split}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{str}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{Ellipsis}}}{{ $\rightarrow$ Any}}
 \pysigstopsignatures
 \sphinxAtStartPar
 Retrieves value at path. If the value doesn’t exist, default is returned.
@@ -621,7 +654,7 @@ To get “hello” from x = Fagus(\{“a”: {[}“b”, \{“c”: “d”\}{]}
 top\sphinxhyphen{}most dict, and then the 2nd element \{“c”: “d”\} is picked from that list. Then, “d” is picked from \{“c”: “d”\}
 and returned. The path\sphinxhyphen{}parameter can be a tuple or list, the keys must be either integers for lists, or any
 hashable objects for dicts. For convenience, the keys can also be put in a single string separated by
-value\_split (default ” “), so a{[}“a 1 c”{]} also returns “d”.
+path\_split (default ” “), so a{[}“a 1 c”{]} also returns “d”.
 
 \sphinxAtStartPar
 * means that the parameter is a Fagus\sphinxhyphen{}Setting, see Fagus\sphinxhyphen{}class\sphinxhyphen{}docstring for more information about options
@@ -630,7 +663,7 @@ value\_split (default ” “), so a{[}“a 1 c”{]} also returns “d”.
 \item {}
 \sphinxAtStartPar
 \sphinxstyleliteralstrong{\sphinxupquote{path}} \textendash{} List/Tuple of key\sphinxhyphen{}values to recursively traverse self. Can also be specified as string, that is split
-into a tuple using value\_split
+into a tuple using path\_split
 
 \item {}
 \sphinxAtStartPar
@@ -649,7 +682,7 @@ independent, use copy to get a shallow copy of the returned value
 
 \item {}
 \sphinxAtStartPar
-\sphinxstyleliteralstrong{\sphinxupquote{value\_split}} \textendash{} * used to split path into a list if path is a str, default ” “
+\sphinxstyleliteralstrong{\sphinxupquote{path\_split}} \textendash{} * used to split path into a list if path is a str, default ” “
 
 \end{itemize}
 
@@ -666,7 +699,7 @@ the value if the path exists, or default if it doesn’t exist
 \begin{fulllineitems}
 \phantomsection\label{\detokenize{fagus.fagus:fagus.fagus.Fagus.iter}}
 \pysigstartsignatures
-\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{iter}}}{\emph{\DUrole{n}{max\_depth}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{int}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{9223372036854775807}}, \emph{\DUrole{n}{path}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{Any}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{\textquotesingle{}\textquotesingle{}}}, \emph{\DUrole{n}{filter\_}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{Optional\DUrole{p}{{[}}{\hyperref[\detokenize{fagus.filters:fagus.filters.Fil}]{\sphinxcrossref{fagus.filters.Fil}}}\DUrole{p}{{]}}}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{None}}, \emph{\DUrole{n}{fagus}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{bool}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{Ellipsis}}, \emph{\DUrole{n}{iter\_fill}\DUrole{o}{=}\DUrole{default_value}{Ellipsis}}, \emph{\DUrole{n}{select}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{Optional\DUrole{p}{{[}}Union\DUrole{p}{{[}}int\DUrole{p}{,}\DUrole{w}{  }collections.abc.Iterable\DUrole{p}{{]}}\DUrole{p}{{]}}}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{None}}, \emph{\DUrole{n}{copy}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{bool}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{False}}, \emph{\DUrole{n}{iter\_nodes}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{bool}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{Ellipsis}}, \emph{\DUrole{n}{filter\_ends}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{bool}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{False}}, \emph{\DUrole{n}{value\_split}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{str}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{Ellipsis}}}{{ $\rightarrow$ {\hyperref[\detokenize{fagus.iterators:fagus.iterators.FagusIterator}]{\sphinxcrossref{fagus.iterators.FagusIterator}}}}}
+\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{iter}}}{\emph{\DUrole{n}{max\_depth}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{int}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{9223372036854775807}}, \emph{\DUrole{n}{path}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{Any}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{\textquotesingle{}\textquotesingle{}}}, \emph{\DUrole{n}{filter\_}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{Optional\DUrole{p}{{[}}{\hyperref[\detokenize{fagus.filters:fagus.filters.Fil}]{\sphinxcrossref{fagus.filters.Fil}}}\DUrole{p}{{]}}}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{None}}, \emph{\DUrole{n}{fagus}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{bool}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{Ellipsis}}, \emph{\DUrole{n}{iter\_fill}\DUrole{o}{=}\DUrole{default_value}{Ellipsis}}, \emph{\DUrole{n}{select}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{Optional\DUrole{p}{{[}}Union\DUrole{p}{{[}}int\DUrole{p}{,}\DUrole{w}{  }collections.abc.Iterable\DUrole{p}{{]}}\DUrole{p}{{]}}}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{None}}, \emph{\DUrole{n}{copy}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{bool}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{False}}, \emph{\DUrole{n}{iter\_nodes}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{bool}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{Ellipsis}}, \emph{\DUrole{n}{filter\_ends}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{bool}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{False}}, \emph{\DUrole{n}{path\_split}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{str}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{Ellipsis}}}{{ $\rightarrow$ {\hyperref[\detokenize{fagus.iterators:fagus.iterators.FagusIterator}]{\sphinxcrossref{fagus.iterators.FagusIterator}}}}}
 \pysigstopsignatures
 \sphinxAtStartPar
 Recursively iterate through Fagus\sphinxhyphen{}object, starting at path
@@ -727,7 +760,7 @@ is set to True, the last nodes will always be copies (if unfiltered they are ref
 
 \item {}
 \sphinxAtStartPar
-\sphinxstyleliteralstrong{\sphinxupquote{value\_split}} \textendash{} * used to split path into a list if path is a str, default ” “
+\sphinxstyleliteralstrong{\sphinxupquote{path\_split}} \textendash{} * used to split path into a list if path is a str, default ” “
 
 \end{itemize}
 
@@ -744,7 +777,7 @@ FagusIterator with one tuple for each leaf\sphinxhyphen{}node, containing the ke
 \begin{fulllineitems}
 \phantomsection\label{\detokenize{fagus.fagus:fagus.fagus.Fagus.filter}}
 \pysigstartsignatures
-\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{filter}}}{\emph{\DUrole{n}{filter\_}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{{\hyperref[\detokenize{fagus.filters:fagus.filters.Fil}]{\sphinxcrossref{fagus.filters.Fil}}}}}, \emph{\DUrole{n}{path}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{Any}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{\textquotesingle{}\textquotesingle{}}}, \emph{\DUrole{n}{fagus}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{bool}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{Ellipsis}}, \emph{\DUrole{n}{copy}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{bool}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{False}}, \emph{\DUrole{n}{default}\DUrole{o}{=}\DUrole{default_value}{Ellipsis}}, \emph{\DUrole{n}{value\_split}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{str}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{Ellipsis}}}{{ $\rightarrow$ collections.abc.Collection}}
+\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{filter}}}{\emph{\DUrole{n}{filter\_}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{{\hyperref[\detokenize{fagus.filters:fagus.filters.Fil}]{\sphinxcrossref{fagus.filters.Fil}}}}}, \emph{\DUrole{n}{path}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{Any}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{\textquotesingle{}\textquotesingle{}}}, \emph{\DUrole{n}{fagus}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{bool}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{Ellipsis}}, \emph{\DUrole{n}{copy}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{bool}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{False}}, \emph{\DUrole{n}{default}\DUrole{o}{=}\DUrole{default_value}{Ellipsis}}, \emph{\DUrole{n}{path\_split}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{str}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{Ellipsis}}}{{ $\rightarrow$ collections.abc.Collection}}
 \pysigstopsignatures
 \sphinxAtStartPar
 Filters self, only keeping the nodes that pass the filter
@@ -776,7 +809,7 @@ Default “”, meaning that the root node is filtered, see get() and README for
 
 \item {}
 \sphinxAtStartPar
-\sphinxstyleliteralstrong{\sphinxupquote{value\_split}} \textendash{} * used to split path into a list if path is a str, default ” “
+\sphinxstyleliteralstrong{\sphinxupquote{path\_split}} \textendash{} * used to split path into a list if path is a str, default ” “
 
 \end{itemize}
 
@@ -797,7 +830,7 @@ the filtered object, starting at path
 \begin{fulllineitems}
 \phantomsection\label{\detokenize{fagus.fagus:fagus.fagus.Fagus.split}}
 \pysigstartsignatures
-\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{split}}}{\emph{\DUrole{n}{filter\_}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{{\hyperref[\detokenize{fagus.filters:fagus.filters.Fil}]{\sphinxcrossref{fagus.filters.Fil}}}}}, \emph{\DUrole{n}{path}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{Any}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{\textquotesingle{}\textquotesingle{}}}, \emph{\DUrole{n}{fagus}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{bool}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{Ellipsis}}, \emph{\DUrole{n}{copy}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{bool}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{False}}, \emph{\DUrole{n}{default}\DUrole{o}{=}\DUrole{default_value}{Ellipsis}}, \emph{\DUrole{n}{value\_split}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{str}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{Ellipsis}}}{{ $\rightarrow$ Union\DUrole{p}{{[}}Tuple\DUrole{p}{{[}}collections.abc.Collection\DUrole{p}{,}\DUrole{w}{  }collections.abc.Collection\DUrole{p}{{]}}\DUrole{p}{,}\DUrole{w}{  }Tuple\DUrole{p}{{[}}Any\DUrole{p}{,}\DUrole{w}{  }Any\DUrole{p}{{]}}\DUrole{p}{{]}}}}
+\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{split}}}{\emph{\DUrole{n}{filter\_}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{{\hyperref[\detokenize{fagus.filters:fagus.filters.Fil}]{\sphinxcrossref{fagus.filters.Fil}}}}}, \emph{\DUrole{n}{path}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{Any}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{\textquotesingle{}\textquotesingle{}}}, \emph{\DUrole{n}{fagus}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{bool}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{Ellipsis}}, \emph{\DUrole{n}{copy}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{bool}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{False}}, \emph{\DUrole{n}{default}\DUrole{o}{=}\DUrole{default_value}{Ellipsis}}, \emph{\DUrole{n}{path\_split}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{str}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{Ellipsis}}}{{ $\rightarrow$ Union\DUrole{p}{{[}}Tuple\DUrole{p}{{[}}collections.abc.Collection\DUrole{p}{,}\DUrole{w}{  }collections.abc.Collection\DUrole{p}{{]}}\DUrole{p}{,}\DUrole{w}{  }Tuple\DUrole{p}{{[}}Any\DUrole{p}{,}\DUrole{w}{  }Any\DUrole{p}{{]}}\DUrole{p}{{]}}}}
 \pysigstopsignatures
 \sphinxAtStartPar
 Splits self into nodes that pass the filter, and nodes that don’t pass the filter
@@ -829,7 +862,7 @@ Default “”, meaning that the root node is split, see get() and README for ex
 
 \item {}
 \sphinxAtStartPar
-\sphinxstyleliteralstrong{\sphinxupquote{value\_split}} \textendash{} * used to split path into a list if path is a str, default ” “
+\sphinxstyleliteralstrong{\sphinxupquote{path\_split}} \textendash{} * used to split path into a list if path is a str, default ” “
 
 \end{itemize}
 
@@ -851,7 +884,7 @@ don’t pass the filter
 \begin{fulllineitems}
 \phantomsection\label{\detokenize{fagus.fagus:fagus.fagus.Fagus.set}}
 \pysigstartsignatures
-\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{set}}}{\emph{\DUrole{n}{value}}, \emph{\DUrole{n}{path}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{collections.abc.Iterable}}, \emph{\DUrole{n}{node\_types}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{str}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{Ellipsis}}, \emph{\DUrole{n}{list\_insert}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{int}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{Ellipsis}}, \emph{\DUrole{n}{value\_split}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{str}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{Ellipsis}}, \emph{\DUrole{n}{fagus}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{bool}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{Ellipsis}}, \emph{\DUrole{n}{if\_}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{Any}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{Ellipsis}}, \emph{\DUrole{n}{default\_node\_type}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{str}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{Ellipsis}}, \emph{\DUrole{n}{copy}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{bool}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{False}}}{{ $\rightarrow$ collections.abc.Collection}}
+\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{set}}}{\emph{\DUrole{n}{value}}, \emph{\DUrole{n}{path}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{collections.abc.Iterable}}, \emph{\DUrole{n}{node\_types}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{str}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{Ellipsis}}, \emph{\DUrole{n}{list\_insert}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{int}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{Ellipsis}}, \emph{\DUrole{n}{path\_split}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{str}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{Ellipsis}}, \emph{\DUrole{n}{fagus}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{bool}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{Ellipsis}}, \emph{\DUrole{n}{if\_}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{Any}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{Ellipsis}}, \emph{\DUrole{n}{default\_node\_type}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{str}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{Ellipsis}}, \emph{\DUrole{n}{copy}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{bool}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{False}}}{{ $\rightarrow$ collections.abc.Collection}}
 \pysigstopsignatures
 \sphinxAtStartPar
 Create (if they don’t already exist) all sub\sphinxhyphen{}nodes in path, and finally set value at leaf\sphinxhyphen{}node
@@ -867,7 +900,7 @@ Create (if they don’t already exist) all sub\sphinxhyphen{}nodes in path, and 
 \item {}
 \sphinxAtStartPar
 \sphinxstyleliteralstrong{\sphinxupquote{path}} \textendash{} List/Tuple of key\sphinxhyphen{}values that are traversed in self. If no nodes exist at the keys, new nodes are
-created. Can also be specified as a string, that is split into a tuple using value\_split. See get()
+created. Can also be specified as a string, that is split into a tuple using path\_split. See get()
 
 \item {}
 \sphinxAtStartPar
@@ -883,7 +916,7 @@ existing node in the list at that index. See README
 
 \item {}
 \sphinxAtStartPar
-\sphinxstyleliteralstrong{\sphinxupquote{value\_split}} \textendash{} * used to split path into a list if path is a string, default ” “
+\sphinxstyleliteralstrong{\sphinxupquote{path\_split}} \textendash{} * used to split path into a list if path is a string, default ” “
 
 \item {}
 \sphinxAtStartPar
@@ -930,7 +963,7 @@ self as a node if fagus is set, or a modified copy of self if copy is set
 \begin{fulllineitems}
 \phantomsection\label{\detokenize{fagus.fagus:fagus.fagus.Fagus.append}}
 \pysigstartsignatures
-\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{append}}}{\emph{\DUrole{n}{value}}, \emph{\DUrole{n}{path}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{Any}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{\textquotesingle{}\textquotesingle{}}}, \emph{\DUrole{n}{node\_types}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{str}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{Ellipsis}}, \emph{\DUrole{n}{list\_insert}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{int}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{Ellipsis}}, \emph{\DUrole{n}{value\_split}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{str}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{Ellipsis}}, \emph{\DUrole{n}{fagus}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{bool}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{Ellipsis}}, \emph{\DUrole{n}{if\_}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{Any}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{Ellipsis}}, \emph{\DUrole{n}{default\_node\_type}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{str}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{Ellipsis}}, \emph{\DUrole{n}{copy}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{bool}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{False}}}{{ $\rightarrow$ collections.abc.Collection}}
+\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{append}}}{\emph{\DUrole{n}{value}}, \emph{\DUrole{n}{path}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{Any}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{\textquotesingle{}\textquotesingle{}}}, \emph{\DUrole{n}{node\_types}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{str}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{Ellipsis}}, \emph{\DUrole{n}{list\_insert}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{int}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{Ellipsis}}, \emph{\DUrole{n}{path\_split}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{str}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{Ellipsis}}, \emph{\DUrole{n}{fagus}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{bool}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{Ellipsis}}, \emph{\DUrole{n}{if\_}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{Any}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{Ellipsis}}, \emph{\DUrole{n}{default\_node\_type}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{str}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{Ellipsis}}, \emph{\DUrole{n}{copy}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{bool}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{False}}}{{ $\rightarrow$ collections.abc.Collection}}
 \pysigstopsignatures
 \sphinxAtStartPar
 Create (if they don’t already exist) all sub\sphinxhyphen{}nodes in path, and finally append value to a list at leaf\sphinxhyphen{}node
@@ -949,7 +982,7 @@ If the leaf\sphinxhyphen{}node is a set, tuple or other value it is converted to
 \item {}
 \sphinxAtStartPar
 \sphinxstyleliteralstrong{\sphinxupquote{path}} \textendash{} List/Tuple of key\sphinxhyphen{}values that are traversed in self. If no nodes exist at the keys, new nodes are
-created. Can also be specified as a string, that is split into a tuple using value\_split. See get()
+created. Can also be specified as a string, that is split into a tuple using path\_split. See get()
 
 \item {}
 \sphinxAtStartPar
@@ -965,7 +998,7 @@ existing node in the list at that index. See README
 
 \item {}
 \sphinxAtStartPar
-\sphinxstyleliteralstrong{\sphinxupquote{value\_split}} \textendash{} * used to split path into a list if path is a string, default ” “
+\sphinxstyleliteralstrong{\sphinxupquote{path\_split}} \textendash{} * used to split path into a list if path is a string, default ” “
 
 \item {}
 \sphinxAtStartPar
@@ -1013,7 +1046,7 @@ self as a node if fagus is set, or a modified copy of self if copy is set
 \begin{fulllineitems}
 \phantomsection\label{\detokenize{fagus.fagus:fagus.fagus.Fagus.extend}}
 \pysigstartsignatures
-\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{extend}}}{\emph{\DUrole{n}{values}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{collections.abc.Iterable}}, \emph{\DUrole{n}{path}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{Any}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{\textquotesingle{}\textquotesingle{}}}, \emph{\DUrole{n}{node\_types}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{str}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{Ellipsis}}, \emph{\DUrole{n}{list\_insert}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{int}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{Ellipsis}}, \emph{\DUrole{n}{value\_split}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{str}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{Ellipsis}}, \emph{\DUrole{n}{fagus}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{bool}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{Ellipsis}}, \emph{\DUrole{n}{if\_}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{Any}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{Ellipsis}}, \emph{\DUrole{n}{default\_node\_type}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{str}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{Ellipsis}}, \emph{\DUrole{n}{copy}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{bool}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{False}}}{{ $\rightarrow$ collections.abc.Collection}}
+\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{extend}}}{\emph{\DUrole{n}{values}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{collections.abc.Iterable}}, \emph{\DUrole{n}{path}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{Any}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{\textquotesingle{}\textquotesingle{}}}, \emph{\DUrole{n}{node\_types}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{str}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{Ellipsis}}, \emph{\DUrole{n}{list\_insert}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{int}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{Ellipsis}}, \emph{\DUrole{n}{path\_split}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{str}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{Ellipsis}}, \emph{\DUrole{n}{fagus}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{bool}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{Ellipsis}}, \emph{\DUrole{n}{if\_}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{Any}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{Ellipsis}}, \emph{\DUrole{n}{default\_node\_type}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{str}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{Ellipsis}}, \emph{\DUrole{n}{copy}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{bool}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{False}}}{{ $\rightarrow$ collections.abc.Collection}}
 \pysigstopsignatures
 \sphinxAtStartPar
 Create (if they don’t already exist) all sub\sphinxhyphen{}nodes in path. Then extend list at leaf\sphinxhyphen{}node with the new values
@@ -1032,7 +1065,7 @@ If the leaf\sphinxhyphen{}node is a set, tuple or other value it is converted to
 \item {}
 \sphinxAtStartPar
 \sphinxstyleliteralstrong{\sphinxupquote{path}} \textendash{} List/Tuple of key\sphinxhyphen{}values that are traversed in self. If no nodes exist at the keys, new nodes are
-created. Can also be specified as a string, that is split into a tuple using value\_split. See get()
+created. Can also be specified as a string, that is split into a tuple using path\_split. See get()
 
 \item {}
 \sphinxAtStartPar
@@ -1048,7 +1081,7 @@ existing node in the list at that index. See README
 
 \item {}
 \sphinxAtStartPar
-\sphinxstyleliteralstrong{\sphinxupquote{value\_split}} \textendash{} * used to split path into a list if path is a string, default ” “
+\sphinxstyleliteralstrong{\sphinxupquote{path\_split}} \textendash{} * used to split path into a list if path is a string, default ” “
 
 \item {}
 \sphinxAtStartPar
@@ -1096,7 +1129,7 @@ self as a node if fagus is set, or a modified copy of self if copy is set
 \begin{fulllineitems}
 \phantomsection\label{\detokenize{fagus.fagus:fagus.fagus.Fagus.insert}}
 \pysigstartsignatures
-\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{insert}}}{\emph{\DUrole{n}{index}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{int}}, \emph{\DUrole{n}{value}}, \emph{\DUrole{n}{path}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{Any}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{\textquotesingle{}\textquotesingle{}}}, \emph{\DUrole{n}{node\_types}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{str}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{Ellipsis}}, \emph{\DUrole{n}{list\_insert}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{int}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{Ellipsis}}, \emph{\DUrole{n}{value\_split}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{str}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{Ellipsis}}, \emph{\DUrole{n}{fagus}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{bool}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{Ellipsis}}, \emph{\DUrole{n}{if\_}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{Any}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{Ellipsis}}, \emph{\DUrole{n}{default\_node\_type}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{str}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{Ellipsis}}, \emph{\DUrole{n}{copy}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{bool}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{False}}}{{ $\rightarrow$ collections.abc.Collection}}
+\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{insert}}}{\emph{\DUrole{n}{index}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{int}}, \emph{\DUrole{n}{value}}, \emph{\DUrole{n}{path}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{Any}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{\textquotesingle{}\textquotesingle{}}}, \emph{\DUrole{n}{node\_types}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{str}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{Ellipsis}}, \emph{\DUrole{n}{list\_insert}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{int}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{Ellipsis}}, \emph{\DUrole{n}{path\_split}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{str}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{Ellipsis}}, \emph{\DUrole{n}{fagus}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{bool}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{Ellipsis}}, \emph{\DUrole{n}{if\_}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{Any}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{Ellipsis}}, \emph{\DUrole{n}{default\_node\_type}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{str}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{Ellipsis}}, \emph{\DUrole{n}{copy}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{bool}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{False}}}{{ $\rightarrow$ collections.abc.Collection}}
 \pysigstopsignatures
 \sphinxAtStartPar
 Create (if they don’t already exist) all sub\sphinxhyphen{}nodes in path. Insert new value at index in list at leaf\sphinxhyphen{}node
@@ -1120,7 +1153,7 @@ index
 \item {}
 \sphinxAtStartPar
 \sphinxstyleliteralstrong{\sphinxupquote{path}} \textendash{} List/Tuple of key\sphinxhyphen{}values that are traversed in self. If no nodes exist at the keys, new nodes are
-created. Can also be specified as a string, that is split into a tuple using value\_split. See get()
+created. Can also be specified as a string, that is split into a tuple using path\_split. See get()
 
 \item {}
 \sphinxAtStartPar
@@ -1136,7 +1169,7 @@ existing node in the list at that index. See README
 
 \item {}
 \sphinxAtStartPar
-\sphinxstyleliteralstrong{\sphinxupquote{value\_split}} \textendash{} * used to split path into a list if path is a string, default ” “
+\sphinxstyleliteralstrong{\sphinxupquote{path\_split}} \textendash{} * used to split path into a list if path is a string, default ” “
 
 \item {}
 \sphinxAtStartPar
@@ -1184,7 +1217,7 @@ self as a node if fagus is set, or a modified copy of self if copy is set
 \begin{fulllineitems}
 \phantomsection\label{\detokenize{fagus.fagus:fagus.fagus.Fagus.add}}
 \pysigstartsignatures
-\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{add}}}{\emph{\DUrole{n}{value}}, \emph{\DUrole{n}{path}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{Any}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{\textquotesingle{}\textquotesingle{}}}, \emph{\DUrole{n}{node\_types}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{str}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{Ellipsis}}, \emph{\DUrole{n}{list\_insert}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{int}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{Ellipsis}}, \emph{\DUrole{n}{value\_split}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{str}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{Ellipsis}}, \emph{\DUrole{n}{fagus}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{bool}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{Ellipsis}}, \emph{\DUrole{n}{if\_}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{Any}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{Ellipsis}}, \emph{\DUrole{n}{default\_node\_type}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{str}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{Ellipsis}}, \emph{\DUrole{n}{copy}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{bool}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{False}}}{{ $\rightarrow$ collections.abc.Collection}}
+\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{add}}}{\emph{\DUrole{n}{value}}, \emph{\DUrole{n}{path}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{Any}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{\textquotesingle{}\textquotesingle{}}}, \emph{\DUrole{n}{node\_types}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{str}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{Ellipsis}}, \emph{\DUrole{n}{list\_insert}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{int}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{Ellipsis}}, \emph{\DUrole{n}{path\_split}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{str}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{Ellipsis}}, \emph{\DUrole{n}{fagus}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{bool}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{Ellipsis}}, \emph{\DUrole{n}{if\_}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{Any}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{Ellipsis}}, \emph{\DUrole{n}{default\_node\_type}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{str}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{Ellipsis}}, \emph{\DUrole{n}{copy}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{bool}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{False}}}{{ $\rightarrow$ collections.abc.Collection}}
 \pysigstopsignatures
 \sphinxAtStartPar
 Create (if they don’t already exist) all sub\sphinxhyphen{}nodes in path, and finally add new value to set at leaf\sphinxhyphen{}node
@@ -1203,7 +1236,7 @@ If the leaf\sphinxhyphen{}node is a list, tuple or other value it is converted t
 \item {}
 \sphinxAtStartPar
 \sphinxstyleliteralstrong{\sphinxupquote{path}} \textendash{} List/Tuple of key\sphinxhyphen{}values that are traversed in self. If no nodes exist at the keys, new nodes are
-created. Can also be specified as a string, that is split into a tuple using value\_split. See get()
+created. Can also be specified as a string, that is split into a tuple using path\_split. See get()
 
 \item {}
 \sphinxAtStartPar
@@ -1219,7 +1252,7 @@ existing node in the list at that index. See README
 
 \item {}
 \sphinxAtStartPar
-\sphinxstyleliteralstrong{\sphinxupquote{value\_split}} \textendash{} * used to split path into a list if path is a string, default ” “
+\sphinxstyleliteralstrong{\sphinxupquote{path\_split}} \textendash{} * used to split path into a list if path is a string, default ” “
 
 \item {}
 \sphinxAtStartPar
@@ -1267,7 +1300,7 @@ self as a node if fagus is set, or a modified copy of self if copy is set
 \begin{fulllineitems}
 \phantomsection\label{\detokenize{fagus.fagus:fagus.fagus.Fagus.update}}
 \pysigstartsignatures
-\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{update}}}{\emph{\DUrole{n}{values}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{collections.abc.Iterable}}, \emph{\DUrole{n}{path}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{Any}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{\textquotesingle{}\textquotesingle{}}}, \emph{\DUrole{n}{node\_types}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{str}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{Ellipsis}}, \emph{\DUrole{n}{list\_insert}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{int}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{Ellipsis}}, \emph{\DUrole{n}{value\_split}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{str}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{Ellipsis}}, \emph{\DUrole{n}{fagus}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{bool}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{Ellipsis}}, \emph{\DUrole{n}{if\_}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{Any}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{Ellipsis}}, \emph{\DUrole{n}{default\_node\_type}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{str}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{Ellipsis}}, \emph{\DUrole{n}{copy}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{bool}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{False}}}{{ $\rightarrow$ collections.abc.Collection}}
+\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{update}}}{\emph{\DUrole{n}{values}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{collections.abc.Iterable}}, \emph{\DUrole{n}{path}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{Any}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{\textquotesingle{}\textquotesingle{}}}, \emph{\DUrole{n}{node\_types}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{str}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{Ellipsis}}, \emph{\DUrole{n}{list\_insert}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{int}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{Ellipsis}}, \emph{\DUrole{n}{path\_split}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{str}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{Ellipsis}}, \emph{\DUrole{n}{fagus}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{bool}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{Ellipsis}}, \emph{\DUrole{n}{if\_}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{Any}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{Ellipsis}}, \emph{\DUrole{n}{default\_node\_type}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{str}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{Ellipsis}}, \emph{\DUrole{n}{copy}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{bool}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{False}}}{{ $\rightarrow$ collections.abc.Collection}}
 \pysigstopsignatures
 \sphinxAtStartPar
 Create (if they don’t already exist) all sub\sphinxhyphen{}nodes in path, then update set at leaf\sphinxhyphen{}node with new values
@@ -1287,7 +1320,7 @@ values. If the node at path is a dict, and values also is a dict, the node\sphin
 \item {}
 \sphinxAtStartPar
 \sphinxstyleliteralstrong{\sphinxupquote{path}} \textendash{} List/Tuple of key\sphinxhyphen{}values that are traversed in self. If no nodes exist at the keys, new nodes are
-created. Can also be specified as a string, that is split into a tuple using value\_split. See get()
+created. Can also be specified as a string, that is split into a tuple using path\_split. See get()
 
 \item {}
 \sphinxAtStartPar
@@ -1303,7 +1336,7 @@ existing node in the list at that index. See README
 
 \item {}
 \sphinxAtStartPar
-\sphinxstyleliteralstrong{\sphinxupquote{value\_split}} \textendash{} * used to split path into a list if path is a string, default ” “
+\sphinxstyleliteralstrong{\sphinxupquote{path\_split}} \textendash{} * used to split path into a list if path is a string, default ” “
 
 \item {}
 \sphinxAtStartPar
@@ -1351,7 +1384,7 @@ self as a node if fagus is set, or a modified copy of self if copy is set
 \begin{fulllineitems}
 \phantomsection\label{\detokenize{fagus.fagus:fagus.fagus.Fagus.setdefault}}
 \pysigstartsignatures
-\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{setdefault}}}{\emph{\DUrole{n}{path}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{Any}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{\textquotesingle{}\textquotesingle{}}}, \emph{\DUrole{n}{default}\DUrole{o}{=}\DUrole{default_value}{Ellipsis}}, \emph{\DUrole{n}{fagus}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{bool}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{Ellipsis}}, \emph{\DUrole{n}{node\_types}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{str}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{Ellipsis}}, \emph{\DUrole{n}{list\_insert}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{int}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{Ellipsis}}, \emph{\DUrole{n}{value\_split}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{str}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{Ellipsis}}, \emph{\DUrole{n}{default\_node\_type}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{str}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{Ellipsis}}}{{ $\rightarrow$ Any}}
+\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{setdefault}}}{\emph{\DUrole{n}{path}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{Any}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{\textquotesingle{}\textquotesingle{}}}, \emph{\DUrole{n}{default}\DUrole{o}{=}\DUrole{default_value}{Ellipsis}}, \emph{\DUrole{n}{fagus}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{bool}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{Ellipsis}}, \emph{\DUrole{n}{node\_types}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{str}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{Ellipsis}}, \emph{\DUrole{n}{list\_insert}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{int}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{Ellipsis}}, \emph{\DUrole{n}{path\_split}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{str}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{Ellipsis}}, \emph{\DUrole{n}{default\_node\_type}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{str}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{Ellipsis}}}{{ $\rightarrow$ Any}}
 \pysigstopsignatures
 \sphinxAtStartPar
 Get value at path and return it. If there is no value at path, set default at path, and return default
@@ -1386,7 +1419,7 @@ existing node in the list at that index. See README
 
 \item {}
 \sphinxAtStartPar
-\sphinxstyleliteralstrong{\sphinxupquote{value\_split}} \textendash{} * used to split path into a list if path is a str, default ” “
+\sphinxstyleliteralstrong{\sphinxupquote{path\_split}} \textendash{} * used to split path into a list if path is a str, default ” “
 
 \item {}
 \sphinxAtStartPar
@@ -1420,7 +1453,7 @@ value at path if it exists, otherwise default is set at path and returned
 \begin{fulllineitems}
 \phantomsection\label{\detokenize{fagus.fagus:fagus.fagus.Fagus.mod}}
 \pysigstartsignatures
-\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{mod}}}{\emph{\DUrole{n}{mod\_function}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{Callable}}, \emph{\DUrole{n}{path}}, \emph{\DUrole{n}{default}\DUrole{o}{=}\DUrole{default_value}{Ellipsis}}, \emph{\DUrole{n}{replace\_value}\DUrole{o}{=}\DUrole{default_value}{True}}, \emph{\DUrole{n}{fagus}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{bool}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{Ellipsis}}, \emph{\DUrole{n}{node\_types}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{str}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{Ellipsis}}, \emph{\DUrole{n}{list\_insert}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{int}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{Ellipsis}}, \emph{\DUrole{n}{value\_split}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{str}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{Ellipsis}}, \emph{\DUrole{n}{default\_node\_type}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{str}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{Ellipsis}}}{{ $\rightarrow$ Any}}
+\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{mod}}}{\emph{\DUrole{n}{mod\_function}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{Callable}}, \emph{\DUrole{n}{path}}, \emph{\DUrole{n}{default}\DUrole{o}{=}\DUrole{default_value}{Ellipsis}}, \emph{\DUrole{n}{replace\_value}\DUrole{o}{=}\DUrole{default_value}{True}}, \emph{\DUrole{n}{fagus}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{bool}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{Ellipsis}}, \emph{\DUrole{n}{node\_types}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{str}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{Ellipsis}}, \emph{\DUrole{n}{list\_insert}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{int}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{Ellipsis}}, \emph{\DUrole{n}{path\_split}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{str}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{Ellipsis}}, \emph{\DUrole{n}{default\_node\_type}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{str}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{Ellipsis}}}{{ $\rightarrow$ Any}}
 \pysigstopsignatures
 \sphinxAtStartPar
 Modifies the value at path using the function\sphinxhyphen{}pointer mod\_function
@@ -1441,7 +1474,7 @@ call more complex functions requiring several arguments.
 \item {}
 \sphinxAtStartPar
 \sphinxstyleliteralstrong{\sphinxupquote{path}} \textendash{} position in self at which the value shall be modified. Defined as a list/Tuple of key\sphinxhyphen{}values to
-recursively traverse self. Can also be specified as string which is split into a tuple using value\_split
+recursively traverse self. Can also be specified as string which is split into a tuple using path\_split
 
 \item {}
 \sphinxAtStartPar
@@ -1471,7 +1504,7 @@ existing node in the list at that index. See README
 
 \item {}
 \sphinxAtStartPar
-\sphinxstyleliteralstrong{\sphinxupquote{value\_split}} \textendash{} * used to split path into a list if path is a str, default ” “
+\sphinxstyleliteralstrong{\sphinxupquote{path\_split}} \textendash{} * used to split path into a list if path is a str, default ” “
 
 \item {}
 \sphinxAtStartPar
@@ -1505,7 +1538,7 @@ the new value that was returned by the mod\_function, or default if there was no
 \begin{fulllineitems}
 \phantomsection\label{\detokenize{fagus.fagus:fagus.fagus.Fagus.mod_all}}
 \pysigstartsignatures
-\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{mod\_all}}}{\emph{\DUrole{n}{mod\_function}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{Callable}}, \emph{\DUrole{n}{filter\_}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{Optional\DUrole{p}{{[}}{\hyperref[\detokenize{fagus.filters:fagus.filters.Fil}]{\sphinxcrossref{fagus.filters.Fil}}}\DUrole{p}{{]}}}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{None}}, \emph{\DUrole{n}{path}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{Any}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{\textquotesingle{}\textquotesingle{}}}, \emph{\DUrole{n}{replace\_value}\DUrole{o}{=}\DUrole{default_value}{True}}, \emph{\DUrole{n}{default}\DUrole{o}{=}\DUrole{default_value}{Ellipsis}}, \emph{\DUrole{n}{max\_depth}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{int}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{9223372036854775807}}, \emph{\DUrole{n}{fagus}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{bool}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{Ellipsis}}, \emph{\DUrole{n}{copy}\DUrole{o}{=}\DUrole{default_value}{False}}, \emph{\DUrole{n}{value\_split}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{str}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{Ellipsis}}}{{ $\rightarrow$ collections.abc.Collection}}
+\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{mod\_all}}}{\emph{\DUrole{n}{mod\_function}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{Callable}}, \emph{\DUrole{n}{filter\_}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{Optional\DUrole{p}{{[}}{\hyperref[\detokenize{fagus.filters:fagus.filters.Fil}]{\sphinxcrossref{fagus.filters.Fil}}}\DUrole{p}{{]}}}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{None}}, \emph{\DUrole{n}{path}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{Any}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{\textquotesingle{}\textquotesingle{}}}, \emph{\DUrole{n}{replace\_value}\DUrole{o}{=}\DUrole{default_value}{True}}, \emph{\DUrole{n}{default}\DUrole{o}{=}\DUrole{default_value}{Ellipsis}}, \emph{\DUrole{n}{max\_depth}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{int}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{9223372036854775807}}, \emph{\DUrole{n}{fagus}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{bool}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{Ellipsis}}, \emph{\DUrole{n}{copy}\DUrole{o}{=}\DUrole{default_value}{False}}, \emph{\DUrole{n}{path\_split}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{str}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{Ellipsis}}}{{ $\rightarrow$ collections.abc.Collection}}
 \pysigstopsignatures
 \sphinxAtStartPar
 Modify all the leaf\sphinxhyphen{}values that match a certain filter
@@ -1551,7 +1584,7 @@ If no value exists at path, the default value is always set at path (independent
 
 \item {}
 \sphinxAtStartPar
-\sphinxstyleliteralstrong{\sphinxupquote{value\_split}} \textendash{} * used to split path into a list if path is a str, default ” “
+\sphinxstyleliteralstrong{\sphinxupquote{path\_split}} \textendash{} * used to split path into a list if path is a str, default ” “
 
 \end{itemize}
 
@@ -1572,7 +1605,7 @@ the node at path where all the leaves matching filter\_ are modified, or default
 \begin{fulllineitems}
 \phantomsection\label{\detokenize{fagus.fagus:fagus.fagus.Fagus.serialize}}
 \pysigstartsignatures
-\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{serialize}}}{\emph{\DUrole{n}{mod\_functions}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{Optional\DUrole{p}{{[}}collections.abc.Mapping\DUrole{p}{{]}}}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{None}}, \emph{\DUrole{n}{path}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{Any}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{\textquotesingle{}\textquotesingle{}}}, \emph{\DUrole{n}{node\_types}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{str}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{Ellipsis}}, \emph{\DUrole{n}{list\_insert}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{int}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{Ellipsis}}, \emph{\DUrole{n}{value\_split}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{str}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{Ellipsis}}, \emph{\DUrole{n}{copy}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{bool}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{False}}}{{ $\rightarrow$ Union\DUrole{p}{{[}}dict\DUrole{p}{,}\DUrole{w}{  }list\DUrole{p}{{]}}}}
+\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{serialize}}}{\emph{\DUrole{n}{mod\_functions}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{Optional\DUrole{p}{{[}}collections.abc.Mapping\DUrole{p}{{]}}}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{None}}, \emph{\DUrole{n}{path}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{Any}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{\textquotesingle{}\textquotesingle{}}}, \emph{\DUrole{n}{node\_types}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{str}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{Ellipsis}}, \emph{\DUrole{n}{list\_insert}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{int}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{Ellipsis}}, \emph{\DUrole{n}{path\_split}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{str}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{Ellipsis}}, \emph{\DUrole{n}{copy}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{bool}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{False}}}{{ $\rightarrow$ Union\DUrole{p}{{[}}dict\DUrole{p}{,}\DUrole{w}{  }list\DUrole{p}{{]}}}}
 \pysigstopsignatures
 \sphinxAtStartPar
 Makes sure the object can be serialized so that it can be converted to JSON, YAML etc.
@@ -1625,7 +1658,7 @@ existing node in the list at that index. See README
 
 \item {}
 \sphinxAtStartPar
-\sphinxstyleliteralstrong{\sphinxupquote{value\_split}} \textendash{} * used to split path into a list if path is a str, default ” “
+\sphinxstyleliteralstrong{\sphinxupquote{path\_split}} \textendash{} * used to split path into a list if path is a str, default ” “
 
 \item {}
 \sphinxAtStartPar
@@ -1661,7 +1694,7 @@ a serializable object that only contains types allowed in json or yaml
 \begin{fulllineitems}
 \phantomsection\label{\detokenize{fagus.fagus:fagus.fagus.Fagus.merge}}
 \pysigstartsignatures
-\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{merge}}}{\emph{\DUrole{n}{obj}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{Union\DUrole{p}{{[}}{\hyperref[\detokenize{fagus.iterators:fagus.iterators.FagusIterator}]{\sphinxcrossref{fagus.iterators.FagusIterator}}}\DUrole{p}{,}\DUrole{w}{  }collections.abc.Collection\DUrole{p}{{]}}}}, \emph{\DUrole{n}{path}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{Any}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{\textquotesingle{}\textquotesingle{}}}, \emph{\DUrole{n}{new\_value\_action}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{str}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{\textquotesingle{}r\textquotesingle{}}}, \emph{\DUrole{n}{extend\_from}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{int}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{9223372036854775807}}, \emph{\DUrole{n}{update\_from}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{int}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{9223372036854775807}}, \emph{\DUrole{n}{fagus}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{bool}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{Ellipsis}}, \emph{\DUrole{n}{copy}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{bool}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{False}}, \emph{\DUrole{n}{copy\_obj}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{bool}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{False}}, \emph{\DUrole{n}{value\_split}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{str}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{Ellipsis}}, \emph{\DUrole{n}{node\_types}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{str}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{Ellipsis}}, \emph{\DUrole{n}{list\_insert}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{int}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{Ellipsis}}, \emph{\DUrole{n}{default\_node\_type}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{str}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{Ellipsis}}}{{ $\rightarrow$ collections.abc.Collection}}
+\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{merge}}}{\emph{\DUrole{n}{obj}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{Union\DUrole{p}{{[}}{\hyperref[\detokenize{fagus.iterators:fagus.iterators.FagusIterator}]{\sphinxcrossref{fagus.iterators.FagusIterator}}}\DUrole{p}{,}\DUrole{w}{  }collections.abc.Collection\DUrole{p}{{]}}}}, \emph{\DUrole{n}{path}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{Any}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{\textquotesingle{}\textquotesingle{}}}, \emph{\DUrole{n}{new\_value\_action}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{str}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{\textquotesingle{}r\textquotesingle{}}}, \emph{\DUrole{n}{extend\_from}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{int}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{9223372036854775807}}, \emph{\DUrole{n}{update\_from}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{int}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{9223372036854775807}}, \emph{\DUrole{n}{fagus}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{bool}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{Ellipsis}}, \emph{\DUrole{n}{copy}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{bool}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{False}}, \emph{\DUrole{n}{copy\_obj}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{bool}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{False}}, \emph{\DUrole{n}{path\_split}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{str}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{Ellipsis}}, \emph{\DUrole{n}{node\_types}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{str}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{Ellipsis}}, \emph{\DUrole{n}{list\_insert}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{int}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{Ellipsis}}, \emph{\DUrole{n}{default\_node\_type}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{str}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{Ellipsis}}}{{ $\rightarrow$ collections.abc.Collection}}
 \pysigstopsignatures
 \sphinxAtStartPar
 Merges two or more tree\sphinxhyphen{}objects to update and extend the root node
@@ -1710,7 +1743,7 @@ put into the root node. Set this to True to prevent that and keep root and objec
 
 \item {}
 \sphinxAtStartPar
-\sphinxstyleliteralstrong{\sphinxupquote{value\_split}} \textendash{} * used to split path into a list if path is a str, default ” “
+\sphinxstyleliteralstrong{\sphinxupquote{path\_split}} \textendash{} * used to split path into a list if path is a str, default ” “
 
 \item {}
 \sphinxAtStartPar
@@ -1758,7 +1791,7 @@ a reference to the modified root node, or a modified copy of the root node (see 
 \begin{fulllineitems}
 \phantomsection\label{\detokenize{fagus.fagus:fagus.fagus.Fagus.pop}}
 \pysigstartsignatures
-\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{pop}}}{\emph{\DUrole{n}{path}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{Any}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{\textquotesingle{}\textquotesingle{}}}, \emph{\DUrole{n}{default}\DUrole{o}{=}\DUrole{default_value}{Ellipsis}}, \emph{\DUrole{n}{fagus}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{bool}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{Ellipsis}}, \emph{\DUrole{n}{value\_split}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{str}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{Ellipsis}}}{}
+\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{pop}}}{\emph{\DUrole{n}{path}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{Any}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{\textquotesingle{}\textquotesingle{}}}, \emph{\DUrole{n}{default}\DUrole{o}{=}\DUrole{default_value}{Ellipsis}}, \emph{\DUrole{n}{fagus}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{bool}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{Ellipsis}}, \emph{\DUrole{n}{path\_split}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{str}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{Ellipsis}}}{}
 \pysigstopsignatures
 \sphinxAtStartPar
 Deletes the value at path and returns it
@@ -1781,7 +1814,7 @@ Deletes the value at path and returns it
 
 \item {}
 \sphinxAtStartPar
-\sphinxstyleliteralstrong{\sphinxupquote{value\_split}} \textendash{} * used to split path into a list if path is a str, default ” “
+\sphinxstyleliteralstrong{\sphinxupquote{path\_split}} \textendash{} * used to split path into a list if path is a str, default ” “
 
 \end{itemize}
 
@@ -1814,7 +1847,7 @@ This function is not implemented in Fagus
 \begin{fulllineitems}
 \phantomsection\label{\detokenize{fagus.fagus:fagus.fagus.Fagus.discard}}
 \pysigstartsignatures
-\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{discard}}}{\emph{\DUrole{n}{path}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{Any}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{\textquotesingle{}\textquotesingle{}}}, \emph{\DUrole{n}{value\_split}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{str}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{Ellipsis}}}{{ $\rightarrow$ None}}
+\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{discard}}}{\emph{\DUrole{n}{path}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{Any}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{\textquotesingle{}\textquotesingle{}}}, \emph{\DUrole{n}{path\_split}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{str}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{Ellipsis}}}{{ $\rightarrow$ None}}
 \pysigstopsignatures
 \sphinxAtStartPar
 Deletes the value at path if it exists
@@ -1829,7 +1862,7 @@ Deletes the value at path if it exists
 
 \item {}
 \sphinxAtStartPar
-\sphinxstyleliteralstrong{\sphinxupquote{value\_split}} \textendash{} * used to split path into a list if path is a str, default ” “
+\sphinxstyleliteralstrong{\sphinxupquote{path\_split}} \textendash{} * used to split path into a list if path is a str, default ” “
 
 \end{itemize}
 
@@ -1845,7 +1878,7 @@ Returns: None
 \begin{fulllineitems}
 \phantomsection\label{\detokenize{fagus.fagus:fagus.fagus.Fagus.remove}}
 \pysigstartsignatures
-\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{remove}}}{\emph{\DUrole{n}{path}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{Any}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{\textquotesingle{}\textquotesingle{}}}, \emph{\DUrole{n}{value\_split}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{str}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{Ellipsis}}}{{ $\rightarrow$ None}}
+\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{remove}}}{\emph{\DUrole{n}{path}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{Any}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{\textquotesingle{}\textquotesingle{}}}, \emph{\DUrole{n}{path\_split}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{str}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{Ellipsis}}}{{ $\rightarrow$ None}}
 \pysigstopsignatures
 \sphinxAtStartPar
 Deletes the value at path if it exists, raises KeyError if it doesn’t
@@ -1860,7 +1893,7 @@ Deletes the value at path if it exists, raises KeyError if it doesn’t
 
 \item {}
 \sphinxAtStartPar
-\sphinxstyleliteralstrong{\sphinxupquote{value\_split}} \textendash{} * used to split path into a list if path is a str, default ” “
+\sphinxstyleliteralstrong{\sphinxupquote{path\_split}} \textendash{} * used to split path into a list if path is a str, default ” “
 
 \end{itemize}
 
@@ -1882,7 +1915,7 @@ Returns: None
 \begin{fulllineitems}
 \phantomsection\label{\detokenize{fagus.fagus:fagus.fagus.Fagus.keys}}
 \pysigstartsignatures
-\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{keys}}}{\emph{\DUrole{n}{path}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{Any}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{\textquotesingle{}\textquotesingle{}}}, \emph{\DUrole{n}{value\_split}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{str}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{Ellipsis}}}{}
+\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{keys}}}{\emph{\DUrole{n}{path}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{Any}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{\textquotesingle{}\textquotesingle{}}}, \emph{\DUrole{n}{path\_split}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{str}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{Ellipsis}}}{}
 \pysigstopsignatures
 \sphinxAtStartPar
 Returns keys for the node at path, or None if that node is a set or doesn’t exist / doesn’t have keys
@@ -1897,7 +1930,7 @@ Returns keys for the node at path, or None if that node is a set or doesn’t ex
 
 \item {}
 \sphinxAtStartPar
-\sphinxstyleliteralstrong{\sphinxupquote{value\_split}} \textendash{} * used to split path into a list if path is a str, default ” “
+\sphinxstyleliteralstrong{\sphinxupquote{path\_split}} \textendash{} * used to split path into a list if path is a str, default ” “
 
 \end{itemize}
 
@@ -1914,7 +1947,7 @@ keys for the node at path, or an empty tuple if that node is a set or doesn’t 
 \begin{fulllineitems}
 \phantomsection\label{\detokenize{fagus.fagus:fagus.fagus.Fagus.values}}
 \pysigstartsignatures
-\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{values}}}{\emph{\DUrole{n}{path}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{Any}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{\textquotesingle{}\textquotesingle{}}}, \emph{\DUrole{n}{value\_split}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{str}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{Ellipsis}}, \emph{\DUrole{n}{fagus}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{bool}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{Ellipsis}}, \emph{\DUrole{n}{copy}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{bool}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{False}}}{}
+\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{values}}}{\emph{\DUrole{n}{path}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{Any}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{\textquotesingle{}\textquotesingle{}}}, \emph{\DUrole{n}{path\_split}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{str}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{Ellipsis}}, \emph{\DUrole{n}{fagus}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{bool}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{Ellipsis}}, \emph{\DUrole{n}{copy}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{bool}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{False}}}{}
 \pysigstopsignatures
 \sphinxAtStartPar
 Returns values for node at path
@@ -1929,7 +1962,7 @@ Returns values for node at path
 
 \item {}
 \sphinxAtStartPar
-\sphinxstyleliteralstrong{\sphinxupquote{value\_split}} \textendash{} * used to split path into a list if path is a str, default ” “
+\sphinxstyleliteralstrong{\sphinxupquote{path\_split}} \textendash{} * used to split path into a list if path is a str, default ” “
 
 \item {}
 \sphinxAtStartPar
@@ -1956,7 +1989,7 @@ tuple if the node isn’t iterable.
 \begin{fulllineitems}
 \phantomsection\label{\detokenize{fagus.fagus:fagus.fagus.Fagus.items}}
 \pysigstartsignatures
-\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{items}}}{\emph{\DUrole{n}{path}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{Any}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{\textquotesingle{}\textquotesingle{}}}, \emph{\DUrole{n}{value\_split}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{str}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{Ellipsis}}, \emph{\DUrole{n}{fagus}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{bool}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{Ellipsis}}, \emph{\DUrole{n}{copy}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{bool}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{False}}}{}
+\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{items}}}{\emph{\DUrole{n}{path}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{Any}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{\textquotesingle{}\textquotesingle{}}}, \emph{\DUrole{n}{path\_split}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{str}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{Ellipsis}}, \emph{\DUrole{n}{fagus}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{bool}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{Ellipsis}}, \emph{\DUrole{n}{copy}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{bool}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{False}}}{}
 \pysigstopsignatures
 \sphinxAtStartPar
 Returns in iterator of (key, value)\sphinxhyphen{}tuples in self, like dict.items()
@@ -1971,7 +2004,7 @@ Returns in iterator of (key, value)\sphinxhyphen{}tuples in self, like dict.item
 
 \item {}
 \sphinxAtStartPar
-\sphinxstyleliteralstrong{\sphinxupquote{value\_split}} \textendash{} * used to split path into a list if path is a str, default ” “
+\sphinxstyleliteralstrong{\sphinxupquote{path\_split}} \textendash{} * used to split path into a list if path is a str, default ” “
 
 \item {}
 \sphinxAtStartPar
@@ -1997,7 +2030,7 @@ iterator of (key, value)\sphinxhyphen{}tuples in self, like dict.items()
 \begin{fulllineitems}
 \phantomsection\label{\detokenize{fagus.fagus:fagus.fagus.Fagus.clear}}
 \pysigstartsignatures
-\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{clear}}}{\emph{\DUrole{n}{path}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{Any}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{\textquotesingle{}\textquotesingle{}}}, \emph{\DUrole{n}{value\_split}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{str}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{Ellipsis}}, \emph{\DUrole{n}{copy}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{bool}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{False}}, \emph{\DUrole{n}{fagus}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{bool}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{Ellipsis}}}{{ $\rightarrow$ collections.abc.Collection}}
+\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{clear}}}{\emph{\DUrole{n}{path}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{Any}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{\textquotesingle{}\textquotesingle{}}}, \emph{\DUrole{n}{path\_split}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{str}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{Ellipsis}}, \emph{\DUrole{n}{copy}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{bool}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{False}}, \emph{\DUrole{n}{fagus}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{bool}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{Ellipsis}}}{{ $\rightarrow$ collections.abc.Collection}}
 \pysigstopsignatures
 \sphinxAtStartPar
 Removes all elements from node at path.
@@ -2012,7 +2045,7 @@ Removes all elements from node at path.
 
 \item {}
 \sphinxAtStartPar
-\sphinxstyleliteralstrong{\sphinxupquote{value\_split}} \textendash{} * used to split path into a list if path is a str, default ” “
+\sphinxstyleliteralstrong{\sphinxupquote{path\_split}} \textendash{} * used to split path into a list if path is a str, default ” “
 
 \item {}
 \sphinxAtStartPar
@@ -2041,7 +2074,7 @@ self as a node if fagus is set, or a modified copy of self if copy is set
 \begin{fulllineitems}
 \phantomsection\label{\detokenize{fagus.fagus:fagus.fagus.Fagus.contains}}
 \pysigstartsignatures
-\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{contains}}}{\emph{\DUrole{n}{value}}, \emph{\DUrole{n}{path}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{Any}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{\textquotesingle{}\textquotesingle{}}}, \emph{\DUrole{n}{value\_split}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{str}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{Ellipsis}}}{{ $\rightarrow$ bool}}
+\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{contains}}}{\emph{\DUrole{n}{value}}, \emph{\DUrole{n}{path}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{Any}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{\textquotesingle{}\textquotesingle{}}}, \emph{\DUrole{n}{path\_split}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{str}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{Ellipsis}}}{{ $\rightarrow$ bool}}
 \pysigstopsignatures
 \sphinxAtStartPar
 Check if value is present in the node at path
@@ -2060,7 +2093,7 @@ Check if value is present in the node at path
 
 \item {}
 \sphinxAtStartPar
-\sphinxstyleliteralstrong{\sphinxupquote{value\_split}} \textendash{} * used to split path into a list if path is a str, default ” “
+\sphinxstyleliteralstrong{\sphinxupquote{path\_split}} \textendash{} * used to split path into a list if path is a str, default ” “
 
 \end{itemize}
 
@@ -2078,7 +2111,7 @@ path doesn’t exit in self
 \begin{fulllineitems}
 \phantomsection\label{\detokenize{fagus.fagus:fagus.fagus.Fagus.count}}
 \pysigstartsignatures
-\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{count}}}{\emph{\DUrole{n}{path}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{Any}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{\textquotesingle{}\textquotesingle{}}}, \emph{\DUrole{n}{value\_split}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{str}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{Ellipsis}}}{{ $\rightarrow$ int}}
+\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{count}}}{\emph{\DUrole{n}{path}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{Any}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{\textquotesingle{}\textquotesingle{}}}, \emph{\DUrole{n}{path\_split}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{str}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{Ellipsis}}}{{ $\rightarrow$ int}}
 \pysigstopsignatures
 \sphinxAtStartPar
 Check the number of elements in the node at path
@@ -2093,7 +2126,7 @@ Check the number of elements in the node at path
 
 \item {}
 \sphinxAtStartPar
-\sphinxstyleliteralstrong{\sphinxupquote{value\_split}} \textendash{} * used to split path into a list if path is a str, default ” “
+\sphinxstyleliteralstrong{\sphinxupquote{path\_split}} \textendash{} * used to split path into a list if path is a str, default ” “
 
 \end{itemize}
 
@@ -2111,7 +2144,7 @@ at path is not a node, 1 is returned
 \begin{fulllineitems}
 \phantomsection\label{\detokenize{fagus.fagus:fagus.fagus.Fagus.index}}
 \pysigstartsignatures
-\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{index}}}{\emph{\DUrole{n}{value}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{Any}}, \emph{\DUrole{n}{start}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{int}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{Ellipsis}}, \emph{\DUrole{n}{stop}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{int}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{Ellipsis}}, \emph{\DUrole{n}{path}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{Any}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{\textquotesingle{}\textquotesingle{}}}, \emph{\DUrole{n}{all\_}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{bool}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{False}}, \emph{\DUrole{n}{value\_split}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{str}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{Ellipsis}}}{{ $\rightarrow$ Optional\DUrole{p}{{[}}Union\DUrole{p}{{[}}int\DUrole{p}{,}\DUrole{w}{  }Any\DUrole{p}{,}\DUrole{w}{  }collections.abc.Sequence\DUrole{p}{{]}}\DUrole{p}{{]}}}}
+\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{index}}}{\emph{\DUrole{n}{value}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{Any}}, \emph{\DUrole{n}{start}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{int}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{Ellipsis}}, \emph{\DUrole{n}{stop}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{int}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{Ellipsis}}, \emph{\DUrole{n}{path}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{Any}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{\textquotesingle{}\textquotesingle{}}}, \emph{\DUrole{n}{all\_}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{bool}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{False}}, \emph{\DUrole{n}{path\_split}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{str}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{Ellipsis}}}{{ $\rightarrow$ Optional\DUrole{p}{{[}}Union\DUrole{p}{{[}}int\DUrole{p}{,}\DUrole{w}{  }Any\DUrole{p}{,}\DUrole{w}{  }collections.abc.Sequence\DUrole{p}{{]}}\DUrole{p}{{]}}}}
 \pysigstopsignatures
 \sphinxAtStartPar
 Returns the index / key of the specified value in the node at path if it exists
@@ -2139,7 +2172,7 @@ Returns the index / key of the specified value in the node at path if it exists
 
 \item {}
 \sphinxAtStartPar
-\sphinxstyleliteralstrong{\sphinxupquote{value\_split}} \textendash{} * used to split path into a list if path is a str, default ” “
+\sphinxstyleliteralstrong{\sphinxupquote{path\_split}} \textendash{} * used to split path into a list if path is a str, default ” “
 
 \end{itemize}
 
@@ -2158,7 +2191,7 @@ node at path, or there is no Collection at path, None is returned (instead of a 
 \begin{fulllineitems}
 \phantomsection\label{\detokenize{fagus.fagus:fagus.fagus.Fagus.isdisjoint}}
 \pysigstartsignatures
-\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{isdisjoint}}}{\emph{\DUrole{n}{other}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{collections.abc.Iterable}}, \emph{\DUrole{n}{path}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{Any}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{\textquotesingle{}\textquotesingle{}}}, \emph{\DUrole{n}{value\_split}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{str}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{Ellipsis}}, \emph{\DUrole{n}{dict\_}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{str}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{\textquotesingle{}keys\textquotesingle{}}}}{{ $\rightarrow$ bool}}
+\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{isdisjoint}}}{\emph{\DUrole{n}{other}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{collections.abc.Iterable}}, \emph{\DUrole{n}{path}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{Any}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{\textquotesingle{}\textquotesingle{}}}, \emph{\DUrole{n}{path\_split}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{str}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{Ellipsis}}, \emph{\DUrole{n}{dict\_}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{str}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{\textquotesingle{}keys\textquotesingle{}}}}{{ $\rightarrow$ bool}}
 \pysigstopsignatures
 \sphinxAtStartPar
 Returns whether the other iterable is disjoint (has no common items) with the node at path
@@ -2177,7 +2210,7 @@ Returns whether the other iterable is disjoint (has no common items) with the no
 
 \item {}
 \sphinxAtStartPar
-\sphinxstyleliteralstrong{\sphinxupquote{value\_split}} \textendash{} * used to split path into a list if path is a str, default ” “
+\sphinxstyleliteralstrong{\sphinxupquote{path\_split}} \textendash{} * used to split path into a list if path is a str, default ” “
 
 \item {}
 \sphinxAtStartPar
@@ -2212,7 +2245,7 @@ Creates a Fagus\sphinxhyphen{}object for obj that has the same options as self
 \begin{fulllineitems}
 \phantomsection\label{\detokenize{fagus.fagus:fagus.fagus.Fagus.reversed}}
 \pysigstartsignatures
-\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{reversed}}}{\emph{\DUrole{n}{path}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{Any}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{\textquotesingle{}\textquotesingle{}}}, \emph{\DUrole{n}{fagus}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{bool}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{Ellipsis}}, \emph{\DUrole{n}{value\_split}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{str}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{Ellipsis}}, \emph{\DUrole{n}{copy}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{bool}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{False}}}{}
+\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{reversed}}}{\emph{\DUrole{n}{path}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{Any}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{\textquotesingle{}\textquotesingle{}}}, \emph{\DUrole{n}{fagus}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{bool}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{Ellipsis}}, \emph{\DUrole{n}{path\_split}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{str}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{Ellipsis}}, \emph{\DUrole{n}{copy}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{bool}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{False}}}{}
 \pysigstopsignatures
 \sphinxAtStartPar
 Get reversed child\sphinxhyphen{}node at path if that node is a list
@@ -2231,7 +2264,7 @@ Get reversed child\sphinxhyphen{}node at path if that node is a list
 
 \item {}
 \sphinxAtStartPar
-\sphinxstyleliteralstrong{\sphinxupquote{value\_split}} \textendash{} * used to split path into a list if path is a str, default ” “
+\sphinxstyleliteralstrong{\sphinxupquote{path\_split}} \textendash{} * used to split path into a list if path is a str, default ” “
 
 \item {}
 \sphinxAtStartPar
@@ -2253,7 +2286,7 @@ a reversed iterator on the node at path (empty if path doesn’t exist)
 \begin{fulllineitems}
 \phantomsection\label{\detokenize{fagus.fagus:fagus.fagus.Fagus.reverse}}
 \pysigstartsignatures
-\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{reverse}}}{\emph{\DUrole{n}{path}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{Any}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{\textquotesingle{}\textquotesingle{}}}, \emph{\DUrole{n}{fagus}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{bool}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{Ellipsis}}, \emph{\DUrole{n}{value\_split}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{str}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{Ellipsis}}, \emph{\DUrole{n}{copy}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{bool}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{False}}}{{ $\rightarrow$ collections.abc.Collection}}
+\pysiglinewithargsret{\sphinxbfcode{\sphinxupquote{reverse}}}{\emph{\DUrole{n}{path}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{Any}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{\textquotesingle{}\textquotesingle{}}}, \emph{\DUrole{n}{fagus}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{bool}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{Ellipsis}}, \emph{\DUrole{n}{path\_split}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{str}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{Ellipsis}}, \emph{\DUrole{n}{copy}\DUrole{p}{:}\DUrole{w}{  }\DUrole{n}{bool}\DUrole{w}{  }\DUrole{o}{=}\DUrole{w}{  }\DUrole{default_value}{False}}}{{ $\rightarrow$ collections.abc.Collection}}
 \pysigstopsignatures
 \sphinxAtStartPar
 Reverse child\sphinxhyphen{}node at path if that node exists and is reversible
@@ -2272,7 +2305,7 @@ Reverse child\sphinxhyphen{}node at path if that node exists and is reversible
 
 \item {}
 \sphinxAtStartPar
-\sphinxstyleliteralstrong{\sphinxupquote{value\_split}} \textendash{} * used to split path into a list if path is a str, default ” “
+\sphinxstyleliteralstrong{\sphinxupquote{path\_split}} \textendash{} * used to split path into a list if path is a str, default ” “
 
 \item {}
 \sphinxAtStartPar
@@ -3508,7 +3541,7 @@ the option\sphinxhyphen{}value if it was valid (otherwise the function is left i
 \begin{fulllineitems}
 \phantomsection\label{\detokenize{fagus.utils:fagus.utils.FagusMeta.__default_options__}}
 \pysigstartsignatures
-\pysigline{\sphinxbfcode{\sphinxupquote{\_\_default\_options\_\_}}\sphinxbfcode{\sphinxupquote{\DUrole{w}{  }\DUrole{p}{=}\DUrole{w}{  }\{\textquotesingle{}default\textquotesingle{}: (None,), \textquotesingle{}default\_node\_type\textquotesingle{}: (\textquotesingle{}d\textquotesingle{}, \textless{}class \textquotesingle{}str\textquotesingle{}\textgreater{}, \textless{}function FagusMeta.\textless{}lambda\textgreater{}\textgreater{}, \textquotesingle{}default\_node\_type must be either "d" for dict or "l" for list.\textquotesingle{}), \textquotesingle{}fagus\textquotesingle{}: (False, \textless{}class \textquotesingle{}bool\textquotesingle{}\textgreater{}), \textquotesingle{}if\_\textquotesingle{}: (\textless{}class \textquotesingle{}fagus.utils.\_None\textquotesingle{}\textgreater{},), \textquotesingle{}iter\_fill\textquotesingle{}: (\textless{}class \textquotesingle{}fagus.utils.\_None\textquotesingle{}\textgreater{},), \textquotesingle{}iter\_nodes\textquotesingle{}: (False, \textless{}class \textquotesingle{}bool\textquotesingle{}\textgreater{}), \textquotesingle{}list\_insert\textquotesingle{}: (9223372036854775807, \textless{}class \textquotesingle{}int\textquotesingle{}\textgreater{}, \textless{}function FagusMeta.\textless{}lambda\textgreater{}\textgreater{}, \textquotesingle{}list\sphinxhyphen{}insert must be a positive int. By default (list\_insert == INF), all existing list\sphinxhyphen{}indices are traversed. If list\sphinxhyphen{}insert \textless{} maxsize, earliest at level n a new node is inserted if that node is a list\textquotesingle{}), \textquotesingle{}node\_types\textquotesingle{}: (\textquotesingle{}\textquotesingle{}, \textless{}class \textquotesingle{}str\textquotesingle{}\textgreater{}, \textless{}function FagusMeta.\textless{}lambda\textgreater{}\textgreater{}, \textquotesingle{}The only allowed characters in node\_types are d (for dict) and l (for list). " " can also be used. In that case, existing nodes are used if possible, and default\_node\_type is used to create new nodes.\textquotesingle{}), \textquotesingle{}value\_split\textquotesingle{}: (\textquotesingle{} \textquotesingle{}, \textless{}class \textquotesingle{}str\textquotesingle{}\textgreater{}, \textless{}function FagusMeta.\textless{}lambda\textgreater{}\textgreater{}, \textquotesingle{}value\_split can\textbackslash{}\textquotesingle{}t be "", as a string can\textbackslash{}\textquotesingle{}t be split by "".\textquotesingle{})\}}}}
+\pysigline{\sphinxbfcode{\sphinxupquote{\_\_default\_options\_\_}}\sphinxbfcode{\sphinxupquote{\DUrole{w}{  }\DUrole{p}{=}\DUrole{w}{  }\{\textquotesingle{}default\textquotesingle{}: (None,), \textquotesingle{}default\_node\_type\textquotesingle{}: (\textquotesingle{}d\textquotesingle{}, \textless{}class \textquotesingle{}str\textquotesingle{}\textgreater{}, \textless{}function FagusMeta.\textless{}lambda\textgreater{}\textgreater{}, \textquotesingle{}default\_node\_type must be either "d" for dict or "l" for list.\textquotesingle{}), \textquotesingle{}fagus\textquotesingle{}: (False, \textless{}class \textquotesingle{}bool\textquotesingle{}\textgreater{}), \textquotesingle{}if\_\textquotesingle{}: (\textless{}class \textquotesingle{}fagus.utils.\_None\textquotesingle{}\textgreater{},), \textquotesingle{}iter\_fill\textquotesingle{}: (\textless{}class \textquotesingle{}fagus.utils.\_None\textquotesingle{}\textgreater{},), \textquotesingle{}iter\_nodes\textquotesingle{}: (False, \textless{}class \textquotesingle{}bool\textquotesingle{}\textgreater{}), \textquotesingle{}list\_insert\textquotesingle{}: (9223372036854775807, \textless{}class \textquotesingle{}int\textquotesingle{}\textgreater{}, \textless{}function FagusMeta.\textless{}lambda\textgreater{}\textgreater{}, \textquotesingle{}list\sphinxhyphen{}insert must be a positive int. By default (list\_insert == INF), all existing list\sphinxhyphen{}indices are traversed. If list\sphinxhyphen{}insert \textless{} maxsize, earliest at level n a new node is inserted if that node is a list\textquotesingle{}), \textquotesingle{}node\_types\textquotesingle{}: (\textquotesingle{}\textquotesingle{}, \textless{}class \textquotesingle{}str\textquotesingle{}\textgreater{}, \textless{}function FagusMeta.\textless{}lambda\textgreater{}\textgreater{}, \textquotesingle{}The only allowed characters in node\_types are d (for dict) and l (for list). " " can also be used. In that case, existing nodes are used if possible, and default\_node\_type is used to create new nodes.\textquotesingle{}), \textquotesingle{}path\_split\textquotesingle{}: (\textquotesingle{} \textquotesingle{}, \textless{}class \textquotesingle{}str\textquotesingle{}\textgreater{}, \textless{}function FagusMeta.\textless{}lambda\textgreater{}\textgreater{}, \textquotesingle{}path\_split can\textbackslash{}\textquotesingle{}t be "", as a string can\textbackslash{}\textquotesingle{}t be split by "".\textquotesingle{})\}}}}
 \pysigstopsignatures
 \sphinxAtStartPar
 Default values for all options used in Fagus
@@ -3609,37 +3642,37 @@ Implement delattr(self, name).
 \sphinxstepscope
 
 
-\chapter{CHANGELOG}
+\chapter{Changelog}
 \label{\detokenize{CHANGELOG:changelog}}\label{\detokenize{CHANGELOG::doc}}
+\sphinxAtStartPar
+\sphinxstylestrong{2022\sphinxhyphen{}05\sphinxhyphen{}13 1.0.1 Release of Fagus on GitHub and ReadTheDocs}
 
-\section{13.05.2022 1.0.0 Release of Fagus on GitHub and ReadTheDocs}
-\label{\detokenize{CHANGELOG:release-of-fagus-on-github-and-readthedocs}}
 \sphinxAtStartPar
 Now. Finally. The documentation is still not completely ready but it’s time to get some feedback from the community.
 
+\sphinxAtStartPar
+\sphinxstylestrong{2022\sphinxhyphen{}04\sphinxhyphen{}05 1.0.0 Renaming to Fagus}
 
-\section{04.05.2022 Renaming to Fagus}
-\label{\detokenize{CHANGELOG:renaming-to-fagus}}
 \sphinxAtStartPar
 Checking GitHub I found that there already were several other libraries and programs having TreeO as a name which I had chosen originally. I then found another (much cooler) name which wasn’t in use yet.
 
+\sphinxAtStartPar
+\sphinxstylestrong{2022\sphinxhyphen{}04 0.9.0 Release getting closer}
 
-\section{04\sphinxhyphen{}2022 Release getting closer}
-\label{\detokenize{CHANGELOG:release-getting-closer}}
 \sphinxAtStartPar
 Development has been ongoing for almost a year. Documentation and testing takes time, but it is absolutely necessary for a library like this. Finally moving away from two Python\sphinxhyphen{}files (one for tests and one for the lib) to a proper \sphinxcode{\sphinxupquote{poetry}}\sphinxhyphen{}project, starting to implement sphinx to parse the docstrings that had been written earlier.
 
+\sphinxAtStartPar
+\sphinxstylestrong{2021\sphinxhyphen{}06 0.1.0 First idea for TreeO}
 
-\section{06\sphinxhyphen{}2021 First idea for TreeO}
-\label{\detokenize{CHANGELOG:first-idea-for-treeo}}
 \sphinxAtStartPar
 Development starts, the idea to this was born writing my Bachelor’s thesis where I felt that constantly writing \sphinxcode{\sphinxupquote{.get("a", \{\}).get("b", \{\}).get("c", \{\})}} was too annoying to go on with.
 
 \sphinxstepscope
 
 
-\chapter{CONTRIBUTING}
-\label{\detokenize{CONTRIBUTING:contributing}}\label{\detokenize{CONTRIBUTING::doc}}
+\chapter{Contributing to Fagus}
+\label{\detokenize{CONTRIBUTING:contributing-to-fagus}}\label{\detokenize{CONTRIBUTING::doc}}
 \sphinxAtStartPar
 First off, welcome and thank you for taking the time to contribute to Fagus! Any contribution, big or small, is welcome to make Fagus more useful such that more people can benefit from it.
 
@@ -3978,23 +4011,6 @@ Run \sphinxcode{\sphinxupquote{poetry version \textless{}major, minor or patch\t
 Run \sphinxcode{\sphinxupquote{sed \sphinxhyphen{}i "s/\_\_version\_\_ = .*\textbackslash{}\$/\_\_version\_\_ = \textbackslash{}"\$(poetry version \sphinxhyphen{}s)\textbackslash{}"/" fagus/\_\_init\_\_.py}} (only works on Linux / MacOS) to update the version number in the fagus\sphinxhyphen{}package. If you know the command to do this replacement in a windows shell, feel free to add it here.
 
 \end{enumerate}
-
-
-\chapter{Indices and tables}
-\label{\detokenize{index:indices-and-tables}}\begin{itemize}
-\item {}
-\sphinxAtStartPar
-\DUrole{xref,std,std-ref}{genindex}
-
-\item {}
-\sphinxAtStartPar
-\DUrole{xref,std,std-ref}{modindex}
-
-\item {}
-\sphinxAtStartPar
-\DUrole{xref,std,std-ref}{search}
-
-\end{itemize}
 
 
 \renewcommand{\indexname}{Python Module Index}

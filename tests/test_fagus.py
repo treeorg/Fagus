@@ -10,27 +10,27 @@ import doctest
 from ipaddress import IPv6Address, IPv4Network, IPv6Network, ip_address
 from pathlib import Path
 from types import ModuleType
+from typing import Any, Dict, cast, Collection, Set
+import collections.abc as c_abc
 
 from fagus import Fagus, Fil, CFil, VFil
 from datetime import datetime, date, time
 import fagus
+from fagus.utils import _is
 
 
-class HashableDict(dict):
-    def __hash__(self):
+class HashableDict(Dict[Any, Any]):
+    def __hash__(self) -> int:  # type: ignore
         return hash(frozenset(self.items()))
 
 
 class TestFagus(unittest.TestCase):
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, **kwargs) -> None:  # type: ignore
         super().__init__(*args, **kwargs)
-        self.a = None
+        self.a = {"1": [[1, True, "a", ("f", {"a", "q"})], {"a": False, "1": (1,)}], "a": [[3, 4], {"b": 1}]}
         self.test_data_path = f"{os.path.dirname(__file__) or '.'}/test-data.json"
 
-    def setUp(self) -> None:
-        setattr(self, "a", {"1": [[1, True, "a", ("f", {"a", "q"})], {"a": False, "1": (1,)}], "a": [[3, 4], {"b": 1}]})
-
-    def test_get(self):
+    def test_get(self) -> None:
         a = Fagus(self.a)
         Fagus.default = 7
         self.assertEqual(7, a["1 2 3"], "Returning default-value for class when unset for object")
@@ -42,14 +42,14 @@ class TestFagus(unittest.TestCase):
         self.assertEqual(1, Fagus(self.a).get((1, 0, 0), 1), "Path not existing return default that comes from param")
         self.assertEqual(1, Fagus.get((((1, 0), 2), 3), "0 0 0"), "Successfully traversing tuples")
         self.assertEqual([[3, 4], {"b": 1}], a.a, "Using dot-notation to get value from Fagus")
-        a.value_split = "_"
-        self.assertEqual(1, a.a_1_b, "Using dot-notation with value_split as _ to get value from Fagus")
+        a.path_split = "_"
+        self.assertEqual(1, a.a_1_b, "Using dot-notation with path_split as _ to get value from Fagus")
         a.c_e = {"a_haa_k": 72}
-        a.value_split = "__"
-        self.assertEqual(72, a.c__e__a_haa_k, "Using dot-notation with __ as value_split to get keys with _ inside")
+        a.path_split = "__"
+        self.assertEqual(72, a.c__e__a_haa_k, "Using dot-notation with __ as path_split to get keys with _ inside")
         del Fagus.default
 
-    def test_iter(self):
+    def test_iter(self) -> None:
         a = Fagus(self.a, copy=True)
         aq = tuple(a["1 0 3 1"])  # have to create this tuple of the set because it's unpredictable what order
         # a and q will have in the set. Using this tuple, I make sure the test still works (the order will be sth same)
@@ -222,7 +222,7 @@ class TestFagus(unittest.TestCase):
             ("data", 1, "role", "alias", "malware-server"),
             ("data", 4, "roleId", 33),
         )
-        b = tuple(
+        b = tuple(  # type: ignore
             a.iter(filter_=Fil("responseCode|limit|data", ..., ("role.*", re.compile("source.*")), str_as_re=True))
         )
         self.assertTrue(all(e in b for e in c), "Checking if it works to convert str to regex when requested")
@@ -233,7 +233,7 @@ class TestFagus(unittest.TestCase):
             Fil(*filter_args, str_as_re=True).args,
             "The correct str's are replaced with re-patterns if string_as_re=False",
         )
-        b = {
+        d = {
             (..., ..., 0, 8),
             (..., ..., 1, 7),
             (..., ..., ..., 5),
@@ -246,7 +246,7 @@ class TestFagus(unittest.TestCase):
             (..., ..., 1, "q"),
         }
         f = {("a", "q"), frozenset(((5, HashableDict({"h": "M"})), ("l", "q"))), frozenset((frozenset((5, 6)), (8, 7)))}
-        self.assertEqual(b, set(Fagus.iter(f)), "Iterating through sets, some sets stacked in sets")
+        self.assertEqual(d, set(Fagus.iter(f)), "Iterating through sets, some sets stacked in sets")
         self.assertEqual(
             [("responseCode", 200), ("limit", 10000), ("offset", 0), ("data", 4, {"state": 3, "comment": None})],
             list(
@@ -259,7 +259,7 @@ class TestFagus(unittest.TestCase):
             "Using sets to accelerate filtering, both as a standalone argument and with other args in a tuple",
         )
 
-    def test_filter(self):
+    def test_filter(self) -> None:
         self.assertEqual(
             {"1": [{"a": False, "1": (1,)}], "a": [{"b": 1}]},
             Fagus.filter(self.a, filter_=Fil(..., lambda x: x % 2), copy=True),
@@ -355,7 +355,7 @@ class TestFagus(unittest.TestCase):
             "subnodes the filter matches (in this case all).",
         )
 
-    def test_split(self):
+    def test_split(self) -> None:
         split_res = (
             {"1": [{"a": False, "1": (1,)}], "a": [{"b": 1}]},
             {"1": [[1, True, "a", ("f", {"a", "q"})]], "a": [[3, 4]]},
@@ -392,9 +392,17 @@ class TestFagus(unittest.TestCase):
         in_, out = a.split(Fil(..., CFil("state", 3)), path="data", copy=True, fagus=True)
         self.assertIsInstance(in_, Fagus, "fagus is on, so in_ must be a Fagus")
         self.assertIsInstance(out, Fagus, "fagus is on, so out must be a Fagus")
-        self.assertEqual({3}, set(in_.iter(filter_=Fil(..., "state"), select=-1)), "all items in in_ match the filter")
-        self.assertNotEqual({3}, set(out.iter(filter_=Fil(..., "state"), select=-1)), "no items in out match filter")
-        self.assertEqual((662, 762), tuple(out.iter(filter_=Fil(..., "id"), select=-1)), "correct ids in out")
+        self.assertEqual(
+            {3},
+            set(in_.iter(filter_=Fil(..., "state"), select=-1)),  # type: ignore
+            "all items in in_ match the filter",
+        )
+        self.assertNotEqual(
+            {3}, set(out.iter(filter_=Fil(..., "state"), select=-1)), "no items in out match filter"  # type: ignore
+        )
+        self.assertEqual(
+            (662, 762), tuple(out.iter(filter_=Fil(..., "id"), select=-1)), "correct ids in out"  # type: ignore
+        )
         self.assertEqual(len(a["data"]), len(in_) + len(out), "All elements are either in in our out")
         in_, out = a.split(Fil(), path="data", copy=True)
         self.assertEqual(a["data"], in_, "If the filter matches everything, in_ must be equal to the original node")
@@ -406,10 +414,10 @@ class TestFagus(unittest.TestCase):
             ("a", "a"), a.split(Fil(), "a", default="a"), "Default is returned for in_ and out if path doesn't exist"
         )
 
-    def test_set(self):
+    def test_set(self) -> None:
         a = Fagus(self.a, copy=True)
         b = copy.deepcopy(self.a)
-        b["1"][0][1] = False
+        b["1"][0][1] = False  # type: ignore
         self.assertEqual(
             b,
             Fagus.set(a, False, "1 0 1"),
@@ -432,26 +440,26 @@ class TestFagus(unittest.TestCase):
         a[("1", 1)] = "hei"
         b["1"][1] = "hei"
         self.assertEqual(b, a(), "Using __set_item__ to set a value")
-        a.value_split = "_"
+        a.path_split = "_"
         a.a_1_b = 2
-        b["a"][1]["b"] = 2
+        b["a"][1]["b"] = 2  # type: ignore
         self.assertEqual(a(), b, "Using another path separator and __setattr__")
-        b["1"] = {"0": {"0": {"g": [9, 5]}}}
-        self.assertEqual(b, a.set({"g": [9, 5]}, "1øæ0øæ0", "dd", value_split="øæ"), "Replace list with dict")
+        b["1"] = {"0": {"0": {"g": [9, 5]}}}  # type: ignore
+        self.assertEqual(b, a.set({"g": [9, 5]}, "1øæ0øæ0", "dd", path_split="øæ"), "Replace list with dict")
         self.assertEqual([[["a"]]], Fagus.set([], "a", "1 1 1", default_node_type="l"), "Only create lists")
         a = Fagus(self.a, copy=True)
-        b = copy.deepcopy(a())
-        b["1"][0].insert(2, [["q"]])
+        b = copy.deepcopy(a())  # type: ignore
+        b["1"][0].insert(2, [["q"]])  # type: ignore
         a.set("q", ("1", 0, 2, 0, 0), list_insert=2, default_node_type="l")
         self.assertEqual(a(), b, "Insert into list")
-        b["1"][0].append("hans")
+        b["1"][0].append("hans")  # type: ignore
         b["1"].insert(0, ["wurst"])
         a.default_node_type = "l"
         a.set("hans", "1 0 100")
         a.set("wurst", "1 -40 5")
         self.assertEqual(a(), b, "Add to list at beginning / end by using indexes higher than len / lower than - len")
         a = Fagus((((1, 0), 2), (3, 4, (5, (6, 7)), 8)))
-        self.assertRaisesRegex(TypeError, "Can't modify root node self having the immutable typ", a.set, 5, "1 2 1 1")
+        self.assertRaisesRegex(TypeError, "Can't modify root node self having the immutable type", a.set, 5, "1 2 1 1")
         a = Fagus(list(a))
         self.assertEqual([((1, 0), 2), [3, 4, [5, [6, 5]], 8]], a.set(5, "1 2 1 1"), "Converting right tuples to lists")
         a = Fagus((((1, 0), 2), [3, 4, (5, (6, 7)), 8]))
@@ -470,62 +478,62 @@ class TestFagus(unittest.TestCase):
         self.assertEqual({"5": 9, "c": 27}, Fagus.set({"5": 9}, 27, "c", if_=range(29)), "if_ with range")
         self.assertEqual(self.a, Fagus.set(a, 27, "c", if_=range(3)), "if_ with range")
 
-    def test_append(self):
+    def test_append(self) -> None:
         a = copy.deepcopy(self.a)
         b = copy.deepcopy(self.a)
-        b["a"][0].append(5)
+        b["a"][0].append(5)  # type: ignore
         self.assertEqual(Fagus.append(a, 5, "a 0"), b, "appending to existing list")
-        b["1"][0][3] = list(b["1"][0][3])
-        b["1"][0][3][1] = list(b["1"][0][3][1])
-        b["1"][0][3][1].append("f")
-        b["1"][0][3][1].sort()
+        b["1"][0][3] = list(b["1"][0][3])  # type: ignore
+        b["1"][0][3][1] = list(b["1"][0][3][1])  # type: ignore
+        b["1"][0][3][1].append("f")  # type: ignore
+        b["1"][0][3][1].sort()  # type: ignore
         Fagus.append(a, "f", "1 0 3 1")
         Fagus.get(a, "1 0 3 1").sort()
         self.assertEqual(
             a, b, "appending to set (converting to list first, both sets must be sorted for the test not to fail)"
         )
-        b["1"][0][0] = [1, 5]
+        b["1"][0][0] = [1, 5]  # type: ignore
         self.assertEqual(Fagus.append(a, 5, "1 0 0"), b, "Creating list from singleton value and appending to it")
-        b["q"] = [6]
+        b["q"] = [6]  # type: ignore
         self.assertEqual(Fagus.append(a, 6, "q"), b, "Create new list for value at a path that didn't exist before")
 
-    def test_extend(self):
+    def test_extend(self) -> None:
         a = copy.deepcopy(self.a)
         b = copy.deepcopy(self.a)
-        b["a"][0].extend((5, 6))
+        b["a"][0].extend((5, 6))  # type: ignore
         self.assertEqual(Fagus.extend(a, (5, 6), "a 0"), b, "appending to existing list")
-        b["1"][0][3] = list(b["1"][0][3])
-        b["1"][0][3][1] = list(b["1"][0][3][1])
-        b["1"][0][3][1].extend("fg")
-        b["1"][0][3][1].sort()
+        b["1"][0][3] = list(b["1"][0][3])  # type: ignore
+        b["1"][0][3][1] = list(b["1"][0][3][1])  # type: ignore
+        b["1"][0][3][1].extend("fg")  # type: ignore
+        b["1"][0][3][1].sort()  # type: ignore
         Fagus.extend(a, "fg", "1 0 3 1")
         Fagus.get(a, "1 0 3 1").sort()
         self.assertEqual(
             a, b, "extending set (converting to list first, both sets must be sorted for the test not to fail)"
         )
-        b["1"][0][0] = [1, 5, 6]
+        b["1"][0][0] = [1, 5, 6]  # type: ignore
         self.assertEqual(Fagus.extend(a, [5, 6], "1 0 0"), b, "Creating list from singleton value and appending to it")
-        b["q"] = [6, 7]
+        b["q"] = [6, 7]  # type: ignore
         self.assertEqual(Fagus.extend(a, [6, 7], "q"), b, "Create new list for value at a path not existing before")
         self.assertRaisesRegex(TypeError, "Can't extend value in root dict", Fagus().extend, [3, 4])
 
-    def test_insert(self):
+    def test_insert(self) -> None:
         a = copy.deepcopy(self.a)
         b = copy.deepcopy(self.a)
-        b["a"][0].insert(2, "hei")
+        b["a"][0].insert(2, "hei")  # type: ignore
         self.assertEqual(Fagus.insert(a, 2, "hei", "a 0"), b, "appending to existing list")
-        b["1"][0][3] = list(b["1"][0][3])
-        b["1"][0][3][1] = list(b["1"][0][3][1])
-        b["1"][0][3][1].insert(5, "fg")
-        b["1"][0][3][1].sort()
+        b["1"][0][3] = list(b["1"][0][3])  # type: ignore
+        b["1"][0][3][1] = list(b["1"][0][3][1])  # type: ignore
+        b["1"][0][3][1].insert(5, "fg")  # type: ignore
+        b["1"][0][3][1].sort()  # type: ignore
         Fagus.insert(a, 5, "fg", "1 0 3 1")
         Fagus.get(a, "1 0 3 1").sort()
         self.assertEqual(
             a, b, "extending set (converting to list first, both sets must be sorted for the test not to fail)"
         )
-        b["1"][0][0] = [5, 1]
+        b["1"][0][0] = [5, 1]  # type: ignore
         self.assertEqual(Fagus.insert(a, -3, 5, "1 0 0"), b, "Creating list from singleton value and appending to it")
-        b["q"] = [5]
+        b["q"] = [5]  # type: ignore
         self.assertEqual(Fagus.insert(a, -9, 5, "q"), b, "Create new list for value at a path that didn't exist before")
         Fagus.insert(a, 2, 4, "1"),
         Fagus.set(b, 4, "1 2", list_insert=1),
@@ -533,49 +541,49 @@ class TestFagus(unittest.TestCase):
             a, b, "Inserting into the list at level 1 does the same as setting with list_insert at the right level"
         )
 
-    def test_add(self):
+    def test_add(self) -> None:
         a = Fagus(self.a, copy=True)
         b = copy.deepcopy(self.a)
-        b["1"][0][3] = list(b["1"][0][3])
-        b["1"][0][3][0] = {"f", "q"}
+        b["1"][0][3] = list(b["1"][0][3])  # type: ignore
+        b["1"][0][3][0] = {"f", "q"}  # type: ignore
         a.add("q", "1 0 3 0")
         self.assertEqual(a(), b, "Converting single value to set, adding value to it")
-        b["1"][0][3][1].add("hans")
+        b["1"][0][3][1].add("hans")  # type: ignore
         a.add("hans", "1 0 3 1")
         self.assertEqual(a(), b, "Adding value to existing set")
-        b["a"][1]["c"] = {5}
+        b["a"][1]["c"] = {5}  # type: ignore
         a.add(5, "a 1 c")
         self.assertEqual(a(), b, "Creating new empty set at position where no value has been before")
         self.assertEqual({5, 6}, Fagus({5}).add(6), "Adding to set that is the root node")
 
-    def test_update(self):
+    def test_update(self) -> None:
         # update set
         a = Fagus(self.a, copy=True)
         b = copy.deepcopy(self.a)
-        b["1"][0][3] = list(b["1"][0][3])
-        b["1"][0][3][0] = {"f", "q", "t", "p"}
+        b["1"][0][3] = list(b["1"][0][3])  # type: ignore
+        b["1"][0][3][0] = {"f", "q", "t", "p"}  # type: ignore
         a.update("qtp", "1 0 3 0")
         self.assertEqual(a(), b, "Converting single value to set, adding new values to it")
-        b["1"][0][3][1].update("hans")
+        b["1"][0][3][1].update("hans")  # type: ignore
         a.update("hans", "1 0 3 1")
         self.assertEqual(a(), b, "Adding new values to existing set")
-        b["a"][1]["c"] = {5}
+        b["a"][1]["c"] = {5}  # type: ignore
         a.add(5, "a 1 c")
         self.assertEqual(a(), b, "Creating new empty set at position where no value has been before")
         # update dict
-        b.update({"hei": 1, "du": "wurst"})
+        b.update({"hei": 1, "du": "wurst"})  # type: ignore
         a.update({"hei": 1, "du": "wurst"})
         self.assertEqual(a(), b, "Updating root dict")
-        b["a"][1].update({"hei": 1, "du": "wurst"})
+        b["a"][1].update({"hei": 1, "du": "wurst"})  # type: ignore
         a.update({"hei": 1, "du": "wurst"}, "a 1")
         self.assertEqual(a(), b, "Updating dict further inside the object")
-        b["k"] = {"a": 1}
+        b["k"] = {"a": 1}  # type: ignore
         a.update({"a": 1}, "k")
         self.assertEqual(a(), b, "Updating dict at node that is not existing yet")
         b["a"][1] = {"hans", "wu"}
         self.assertEqual(b, a.update({"hans", "wu"}, "a 1"), "Node is dict, but values is set -> set set(value)")
 
-    def test_setdefault(self):
+    def test_setdefault(self) -> None:
         a = Fagus(self.a, copy=True)
         b = copy.deepcopy(self.a)
         self.assertEqual(a.setdefault("a 0 0", 5), 3, "Setdefault returns existing value")
@@ -584,37 +592,37 @@ class TestFagus(unittest.TestCase):
         b["a"].append([5])
         self.assertEqual(a(), b, "SetDefault has added the value to the list")
 
-    def test_mod(self):
+    def test_mod(self) -> None:
         a = Fagus(self.a, copy=True)
         b = copy.deepcopy(self.a)
-        b["1"][0][0] += 4
+        b["1"][0][0] += 4  # type: ignore
         a.mod(lambda x: x + 4, "1 0 0", 6)
         self.assertEqual(b, a(), "Modifying existing number")
-        b["1"][0].insert(0, 2)
+        b["1"][0].insert(0, 2)  # type: ignore
         a.mod(lambda x: x + 4, "1 0 0", 2, list_insert=2)
         self.assertEqual(b, a(), "Setting default value where it doesn't exist due to list_insert at the last list")
         b["1"].insert(0, [2])
         a.mod(lambda x: x + 4, "1 0 0", 2, list_insert=1, default_node_type="l")
         self.assertEqual(b, a(), "Setting default value where it doesn't exist due to list_insert at an earlier list")
 
-        def fancy_mod1(old_value):
+        def fancy_mod1(old_value: Any) -> Any:
             return old_value * 2
 
-        b["1"][0][0] = fancy_mod1(b["1"][0][0])
+        b["1"][0][0] = fancy_mod1(b["1"][0][0])  # type: ignore
         a.mod(fancy_mod1, "1 0 0")
         self.assertEqual(b, a(), "Using function pointer that works like a lambda - one param, one arg")
-        b["1"][0][0] = fancy_mod1(b["1"][0][0])
+        b["1"][0][0] = fancy_mod1(b["1"][0][0])  # type: ignore
         a.mod(fancy_mod1, "1 0 0")
         self.assertEqual(b, a(), "Mod can be a function pointer (and not a lambda) as well")
 
-        def fancy_mod2(old_value, arg1, arg2, arg3, **kwargs):
+        def fancy_mod2(old_value, arg1, arg2, arg3, **kwargs):  # type: ignore
             return sum([old_value, arg1, arg2, arg3, *kwargs.values()])
 
-        b["1"][0][0] += 1 + 2 + 3 + 4 + 5
-        a.mod(lambda x: fancy_mod2(x, 1, 2, 3, kwarg1=4, kwarg2=5), "1 0 0")
+        b["1"][0][0] += 1 + 2 + 3 + 4 + 5  # type: ignore
+        a.mod(lambda x: fancy_mod2(x, 1, 2, 3, kwarg1=4, kwarg2=5), "1 0 0")  # type: ignore
         self.assertEqual(b, a(), "Complex function taking keyword-arguments and ordinary arguments")
 
-    def test_mod_all(self):
+    def test_mod_all(self) -> None:
         with open(self.test_data_path) as fp:
             a = Fagus(json.load(fp))
         date_filter = Fil(..., {"firstSeen", "lastSeen", "lastModified"})
@@ -627,14 +635,14 @@ class TestFagus(unittest.TestCase):
         )
         Fagus.mod_all(a, lambda x: x.pop("lastModified"), path="data", replace_value=False, max_depth=0)
         self.assertTrue(all("lastModified" not in e for e in a["data"]), "Modifying nodes without replacing them")
-        a = [([(0, 0), 0], ([0, (0, 0, frozenset((0,))), (((0,),),)],))]
+        a = [([(0, 0), 0], ([0, (0, 0, frozenset((0,))), (((0,),),)],))]  # type: ignore
         self.assertEqual(
             [([[1, 1], 1], ([1, [1, 1, {1}], [[[1]]]],))],
             Fagus.mod_all(a, lambda x: x + 1, copy=True),
             "Only necessary modifications when nodes are transformed from immodifyable to modifyable. Also testing set",
         )
 
-    def test_serialize(self):
+    def test_serialize(self) -> None:
         test_obj = {date(2021, 3, 6): [time(6, 45, 22), datetime(2021, 6, 23, 5, 45, 22)], ("hei", "du"): {3, 4, 5}}
         a = Fagus(test_obj, copy=True)
         self.assertRaisesRegex(
@@ -643,7 +651,10 @@ class TestFagus(unittest.TestCase):
             Fagus((1, 2, 3, [4, 5, 6], {6, 5})).serialize,
         )
         self.assertRaisesRegex(
-            ValueError, "Dicts with composite keys \\(tuples\\) are not supported in", a.serialize, copy=True
+            ValueError,
+            "Dicts with composite keys \\(tuples\\) are not supported in",
+            a.serialize,
+            copy=True,
         )
         b = {"2021-03-06": ["06:45:22", "2021-06-23 05:45:22"], "hei du": [3, 4, 5]}
         self.assertEqual(a.serialize({"tuple_keys": lambda x: " ".join(x)}), b, "Serialized datetime and tuple-key")
@@ -658,7 +669,7 @@ class TestFagus(unittest.TestCase):
             a(),
             "Removing tuples / sets in complex dict / list tree",
         )
-        a = Fagus(default_node_type="l")
+        a = Fagus({}, default_node_type="l")
         a["a 1"] = ip_address("::1")
         a.append(ip_address("127.0.0.1"), "a 0")
         a["a -8"] = IPv4Network("192.168.178.0/24")
@@ -675,12 +686,13 @@ class TestFagus(unittest.TestCase):
             "Only using default function with str on IP-objects",
         )
 
-        def fancy_network_mask(network, format_string: str, **kwargs):
+        def fancy_network_mask(network, format_string: str, **kwargs) -> str:  # type: ignore
             if type(network) == IPv4Network:
-                return (
+                return cast(
+                    str,
                     format_string % (network, network.netmask)
                     + kwargs.get("broadcast", " and the bc-address ")
-                    + str(network.broadcast_address)
+                    + str(network.broadcast_address),
                 )
             return format_string % (network, network.netmask)
 
@@ -697,7 +709,7 @@ class TestFagus(unittest.TestCase):
                 {
                     IPv6Address: lambda x: f"{x.compressed} {x.exploded}",
                     "default": lambda x: "global" if x.is_global else "local",
-                    (IPv4Network, IPv6Network): lambda x: fancy_network_mask(
+                    (IPv4Network, IPv6Network): lambda x: fancy_network_mask(  # type: ignore
                         x,
                         "The network %s with the netmask %s",
                         broadcast=" and the broadcast-address ",
@@ -708,7 +720,7 @@ class TestFagus(unittest.TestCase):
             "Complex mod-functions with function pointer, args, kwargs, lambdas and tuple-types, overriding default",
         )
 
-    def test_merge(self):
+    def test_merge(self) -> None:
         b = {"a": {"b": {"c": 5}}, "d": "e"}
         c = {"a": {"b": {"k": 1, "l": 2, "m": 3}, "t": 5}, "u": {"v": {"w": "x"}}, "d": 4}
         bc = b.copy()
@@ -807,14 +819,16 @@ class TestFagus(unittest.TestCase):
         self.assertEqual([1, 2, 3], Fagus([{"a": 1}]) + [1, 2, 3], "Testing the plus (+) operator")
         self.assertEqual([{"a": 1}, 2, 3], [1, 2, 3] + Fagus([{"a": 1}]), "Testing the plus (+) operator from right")
 
-    def test_pop(self):
+    def test_pop(self) -> None:
         a = Fagus(self.a, copy=True)
         b = copy.deepcopy(self.a)
-        self.assertEqual(a.pop("1 0 2"), b["1"][0].pop(2), "Pop correctly drops the value at the position")
+        self.assertEqual(
+            a.pop("1 0 2"), b["1"][0].pop(2), "Pop correctly drops the value at the position"  # type: ignore
+        )
         a.pop("8 9 10")
         self.assertEqual(a(), b, "Pop did not modify the object as path doesn't exist")
         self.assertIsNone(a.pop("8"), "When pop fails because the Key didn't exist in the node, default is returned")
-        b["1"][0][2][1].remove("a")
+        b["1"][0][2][1].remove("a")  # type: ignore
         self.assertEqual("a", a.pop("1 0 2 1 a"), "Correctly popping from set (internally calling remove)")
         self.assertEqual(b.pop("a"), a.pop("a"), "Correctly popping from dict at root level")
         self.assertEqual(a(), b, "Pop has correctly modified the object")
@@ -831,27 +845,27 @@ class TestFagus(unittest.TestCase):
         del a.c
         self.assertEqual({"a": "b"}, a(), "Using dot-notation for deleting")
 
-    def test_discard(self):
+    def test_discard(self) -> None:
         # implementation relies 90 % on pop, so most tests are there
         a = Fagus(self.a, copy=True)
         b = copy.deepcopy(self.a)
-        b["1"][0].pop(2)
+        b["1"][0].pop(2)  # type: ignore
         a.discard("1 0 2")
         self.assertEqual(a(), b, "Discard correctly drops the value at the position")
         a.discard("8 9 10")
         self.assertEqual(a(), b, "Discard did not modify the object as path doesn't exist, and didn't throw an error")
 
-    def test_remove(self):
+    def test_remove(self) -> None:
         # implementation relies 90 % on pop, so most tests are there
         a = Fagus(self.a, copy=True)
         b = copy.deepcopy(self.a)
-        b["1"][0].pop(2)
+        b["1"][0].pop(2)  # type: ignore
         a.remove("1 0 2")
         self.assertEqual(a(), b, "Remove correctly drops the value at the position")
         self.assertRaisesRegex(KeyError, "Couldn't remove .*: Does not exist", a.remove, "8 9 10")
         self.assertEqual(a(), b, "Remove did not modify the object as path doesn't exist, and didn't throw an error")
 
-    def test_keys(self):
+    def test_keys(self) -> None:
         self.assertEqual(("1", "a"), tuple(Fagus.keys(self.a)), "Getting dict-keys from root dict")
         self.assertIsInstance(Fagus.keys(self.a, "a 1"), type({}.keys()), "Dicts (also inside the node) give dict_keys")
         self.assertIsInstance(Fagus.keys(self.a, "1"), range, "A list returns a range")
@@ -859,7 +873,7 @@ class TestFagus(unittest.TestCase):
         self.assertEqual((..., ...), tuple(Fagus.keys(self.a, "1 0 3 1")), "A Set gives ... for each element")
         self.assertEqual((), Fagus.keys(self.a, "1 0 3 5"), "A nonexisting path gives empty keys (an empty tuple)")
 
-    def test_values(self):
+    def test_values(self) -> None:
         with open(self.test_data_path) as fp:
             a = Fagus(json.load(fp))
         self.assertEqual(tuple(a.values()), tuple(a.values()), "The same dict-values if the root node is a dict")
@@ -878,21 +892,25 @@ class TestFagus(unittest.TestCase):
             Fagus({"fqdn": "dlp.dlsofteclipse.com"}),
         ]
         self.assertEqual(b, list(a.values("data 4", fagus=True)), "Correctly returning dict values, with Fagus's")
-        b = (200, 10000, 0, 0, Fagus({}), Fagus([]), a.get("data", fagus=True), 10000)
+        b = (200, 10000, 0, 0, Fagus({}), Fagus([]), a.get("data", fagus=True), 10000)  # type: ignore
         self.assertEqual(b, tuple(a.values(fagus=True)), "Correctly returning nodes in a dict")
         self.assertEqual((), a.values("data 12"), "Returning empty tuple for a path that doesn't exist")
         self.assertEqual((10000,), a.values("size"), "Singleton value is returned alone in a tuple")
 
-    def test_items(self):
+    def test_items(self) -> None:
         self.assertIsInstance(Fagus.items(self.a), type({}.items()), "Dict gives dict-items")
         self.assertIsInstance(Fagus.items(self.a, "1"), enumerate, "List gives enumerate-obj")
         self.assertTrue(all(isinstance(v, Fagus) for _, v in Fagus.items(self.a, fagus=True)), "fagus ok")
         self.assertEqual({(..., "a"), (..., "q")}, set(Fagus.items(self.a, "1 0 3 1")), "(..., e) for elements set")
         self.assertEqual(tuple(Fagus.iter(self.a, 0)), tuple(Fagus.items(self.a)), "items at root = iter at root")
 
-    def test_index(self):
+    def test_index(self) -> None:
         self.assertIsNone(Fagus.index(self.a, 1, path="hallo"), "Return None if there is no node at path")
-        self.assertEqual(("", 6), tuple(Fagus.index({2: 7, "": 3, 6: 3, 4: 9}, 3, all_=True)), "All matching dict-keys")
+        self.assertEqual(
+            ("", 6),
+            tuple(Fagus.index({2: 7, "": 3, 6: 3, 4: 9}, 3, all_=True)),  # type: ignore
+            "All matching dict-keys",
+        )
         self.assertFalse(Fagus.index(self.a, "p", path="1 0 3 1"), "True if the element exists in set")
         self.assertTrue(Fagus.index(self.a, "q", path="1 0 3 1"), "True if the element exists in set")
         self.assertEqual("b", Fagus.index(self.a, 1, path="a 1"), "Getting index from dict")
@@ -906,7 +924,7 @@ class TestFagus(unittest.TestCase):
         self.assertEqual([6], Fagus.index([2, 5, 6, 5, 4, 3, 5, 1], 5, -2, -1, all_=True), "All list indices")
         self.assertEqual(6, [2, 5, 6, 5, 4, 3, 5, 1].index(5, -2, -1), "For reference to see if it is called right")
 
-    def test_clear(self):
+    def test_clear(self) -> None:
         self.assertEqual({}, Fagus.clear(self.a, copy=True), "Emptying at root level gives an empty dict")
         self.assertEqual({"1": [], "a": [[3, 4], {"b": 1}]}, Fagus.clear(self.a, "1", copy=True), "clear a list inside")
         self.assertEqual(
@@ -917,21 +935,21 @@ class TestFagus(unittest.TestCase):
         self.assertEqual(self.a, Fagus.clear(self.a, "a b c", copy=True), "No change if node doesn't exist")
         self.assertEqual(self.a, Fagus.clear(self.a, "a 0 1", copy=True), "No change if node can't be cleared")
 
-    def test_contains(self):
+    def test_contains(self) -> None:
         self.assertTrue(Fagus.contains(self.a, True, "1 0"), "path exists, and value is in node at path")
         self.assertFalse(Fagus.contains(self.a, False, "1 0"), "path exists, but value doesn't exist in node at path")
         self.assertTrue(Fagus.contains(self.a, "a", "1 0 2"), "If it is not a node but just a value, compare that")
         self.assertFalse(Fagus.contains(self.a, "q", "1 0 2"), "If it is not a node but just a value, compare that")
         self.assertFalse(Fagus.contains(self.a, "q", "1 0 ha"), "False if path doesn̈́'t exist")
 
-    def test_count(self):
+    def test_count(self) -> None:
         self.assertEqual(4, Fagus.count(self.a, "1 0"), "Counting an existing list")
         self.assertEqual(2, Fagus.count(self.a, "1 1"), "Counting an existing dict")
         self.assertEqual(2, Fagus.count(self.a, "1 0 3 1"), "Counting an existing set")
         self.assertEqual(0, Fagus.count(self.a, "Hei god morgen"), "When the node doesn't exist, return 0")
         self.assertEqual(1, Fagus.count(self.a, "1 0 1"), "When the node is a simple value, return 1")
 
-    def test_isdisjoint(self):
+    def test_isdisjoint(self) -> None:
         self.assertFalse(Fagus.isdisjoint(self.a, {"a"}), "check dict keys (which is the default)")
         self.assertRaisesRegex(ValueError, "dict_ attribute must bei either ", Fagus.isdisjoint, {}, {}, dict_="hansi")
         self.assertTrue(Fagus.isdisjoint({2: 1, 4: 3}, {2, 4}, dict_="values"), "check dict values")
@@ -940,7 +958,7 @@ class TestFagus(unittest.TestCase):
         self.assertFalse(Fagus.isdisjoint(self.a, {"a"}, "1 0 3 1"), "check if it works for a set deeply inside")
         self.assertFalse(Fagus.isdisjoint((1, 2, 3, 4), [3, 4]), "check if it works for tuples and lists")
 
-    def test_reversed(self):
+    def test_reversed(self) -> None:
         self.assertEqual(
             (
                 [[3, 4], {"b": 1}],
@@ -956,31 +974,33 @@ class TestFagus(unittest.TestCase):
         self.assertEqual((), tuple(Fagus.reversed(self.a, "hei og hopp")), "Return empty tuple if noed doesn't exist")
         self.assertEqual((3, 2, 1), tuple(reversed(Fagus((1, 2, 3)))), "Testing if __reversed__ also works")
 
-    def test_reverse(self):
+    def test_reverse(self) -> None:
         self.assertRaisesRegex(TypeError, "Cannot reverse root node of type", Fagus.reverse, set())
-        self.assertRaisesRegex(TypeError, "Cannot reverse root node of type", Fagus.reverse, self.a["1"][0][3])
+        self.assertRaisesRegex(
+            TypeError, "Cannot reverse root node of type", Fagus.reverse, self.a["1"][0][3]  # type: ignore
+        )
         self.assertRaisesRegex(TypeError, "Cannot reverse node of type", Fagus.reverse, self.a, "1 0 3 1", copy=True)
         self.assertEqual({"a": self.a["a"], "1": self.a["1"]}, Fagus.reverse(self.a, copy=True), "Reversing root dict")
         a = Fagus(self.a, copy=True)
         b = Fagus.copy(self.a)
-        b["1"][0].reverse()
+        b["1"][0].reverse()  # type: ignore
         self.assertEqual(b, a.reverse("1 0"), "Reversing list inside tree")
-        b["1"][0][0] = list(reversed(b["1"][0][0]))
+        b["1"][0][0] = list(reversed(b["1"][0][0]))  # type: ignore
         self.assertEqual(b, a.reverse("1 0 0"), "Reversing tuple (which converts it to a list)")
-        b["1"].reverse()
-        self.assertEqual(b["1"], Fagus.reverse(a["1"]), "Reversing root list")
-        a = {"a": {"b": 1, "c": {"f": 4, "g": 3}}, "d": 3}
+        b["1"].reverse()  # type: ignore
+        self.assertEqual(b["1"], Fagus.reverse(a["1"]), "Reversing root list")  # type: ignore
+        a = {"a": {"b": 1, "c": {"f": 4, "g": 3}}, "d": 3}  # type: ignore
         self.assertEqual(a, Fagus.reverse(Fagus.reverse(a, "a"), "a"), "Double reversing a dict inside a tree")
         b = Fagus.copy(a)
-        b["a"]["c"] = {"g": 3, "f": 4}
+        b["a"]["c"] = {"g": 3, "f": 4}  # type: ignore
         self.assertEqual(b, Fagus.reverse(a, "a c"), "Reversing a dict inside a tree")
 
-    def test_child(self):
-        a = Fagus(self.a, fagus=True, value_split="_")
+    def test_child(self) -> None:
+        a = Fagus(self.a, fagus=True, path_split="_")
         b = a.child({"1": 9, 3: 11})
         self.assertEqual(a._options, b._options, "a child has the same options as its parent")
 
-    def test_copy(self):
+    def test_copy(self) -> None:
         a = copy.deepcopy(self.a)
         b = Fagus(a, copy=True)
         self.assertEqual(a, b(), "Shallow-copy is actually equal to the original object if it isn't changed")
@@ -989,47 +1009,47 @@ class TestFagus(unittest.TestCase):
         b = Fagus(a, copy=True)
         b["f"] = 2
         self.assertNotEqual(a, b(), "Can add at root level without affecting the original object")
-        b = Fagus(a).copy()
+        b = Fagus(a).copy()  # type: ignore
         b["1 0 0"] = 100
         self.assertNotEqual(a, b(), "Can change node deeply in the original object without affecting original object")
         b = Fagus(a, copy=True)
         b.pop("1 0 3")
         self.assertNotEqual(a, b(), "Can pop deeply in the object without affecting the original object")
 
-    def test_repr(self):
-        a = Fagus({"a": 9, "c": [1, 2, False]}, value_split="_", fagus=True)
+    def test_repr(self) -> None:
+        a = Fagus({"a": 9, "c": [1, 2, False]}, path_split="_", fagus=True)
         b = eval(repr(a))
         self.assertEqual(a, b, "Able to create equivalent obj from repr")
         self.assertEqual(a._options, b._options, "Able to create equivalent obj from repr, even with options")
 
     # tests for the + and +=-operators are in test_merge, test_add tests the add-function
 
-    def test_sub(self):
+    def test_sub(self) -> None:
         a = Fagus(self.a, copy=True)
         self.assertEqual({"a": [[3, 4], {"b": 1}]}, a - {"1"}, "Removing keys from root dict")
         a.fagus = True
         self.assertEqual(Fagus({"a": [[3, 4], {"b": 1}]}), a - "1", "Removing key from root dict, with fagus")
         self.assertEqual(self.a, a(), "a was not modified by these operations")
         b = Fagus(a["1 0"], copy=True)
-        b -= [1, "a"]
+        b -= [1, "a"]  # type: ignore
         self.assertEqual([True, ("f", {"a", "q"})], b(), "isub removes items as it should")
         self.assertRaisesRegex(TypeError, "Unsupported operand types for -=", Fagus(("a", "b")).__isub__, ("a",))
         self.assertEqual([8, 9], (6, 8, 7, 9, 11) - Fagus({6, 7, 11}), "rsub with a set on a tuple gives a list")
         self.assertEqual({8, 9}, frozenset({6, 8, 7, 9}) - Fagus((6, 7)), "rsub with a tuple on a set gives a set")
 
-    def test_mul(self):
+    def test_mul(self) -> None:
         a = Fagus(self.a["1"][0], copy=True)
-        self.assertEqual(3 * self.a["1"][0], 3 * a, "rmul works as intended on a list")
+        self.assertEqual(3 * self.a["1"][0], 3 * a, "rmul works as intended on a list")  # type: ignore
         self.assertEqual((3, 9, 3, 9, 3, 9, 3, 9), Fagus((3, 9)) * 4, "mul works as intended on a tuple")
         self.assertEqual(self.a["1"][0], a(), "A was not modified by mul and rmul")
         self.assertRaisesRegex(TypeError, "Unsupported operand types for", Fagus(self.a).__mul__, 3)
-        a *= 2
-        self.assertEqual(2 * self.a["1"][0], a(), "imul does what it's supposed to do")
+        a *= 2  # type: ignore
+        self.assertEqual(2 * self.a["1"][0], a(), "imul does what it's supposed to do")  # type: ignore
         self.assertRaisesRegex(TypeError, "Unsupported operand types for", Fagus(self.a).__imul__, 3)
         self.assertRaisesRegex(TypeError, "Unsupported operand types for", a.__imul__, "a")
         self.assertRaisesRegex(TypeError, "Unsupported operand types for", a.__rmul__, "a")
 
-    def test_options(self):
+    def test_options(self) -> None:
         a = Fagus()
         Fagus.default = 6
         self.assertEqual({"default": 6}, Fagus._cls_options, "It works to set an option at class level")
@@ -1049,7 +1069,7 @@ class TestFagus(unittest.TestCase):
             a.options({"if_": (2, 7), "node_types": "d  ld"}),
             "Options have been overriden where they should, and not overridden where they shouldn't",
         )
-        default_options = {k: v[0] for k, v in Fagus.__default_options__.items()}
+        default_options = {k: v.default for k, v in Fagus.__default_options__.items()}
         self.assertEqual(
             {**default_options, "default": 3, "default_node_type": "l", "if_": (2, 7), "node_types": "d  ld"},
             a.options(get_default_options=True),
@@ -1076,13 +1096,13 @@ class TestFagus(unittest.TestCase):
         )
         self.assertEqual({"fagus": True, "iter_fill": True}, a.options(), "same a-opts despite Fagus reset")
         self.assertRaisesRegex(
-            TypeError, "Can't apply value_split because value_split needs to be a str", a.options, {"value_split": 9}
+            TypeError, "Can't apply path_split because path_split needs to be a str", a.options, {"path_split": 9}
         )
         self.assertRaisesRegex(ValueError, "The only allowed characters in node", Fagus.options, {"node_types": "fpg"})
         self.assertEqual({}, Fagus.options(reset=True), "All options have been removed at class level and not replaced")
 
 
-def main():
+def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("-v", "--verbose", action="store_true", help="verbose output from the tests")
     subparsers = parser.add_subparsers(dest="test")
@@ -1119,7 +1139,7 @@ def main():
 
 def run_doctests(verbose: bool, test_type: str) -> bool:
     fagus_dir = Path(__file__).parents[1]
-    tested = {}
+    tested: Dict[str, Dict[str, bool]] = {}
     if test_type in ("all", "modules"):
         tested["modules"] = {}
         modules_to_check = [fagus]
@@ -1128,7 +1148,7 @@ def run_doctests(verbose: bool, test_type: str) -> bool:
             modules_to_check.extend(
                 subm
                 for subm in mod.__dict__.values()
-                if isinstance(subm, ModuleType) and str(fagus_dir) in str(subm) and subm not in tested["modules"]
+                if isinstance(subm, ModuleType) and str(fagus_dir) in str(subm) and str(subm) not in tested["modules"]
             )
             res = not doctest.testmod(mod, verbose=verbose).failed
             tested["modules"][mod.__name__] = res
@@ -1140,7 +1160,7 @@ def run_doctests(verbose: bool, test_type: str) -> bool:
         test_parser = doctest.DocTestParser()
         for dir_, file in ((dir_, file) for dir_, _, fls in os.walk(fagus_dir) for file in fls if file.endswith(".md")):
             file_path = os.path.join(dir_, file)
-            with open(file_path) as f:
+            with open(file_path, encoding="utf-8") as f:
                 lines = tuple(
                     line for lines in (("\n", li) if li == "```\n" else (li,) for li in f.readlines()) for line in lines
                 )
@@ -1151,6 +1171,47 @@ def run_doctests(verbose: bool, test_type: str) -> bool:
     res = all(sum(test_type.values()) == len(test_type) for test_type in tested.values())
     print(f"Doctests ok for {' and '.join(f'{sum(v.values())}/{len(v)} {k}' for k, v in tested.items())}")
     return res
+
+
+class SortedSet(Set):
+    """Helper class to be able to always print a set sorted and thus predictable (used internally for doctests)"""
+
+    def __str__(self):
+        return f"{{{str(sorted(list(self)))[1:-1]}}}"
+
+    def __repr__(self):
+        return str(self)  # f"SortedSet({str(self)})"
+        # return f"SortedSet({str(self)})"
+
+
+def sorted_set(obj: Collection[Any]) -> Collection[Any]:
+    """Helper function making sure that all the sets in a Fagus-tree are printed sorted (for doctests to be predictable)
+
+    Args:
+        obj: the object to be used and printed in a doctest
+
+    Returns:
+        The str of the object, but with all the contained sets being alphabetically sorted
+    """
+    if isinstance(obj.root if isinstance(obj, Fagus) else obj, c_abc.Set):
+        return str(SortedSet(obj))
+    root = Fagus(obj, copy=True)
+    iterator = Fagus.iter(root, iter_nodes=True, copy=True)
+    for nodes in iterator:
+        if ... in nodes:
+            node_index = -nodes[::-1].index(...) - 1
+            root[nodes[1:node_index:2]] = SortedSet(iterator.skip((len(nodes) + node_index) // 2))
+        elif not _is(nodes[-1], c_abc.Iterable):
+            iterator.skip((len(nodes) - 2) // 2)
+
+        # nodes.index()
+        # list(nodes[:-3:2]).
+        # print(nodes[:-3:2])
+        # node = iterator.skip((len(nodes) - 2) // 2)
+        # if isinstance(nodes[-3], c_abc.Set):
+        # root[nodes[1:-3:2]] = SortedSet(nodes[-3])
+    # print(repr(root))
+    return root if isinstance(obj, Fagus) and obj.fagus else root.root
 
 
 if __name__ == "__main__":

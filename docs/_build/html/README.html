@@ -53,7 +53,7 @@
 <li class="toctree-l4"><a class="reference internal" href="#if">if_</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#iter-fill">iter_fill</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#iter-nodes">iter_nodes</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#value-split">value_split</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#path-split">path_split</a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="#iterating-over-nested-objects">Iterating over nested objects</a><ul>
@@ -65,8 +65,8 @@
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="fagus.html">fagus package</a></li>
-<li class="toctree-l1"><a class="reference internal" href="CHANGELOG.html">CHANGELOG</a></li>
-<li class="toctree-l1"><a class="reference internal" href="CONTRIBUTING.html">CONTRIBUTING</a></li>
+<li class="toctree-l1"><a class="reference internal" href="CHANGELOG.html">Changelog</a></li>
+<li class="toctree-l1"><a class="reference internal" href="CONTRIBUTING.html">Contributing to Fagus</a></li>
 </ul>
 
         </div>
@@ -140,7 +140,7 @@
 </div>
 <ul class="simple">
 <li><p><strong>Line 3</strong>: The path-parameter is the tuple in the second argument of the get-function. The first and third element in that tuple are list-indices, whereas the second and fourth element are dict-keys.</p></li>
-<li><p><strong>Line 5</strong>: In many cases, the dict-keys that are traversed are strings. For convenience, it’s also possible to provide the whole path-parameter as one string that is split up into the different keys. In the example above, <code class="docutils literal notranslate"><span class="pre">&quot;</span> <span class="pre">&quot;</span></code> is used to split the path-string, this can be customized using <code class="docutils literal notranslate"><span class="pre">value_split</span></code>.</p></li>
+<li><p><strong>Line 5</strong>: In many cases, the dict-keys that are traversed are strings. For convenience, it’s also possible to provide the whole path-parameter as one string that is split up into the different keys. In the example above, <code class="docutils literal notranslate"><span class="pre">&quot;</span> <span class="pre">&quot;</span></code> is used to split the path-string, this can be customized using <code class="docutils literal notranslate"><span class="pre">path_split</span></code>.</p></li>
 </ul>
 </section>
 <section id="static-and-instance-usage">
@@ -167,7 +167,7 @@
 </div>
 <ul class="simple">
 <li><p><strong>Square bracket notation</strong>: On <code class="docutils literal notranslate"><span class="pre">Fagus</span></code>-instances, the square-bracket notation can be used for easier access of data if no further customization is needed. Line 3 is equivalent to <code class="docutils literal notranslate"><span class="pre">a.set(6,</span> <span class="pre">&quot;x</span> <span class="pre">y</span> <span class="pre">z&quot;)</span></code>. It can be used for getting, setting and deleting items (line 6).</p></li>
-<li><p><strong>Dot notation</strong>: The dot-notation is activated for setting, getting and deleting items as well (line 4). It can be used to access <code class="docutils literal notranslate"><span class="pre">str</span></code>-keys in <code class="docutils literal notranslate"><span class="pre">dict</span></code>s and <code class="docutils literal notranslate"><span class="pre">list</span></code>-indices, the index must then be preceded with an underscore due to Python naming limitations (<code class="docutils literal notranslate"><span class="pre">a._4</span></code>). This can be further customized using <a class="reference internal" href="#value-split"><span class="std std-doc"><code class="docutils literal notranslate"><span class="pre">value_split</span></code></span></a></p></li>
+<li><p><strong>Dot notation</strong>: The dot-notation is activated for setting, getting and deleting items as well (line 4). It can be used to access <code class="docutils literal notranslate"><span class="pre">str</span></code>-keys in <code class="docutils literal notranslate"><span class="pre">dict</span></code>s and <code class="docutils literal notranslate"><span class="pre">list</span></code>-indices, the index must then be preceded with an underscore due to Python naming limitations (<code class="docutils literal notranslate"><span class="pre">a._4</span></code>). This can be further customized using <a class="reference internal" href="#path-split"><span class="std std-doc"><code class="docutils literal notranslate"><span class="pre">path_split</span></code></span></a></p></li>
 </ul>
 <p><code class="docutils literal notranslate"><span class="pre">Fagus</span></code> is a wrapper-class around a tree of <code class="docutils literal notranslate"><span class="pre">dict</span></code>- or <code class="docutils literal notranslate"><span class="pre">list</span></code>-objects. To get back the root-object inside the instance, use <code class="docutils literal notranslate"><span class="pre">()</span></code> to call the object – this is shown in line 7.</p>
 </section>
@@ -301,8 +301,29 @@
 <p>As you can see, the node itself is included as the first element in both tuples. In the first tuple, we also find the subnode <code class="docutils literal notranslate"><span class="pre">{&quot;b&quot;:</span> <span class="pre">2}</span></code> as the third element. In line 2, the tuples are filled after this scheme: <code class="docutils literal notranslate"><span class="pre">key1,</span> <span class="pre">key2,</span> <span class="pre">key3,</span> <span class="pre">...,</span> <span class="pre">value</span></code>. In line 4, we additionally get the nodes, so it is <code class="docutils literal notranslate"><span class="pre">root-node,</span> <span class="pre">key1,</span> <span class="pre">node,</span> <span class="pre">key2,</span> <span class="pre">node2,</span> <span class="pre">key3,</span> <span class="pre">...,</span> <span class="pre">value</span></code>.</p>
 <p>Sometimes in loops it can be helpful to actually have access to the whole node containing other relevant information. This can be especially useful combined with <a class="reference internal" href="#skipping-nodes-in-iteration"><span class="std std-doc"><code class="docutils literal notranslate"><span class="pre">skip()</span></code></span></a>.</p>
 </section>
-<section id="value-split">
-<h4>value_split<a class="headerlink" href="#value-split" title="Permalink to this headline"></a></h4>
+<section id="path-split">
+<h4>path_split<a class="headerlink" href="#path-split" title="Permalink to this headline"></a></h4>
+<ul class="simple">
+<li><p><strong>Default</strong>: <code class="docutils literal notranslate"><span class="pre">&quot;</span> <span class="pre">&quot;</span></code></p></li>
+<li><p><strong>Type</strong>: <code class="docutils literal notranslate"><span class="pre">str</span></code></p></li>
+</ul>
+<p>The keys needed to traverse a <code class="docutils literal notranslate"><span class="pre">Fagus</span></code>-object for getting or setting a value are passed as a <code class="docutils literal notranslate"><span class="pre">tuple</span></code> or <code class="docutils literal notranslate"><span class="pre">list</span></code> (line 2). <code class="docutils literal notranslate"><span class="pre">path_split</span></code> allows to alternatively specify all the keys in a single string, split by <code class="docutils literal notranslate"><span class="pre">path_split</span></code> (line 4). As shown in line 4, list indices can be specified in the path-string, they are automatically converted back to <code class="docutils literal notranslate"><span class="pre">int</span></code>.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="linenos">1</span><span class="gp">&gt;&gt;&gt; </span><span class="n">a</span> <span class="o">=</span> <span class="n">Fagus</span><span class="p">({</span><span class="s2">&quot;a&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;b&quot;</span><span class="p">:</span> <span class="p">[</span><span class="kc">True</span><span class="p">,</span> <span class="s2">&quot;q&quot;</span><span class="p">]}})</span>
+<span class="linenos">2</span><span class="gp">&gt;&gt;&gt; </span><span class="n">a</span><span class="p">[(</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)]</span>
+<span class="linenos">3</span><span class="go">True</span>
+<span class="linenos">4</span><span class="gp">&gt;&gt;&gt; </span><span class="n">a</span><span class="p">[</span><span class="s2">&quot;a b 0&quot;</span><span class="p">]</span>
+<span class="linenos">5</span><span class="go">True</span>
+</pre></div>
+</div>
+<p>By default, <code class="docutils literal notranslate"><span class="pre">path_split</span></code> is a single space <code class="docutils literal notranslate"><span class="pre">&quot;</span> <span class="pre">&quot;</span></code>, but any other string can be used as a split character. If path string is set to <code class="docutils literal notranslate"><span class="pre">&quot;_&quot;</span></code>, the dot-notation can be used to get or set a node deeply inside a <code class="docutils literal notranslate"><span class="pre">Fagus</span></code>-object.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="linenos">1</span><span class="gp">&gt;&gt;&gt; </span><span class="n">a</span> <span class="o">=</span> <span class="n">Fagus</span><span class="p">(</span><span class="n">path_split</span><span class="o">=</span><span class="s2">&quot;_&quot;</span><span class="p">)</span>
+<span class="linenos">2</span><span class="gp">&gt;&gt;&gt; </span><span class="n">a</span><span class="o">.</span><span class="n">a_c_1</span> <span class="o">=</span> <span class="mi">4</span>  <span class="c1"># {&quot;a&quot;: {&quot;c&quot;: {&quot;1&quot;: 4}}}</span>
+<span class="linenos">3</span><span class="gp">&gt;&gt;&gt; </span><span class="n">a</span> <span class="o">=</span> <span class="n">Fagus</span><span class="p">(</span><span class="n">path_split</span><span class="o">=</span><span class="s2">&quot;_&quot;</span><span class="p">,</span> <span class="n">default_node_type</span><span class="o">=</span><span class="s2">&quot;l&quot;</span><span class="p">)</span>
+<span class="linenos">4</span><span class="gp">&gt;&gt;&gt; </span><span class="n">a</span><span class="o">.</span><span class="n">_0_2</span> <span class="o">=</span> <span class="mi">6</span>  <span class="c1"># [[6]], note that the str after . is prefixed with a _ for a list index</span>
+<span class="linenos">5</span><span class="gp">&gt;&gt;&gt; </span><span class="n">a</span> <span class="o">=</span> <span class="n">Fagus</span><span class="p">(</span><span class="n">path_split</span><span class="o">=</span><span class="s2">&quot;__&quot;</span><span class="p">)</span>
+<span class="linenos">6</span><span class="gp">&gt;&gt;&gt; </span><span class="n">a</span><span class="o">.</span><span class="n">example_index__another_index</span> <span class="o">=</span> <span class="s2">&quot;q&quot;</span>  <span class="c1"># {&quot;example_index&quot;: {&quot;another_index&quot;: &quot;q&quot;}}</span>
+</pre></div>
+</div>
 </section>
 </section>
 <section id="iterating-over-nested-objects">

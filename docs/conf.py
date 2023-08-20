@@ -65,12 +65,14 @@ suppress_warnings = ["myst.header"]
 # Latex
 if any("pdf" in arg or "latex" in arg for arg in sys.argv) and "readthedocs.org" in os.getcwd():
     import json
+
     if os.path.exists("../orig_files.json"):
         with open("../orig_files.json") as f:
             orig_files = json.load(f)
     else:
         orig_files = {}
     from package import sphinx_hacks
+
     orig_files.update(sphinx_hacks("pdf"))
     with open("../orig_files.json", "w") as f:
         json.dump(orig_files, f)
