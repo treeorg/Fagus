@@ -1,4 +1,7 @@
 # Changelog
+
+- Removed caret dependency for Python 3.6, so now it is compatible with any future Python version.
+
 **2023-08-19 1.1.0 Fixed strong typing and added more documentation**
 
 - Added mypy as a build-dependency to ensure correct and strong typing in the whole library. Consequences:
