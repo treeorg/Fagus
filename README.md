@@ -515,14 +515,11 @@ The third principle `update()` operates after is the following:
 
 Especially this last principle may seem tedious, however it was chosen to implement it that way to prevent ambiguity, and the main reason for that is the `update()` function being used in `set`-nodes as well as `dict`-nodes.
 
+### remove(), delete() and pop()
+
 ### serialize() -- ensure that a tree is json- or yaml-serializable
 
 ### mod() -- modifying elements
-
-### remove(), delete() and pop()
-
-
-
 
 ## Iterating over nested objects
 
