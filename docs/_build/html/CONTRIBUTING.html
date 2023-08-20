@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Contributing to Fagus &mdash; Fagus 1.0.1 documentation</title>
+  <title>Contributing to Fagus &mdash; Fagus 1.1.0 documentation</title>
       <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="_static/wider_page.css" type="text/css" />
@@ -27,11 +27,15 @@
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search" >
-            <a href="index.html" class="icon icon-home"> Fagus
+
+
+
+          <a href="index.html" class="icon icon-home">
+            Fagus
           </a>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
-    <input type="text" name="q" placeholder="Search docs" />
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
     <input type="hidden" name="check_keywords" value="yes" />
     <input type="hidden" name="area" value="default" />
   </form>
@@ -88,8 +92,8 @@
         <div class="rst-content">
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
-      <li>Contributing to Fagus</li>
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Contributing to Fagus</li>
       <li class="wy-breadcrumbs-aside">
             <a href="_sources/CONTRIBUTING.rst.txt" rel="nofollow"> View page source</a>
       </li>
@@ -249,14 +253,42 @@
 <section id="releasing-a-new-fagus-package-on-pypi">
 <h4>Releasing A New Fagus Package on PyPi<a class="headerlink" href="#releasing-a-new-fagus-package-on-pypi" title="Permalink to this headline"></a></h4>
 <ol class="arabic simple">
-<li><p>Run <code class="docutils literal notranslate"><span class="pre">poetry</span> <span class="pre">version</span> <span class="pre">&lt;major,</span> <span class="pre">minor</span> <span class="pre">or</span> <span class="pre">patch&gt;</span></code>to increment the version number in poetry.</p>
+<li><p>Update <code class="docutils literal notranslate"><span class="pre">Changelog.md</span></code> with a description of the changes you have made.</p></li>
+<li><p>Manually run <code class="docutils literal notranslate"><span class="pre">package.py</span></code> from the project’s root folder using the following command</p>
 <ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">python3</span> <span class="pre">package</span> <span class="pre">update</span> <span class="pre">-bdlp</span> <span class="pre">-v</span> <span class="pre">&lt;version</span> <span class="pre">number</span> <span class="pre">or</span> <span class="pre">increment&gt;</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">b</span></code> builds the package for later upload to PyPi</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">d</span></code> updates the documentation files (see if this runs properly, if it does it will work on sphinx as well)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">l</span></code> builds a pdf-documentation file</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">p</span></code> runs the pre-commit checks to ensure that everything is alright before publishing</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">v</span></code> requires a version number or increment. Either manually put a version number here, or use one of the following increments:</p>
+<ul>
 <li><p><strong>Major</strong>: For backwards incompatible changes (e.g. removing support for Python 3.6)</p></li>
 <li><p><strong>Minor</strong>: Adds functionality in a backwards compatible way</p></li>
 <li><p><strong>Patch</strong>: Fixes bugs in a backwards compatible way</p></li>
 </ul>
 </li>
-<li><p>Run <code class="docutils literal notranslate"><span class="pre">sed</span> <span class="pre">-i</span> <span class="pre">&quot;s/__version__</span> <span class="pre">=</span> <span class="pre">.*\$/__version__</span> <span class="pre">=</span> <span class="pre">\&quot;$(poetry</span> <span class="pre">version</span> <span class="pre">-s)\&quot;/&quot;</span> <span class="pre">fagus/__init__.py</span></code> (only works on Linux / MacOS) to update the version number in the fagus-package. If you know the command to do this replacement in a windows shell, feel free to add it here.</p></li>
+</ul>
+</li>
+<li><p>Make a commit including all the changes made in step 1 and 2, and repeat them if necessary. Check the following before committing:</p>
+<ul class="simple">
+<li><p>Ensure that the version number mentioned in <code class="docutils literal notranslate"><span class="pre">CHANGELOG.md</span></code> corresponds to the one that is now present in <code class="docutils literal notranslate"><span class="pre">pyproject.toml</span></code>. If it is not equal, update <code class="docutils literal notranslate"><span class="pre">CHANGELOG.md</span></code> accordingly, and rerun step 2 but without the version-parameter <code class="docutils literal notranslate"><span class="pre">-v</span></code>.</p></li>
+<li><p>Go through the errors and warnings which are thrown especially while the documentation is created in step 2.</p>
+<ul>
+<li><p>This warning is alright: <code class="docutils literal notranslate"><span class="pre">WARNING:</span> <span class="pre">more</span> <span class="pre">than</span> <span class="pre">one</span> <span class="pre">target</span> <span class="pre">found</span> <span class="pre">for</span> <span class="pre">cross-reference</span> <span class="pre">'Fil':</span> <span class="pre">fagus.Fil,</span> <span class="pre">fagus.filters.Fil</span></code></p></li>
+<li><p>Fix all other warnings / errors.</p></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>Create a Pull Request for the changes back to the <code class="docutils literal notranslate"><span class="pre">main</span></code>-branch, this is easiest to do directly on <a class="reference external" href="https://github.com/treeorg/Fagus/pulls">GitHub</a>. Use the title and text from <code class="docutils literal notranslate"><span class="pre">CHANGELOG.md</span></code> for the title and description of the PR.</p></li>
+<li><p>Run <code class="docutils literal notranslate"><span class="pre">poetry</span> <span class="pre">publish</span></code> to publish the new version to <code class="docutils literal notranslate"><span class="pre">PyPi</span></code>.</p>
+<ul class="simple">
+<li><p>If it doesn’t work, make sure that you are allowed to publish to <a class="reference external" href="https://pypi.org/project/fagus/">Fagus</a>.</p></li>
+<li><p>Set up an access token in your PyPi account <a class="reference external" href="https://pypi.org/manage/account/">here</a>.</p></li>
+<li><p>Then run <code class="docutils literal notranslate"><span class="pre">poetry</span> <span class="pre">config</span> <span class="pre">pypi-token.pypi</span> <span class="pre">&lt;my-token&gt;</span></code> documented <a class="reference external" href="https://python-poetry.org/docs/repositories/#configuring-credentials">here</a> to add the token to your <code class="docutils literal notranslate"><span class="pre">poetry</span></code>-configuration, <code class="docutils literal notranslate"><span class="pre">poetry</span> <span class="pre">publish</span></code> should now work.</p></li>
+</ul>
+</li>
 </ol>
 </section>
 </section>

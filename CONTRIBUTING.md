@@ -103,8 +103,24 @@ You can run `python3 -m unittest discover` to run all the tests in `./tests`. If
    * If the pre-commit-checks fail, your commit is rejected and after fixing the issues you'd have to retype the commit-message. To not have that problem, do step 3 beforehand.
 
 #### Releasing A New Fagus Package on PyPi
-1. Run `poetry version <major, minor or patch>`to increment the version number in poetry.
-    * **Major**: For backwards incompatible changes (e.g. removing support for Python 3.6)
-    * **Minor**: Adds functionality in a backwards compatible way
-    * **Patch**: Fixes bugs in a backwards compatible way
-3. Run `sed -i "s/__version__ = .*\$/__version__ = \"$(poetry version -s)\"/" fagus/__init__.py` (only works on Linux / MacOS) to update the version number in the fagus-package. If you know the command to do this replacement in a windows shell, feel free to add it here.
+1. Update `Changelog.md` with a description of the changes you have made.
+2. Manually run `package.py` from the project's root folder using the following command
+   - `python3 package update -bdlp -v <version number or increment>`
+   - `b` builds the package for later upload to PyPi
+   - `d` updates the documentation files (see if this runs properly, if it does it will work on sphinx as well)
+   - `l` builds a pdf-documentation file
+   - `p` runs the pre-commit checks to ensure that everything is alright before publishing
+   - `v` requires a version number or increment. Either manually put a version number here, or use one of the following increments:
+      - **Major**: For backwards incompatible changes (e.g. removing support for Python 3.6)
+      - **Minor**: Adds functionality in a backwards compatible way
+      - **Patch**: Fixes bugs in a backwards compatible way
+3. Make a commit including all the changes made in step 1 and 2, and repeat them if necessary. Check the following before committing:
+   - Ensure that the version number mentioned in `CHANGELOG.md` corresponds to the one that is now present in `pyproject.toml`. If it is not equal, update `CHANGELOG.md` accordingly, and rerun step 2 but without the version-parameter `-v`.
+   - Go through the errors and warnings which are thrown especially while the documentation is created in step 2.
+     - This warning is alright: `WARNING: more than one target found for cross-reference 'Fil': fagus.Fil, fagus.filters.Fil`
+     - Fix all other warnings / errors.
+4. Create a Pull Request for the changes back to the `main`-branch, this is easiest to do directly on [GitHub](https://github.com/treeorg/Fagus/pulls). Use the title and text from `CHANGELOG.md` for the title and description of the PR.
+5. Run `poetry publish` to publish the new version to `PyPi`.
+   - If it doesn't work, make sure that you are allowed to publish to [Fagus](https://pypi.org/project/fagus/).
+   - Set up an access token in your PyPi account [here](https://pypi.org/manage/account/).
+   - Then run `poetry config pypi-token.pypi <my-token>` documented [here](https://python-poetry.org/docs/repositories/#configuring-credentials) to add the token to your `poetry`-configuration, `poetry publish` should now work.

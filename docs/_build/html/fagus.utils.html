@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>fagus.utils module &mdash; Fagus 1.0.1 documentation</title>
+  <title>fagus.utils module &mdash; Fagus 1.1.0 documentation</title>
       <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="_static/wider_page.css" type="text/css" />
@@ -28,11 +28,15 @@
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search" >
-            <a href="index.html" class="icon icon-home"> Fagus
+
+
+
+          <a href="index.html" class="icon icon-home">
+            Fagus
           </a>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
-    <input type="text" name="q" placeholder="Search docs" />
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
     <input type="hidden" name="check_keywords" value="yes" />
     <input type="hidden" name="area" value="default" />
   </form>
@@ -69,9 +73,9 @@
         <div class="rst-content">
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
-          <li><a href="fagus.html">fagus package</a> &raquo;</li>
-      <li>fagus.utils module</li>
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="fagus.html">fagus package</a></li>
+      <li class="breadcrumb-item active">fagus.utils module</li>
       <li class="wy-breadcrumbs-aside">
             <a href="_sources/fagus.utils.rst.txt" rel="nofollow"> View page source</a>
       </li>
@@ -85,79 +89,107 @@
 <span id="fagus-utils-module"></span><h1>fagus.utils module<a class="headerlink" href="#module-fagus.utils" title="Permalink to this headline"></a></h1>
 <p>This module contains classes and functions used across the Fagus-library that didn’t fit in another module</p>
 <dl class="py class">
-<dt class="sig sig-object py" id="fagus.utils.FagusMeta">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">fagus.utils.</span></span><span class="sig-name descname"><span class="pre">FagusMeta</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bases</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">namespace</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#fagus.utils.FagusMeta" title="Permalink to this definition"></a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">abc.ABCMeta</span></code></p>
-<p>Metaclass for Fagus-objects to facilitate options at class-level</p>
+<dt class="sig sig-object py" id="fagus.utils.FagusOption">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">fagus.utils.</span></span><span class="sig-name descname"><span class="pre">FagusOption</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">name:</span> <span class="pre">str,</span> <span class="pre">default:</span> <span class="pre">typing.Any,</span> <span class="pre">type_:</span> <span class="pre">type</span> <span class="pre">=</span> <span class="pre">&lt;class</span> <span class="pre">'typing._AnyMeta'&gt;,</span> <span class="pre">verify_function:</span> <span class="pre">typing.Callable[[typing.Any],</span> <span class="pre">bool]</span> <span class="pre">=</span> <span class="pre">&lt;function</span> <span class="pre">FagusOption.&lt;lambda&gt;&gt;,</span> <span class="pre">verify_error_msg:</span> <span class="pre">typing.Optional[str]</span> <span class="pre">=</span> <span class="pre">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#fagus.utils.FagusOption" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Helper class to facilitate Fagus options.</p>
 <dl class="py method">
-<dt class="sig sig-object py" id="fagus.utils.FagusMeta.__verify_option__">
-<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">__verify_option__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">option_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">option</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#fagus.utils.FagusMeta.__verify_option__" title="Permalink to this definition"></a></dt>
-<dd><p>Verify Fagus-option using the functions / types in __default_options__</p>
+<dt class="sig sig-object py" id="fagus.utils.FagusOption.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">name:</span> <span class="pre">str,</span> <span class="pre">default:</span> <span class="pre">typing.Any,</span> <span class="pre">type_:</span> <span class="pre">type</span> <span class="pre">=</span> <span class="pre">&lt;class</span> <span class="pre">'typing._AnyMeta'&gt;,</span> <span class="pre">verify_function:</span> <span class="pre">typing.Callable[[typing.Any],</span> <span class="pre">bool]</span> <span class="pre">=</span> <span class="pre">&lt;function</span> <span class="pre">FagusOption.&lt;lambda&gt;&gt;,</span> <span class="pre">verify_error_msg:</span> <span class="pre">typing.Optional[str]</span> <span class="pre">=</span> <span class="pre">None</span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#fagus.utils.FagusOption.__init__" title="Permalink to this definition"></a></dt>
+<dd><p>Initializes FagusOption with the given parameters</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>option_name</strong> – name of the option to verify</p></li>
-<li><p><strong>option</strong> – the value to be verified</p></li>
+<li><p><strong>name</strong> (<em>str</em>) – The name of the option.</p></li>
+<li><p><strong>default</strong> (<em>Any</em>) – The default value for the option if it hasn’t been set explicitly at class- or instance
+level or in the function.</p></li>
+<li><p><strong>type_</strong> (<em>type</em>) – The expected type for the input to the option. Defaults to Any. In case the provided
+input to the option doesn’t have the type indicated here, an error-message is thrown.</p></li>
+<li><p><strong>verify_function</strong> (<em>Callable</em><em>[</em><em>[</em><em>Any</em><em>]</em><em>, </em><em>bool</em><em>]</em>) – A function to verify the input value to the option. Returns a bool
+whether the input was valid or not. An error is thrown if the input isn’t valid with the error message
+defined in verify_error_message. Defaults to <cite>lambda x: True</cite>, meaning that any input is valid</p></li>
+<li><p><strong>verify_error_msg</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em>) – An error message to display when the verify_function returns False.
+Defaults to f”{value} is not a valid value for {self.name}”</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p>the option-value if it was valid (otherwise the function is left in an error)</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="fagus.utils.FagusMeta.__default_options__">
-<span class="sig-name descname"><span class="pre">__default_options__</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'default':</span> <span class="pre">(None,),</span> <span class="pre">'default_node_type':</span> <span class="pre">('d',</span> <span class="pre">&lt;class</span> <span class="pre">'str'&gt;,</span> <span class="pre">&lt;function</span> <span class="pre">FagusMeta.&lt;lambda&gt;&gt;,</span> <span class="pre">'default_node_type</span> <span class="pre">must</span> <span class="pre">be</span> <span class="pre">either</span> <span class="pre">&quot;d&quot;</span> <span class="pre">for</span> <span class="pre">dict</span> <span class="pre">or</span> <span class="pre">&quot;l&quot;</span> <span class="pre">for</span> <span class="pre">list.'),</span> <span class="pre">'fagus':</span> <span class="pre">(False,</span> <span class="pre">&lt;class</span> <span class="pre">'bool'&gt;),</span> <span class="pre">'if_':</span> <span class="pre">(&lt;class</span> <span class="pre">'fagus.utils._None'&gt;,),</span> <span class="pre">'iter_fill':</span> <span class="pre">(&lt;class</span> <span class="pre">'fagus.utils._None'&gt;,),</span> <span class="pre">'iter_nodes':</span> <span class="pre">(False,</span> <span class="pre">&lt;class</span> <span class="pre">'bool'&gt;),</span> <span class="pre">'list_insert':</span> <span class="pre">(9223372036854775807,</span> <span class="pre">&lt;class</span> <span class="pre">'int'&gt;,</span> <span class="pre">&lt;function</span> <span class="pre">FagusMeta.&lt;lambda&gt;&gt;,</span> <span class="pre">'list-insert</span> <span class="pre">must</span> <span class="pre">be</span> <span class="pre">a</span> <span class="pre">positive</span> <span class="pre">int.</span> <span class="pre">By</span> <span class="pre">default</span> <span class="pre">(list_insert</span> <span class="pre">==</span> <span class="pre">INF),</span> <span class="pre">all</span> <span class="pre">existing</span> <span class="pre">list-indices</span> <span class="pre">are</span> <span class="pre">traversed.</span> <span class="pre">If</span> <span class="pre">list-insert</span> <span class="pre">&lt;</span> <span class="pre">maxsize,</span> <span class="pre">earliest</span> <span class="pre">at</span> <span class="pre">level</span> <span class="pre">n</span> <span class="pre">a</span> <span class="pre">new</span> <span class="pre">node</span> <span class="pre">is</span> <span class="pre">inserted</span> <span class="pre">if</span> <span class="pre">that</span> <span class="pre">node</span> <span class="pre">is</span> <span class="pre">a</span> <span class="pre">list'),</span> <span class="pre">'node_types':</span> <span class="pre">('',</span> <span class="pre">&lt;class</span> <span class="pre">'str'&gt;,</span> <span class="pre">&lt;function</span> <span class="pre">FagusMeta.&lt;lambda&gt;&gt;,</span> <span class="pre">'The</span> <span class="pre">only</span> <span class="pre">allowed</span> <span class="pre">characters</span> <span class="pre">in</span> <span class="pre">node_types</span> <span class="pre">are</span> <span class="pre">d</span> <span class="pre">(for</span> <span class="pre">dict)</span> <span class="pre">and</span> <span class="pre">l</span> <span class="pre">(for</span> <span class="pre">list).</span> <span class="pre">&quot;</span> <span class="pre">&quot;</span> <span class="pre">can</span> <span class="pre">also</span> <span class="pre">be</span> <span class="pre">used.</span> <span class="pre">In</span> <span class="pre">that</span> <span class="pre">case,</span> <span class="pre">existing</span> <span class="pre">nodes</span> <span class="pre">are</span> <span class="pre">used</span> <span class="pre">if</span> <span class="pre">possible,</span> <span class="pre">and</span> <span class="pre">default_node_type</span> <span class="pre">is</span> <span class="pre">used</span> <span class="pre">to</span> <span class="pre">create</span> <span class="pre">new</span> <span class="pre">nodes.'),</span> <span class="pre">'path_split':</span> <span class="pre">('</span> <span class="pre">',</span> <span class="pre">&lt;class</span> <span class="pre">'str'&gt;,</span> <span class="pre">&lt;function</span> <span class="pre">FagusMeta.&lt;lambda&gt;&gt;,</span> <span class="pre">'path_split</span> <span class="pre">can\'t</span> <span class="pre">be</span> <span class="pre">&quot;&quot;,</span> <span class="pre">as</span> <span class="pre">a</span> <span class="pre">string</span> <span class="pre">can\'t</span> <span class="pre">be</span> <span class="pre">split</span> <span class="pre">by</span> <span class="pre">&quot;&quot;.')}</span></em><a class="headerlink" href="#fagus.utils.FagusMeta.__default_options__" title="Permalink to this definition"></a></dt>
-<dd><p>Default values for all options used in Fagus</p>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="fagus.utils.FagusMeta.no_node">
-<span class="sig-name descname"><span class="pre">no_node</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">(&lt;class</span> <span class="pre">'str'&gt;,</span> <span class="pre">&lt;class</span> <span class="pre">'bytes'&gt;,</span> <span class="pre">&lt;class</span> <span class="pre">'bytearray'&gt;)</span></em><a class="headerlink" href="#fagus.utils.FagusMeta.no_node" title="Permalink to this definition"></a></dt>
-<dd><p>Every type of Collection in no_node will not be treated as a node, but as a single value</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="fagus.utils.FagusMeta.options">
-<span class="sig-name descname"><span class="pre">options</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">options</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">dict</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">get_default_options</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reset</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span></span></span><a class="headerlink" href="#fagus.utils.FagusMeta.options" title="Permalink to this definition"></a></dt>
-<dd><p>Function to set multiple Fagus-options in one line</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>options</strong> – dict with options that shall be set</p></li>
-<li><p><strong>get_default_options</strong> – return all options (include default-values). Default: only return options that are set</p></li>
-<li><p><strong>reset</strong> – if ~ is set, all options are reset before options is set</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>a dict of options that are set, or all options if get_default_options is set</p>
+<dd class="field-even"><p>None</p>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="fagus.utils.FagusMeta.__setattr__">
-<span class="sig-name descname"><span class="pre">__setattr__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">attr</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#fagus.utils.FagusMeta.__setattr__" title="Permalink to this definition"></a></dt>
-<dd><p>Implement setattr(self, name, value).</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="fagus.utils.FagusMeta.__getattr__">
-<span class="sig-name descname"><span class="pre">__getattr__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">attr</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#fagus.utils.FagusMeta.__getattr__" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="fagus.utils.FagusMeta.__delattr__">
-<span class="sig-name descname"><span class="pre">__delattr__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">attr</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#fagus.utils.FagusMeta.__delattr__" title="Permalink to this definition"></a></dt>
-<dd><p>Implement delattr(self, name).</p>
+<dt class="sig sig-object py" id="fagus.utils.FagusOption.verify">
+<span class="sig-name descname"><span class="pre">verify</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Any</span></span></span><a class="headerlink" href="#fagus.utils.FagusOption.verify" title="Permalink to this definition"></a></dt>
+<dd><p>Verifies if the input value to the option has the correct type and passes the validation function.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>value</strong> (<em>Any</em>) – The option input value to be verified.</p>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>TypeError</strong> – If the input value is not of the expected type.</p></li>
+<li><p><strong>ValueError</strong> – If the input value does not pass the custom validation function.</p></li>
+</ul>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>The input value if it meets the requirements.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>Any</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py attribute">
-<dt class="sig sig-object py" id="fagus.utils.FagusMeta.__module__">
-<span class="sig-name descname"><span class="pre">__module__</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'fagus.utils'</span></em><a class="headerlink" href="#fagus.utils.FagusMeta.__module__" title="Permalink to this definition"></a></dt>
+<dt class="sig sig-object py" id="fagus.utils.FagusOption.__dict__">
+<span class="sig-name descname"><span class="pre">__dict__</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">mappingproxy({'__module__':</span> <span class="pre">'fagus.utils',</span> <span class="pre">'__doc__':</span> <span class="pre">'Helper</span> <span class="pre">class</span> <span class="pre">to</span> <span class="pre">facilitate</span> <span class="pre">Fagus</span> <span class="pre">options.',</span> <span class="pre">'__init__':</span> <span class="pre">&lt;function</span> <span class="pre">FagusOption.__init__&gt;,</span> <span class="pre">'verify':</span> <span class="pre">&lt;function</span> <span class="pre">FagusOption.verify&gt;,</span> <span class="pre">'__dict__':</span> <span class="pre">&lt;attribute</span> <span class="pre">'__dict__'</span> <span class="pre">of</span> <span class="pre">'FagusOption'</span> <span class="pre">objects&gt;,</span> <span class="pre">'__weakref__':</span> <span class="pre">&lt;attribute</span> <span class="pre">'__weakref__'</span> <span class="pre">of</span> <span class="pre">'FagusOption'</span> <span class="pre">objects&gt;,</span> <span class="pre">'__annotations__':</span> <span class="pre">{}})</span></em><a class="headerlink" href="#fagus.utils.FagusOption.__dict__" title="Permalink to this definition"></a></dt>
 <dd></dd></dl>
 
+<dl class="py attribute">
+<dt class="sig sig-object py" id="fagus.utils.FagusOption.__module__">
+<span class="sig-name descname"><span class="pre">__module__</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'fagus.utils'</span></em><a class="headerlink" href="#fagus.utils.FagusOption.__module__" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="fagus.utils.FagusOption.__weakref__">
+<span class="sig-name descname"><span class="pre">__weakref__</span></span><a class="headerlink" href="#fagus.utils.FagusOption.__weakref__" title="Permalink to this definition"></a></dt>
+<dd><p>list of weak references to the object (if defined)</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="fagus.utils.EllipsisType">
+<span class="sig-prename descclassname"><span class="pre">fagus.utils.</span></span><span class="sig-name descname"><span class="pre">EllipsisType</span></span><a class="headerlink" href="#fagus.utils.EllipsisType" title="Permalink to this definition"></a></dt>
+<dd><p>TypeAlias to represent type(…), which cannot be done in a nicer way prior to Python 3.10</p>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="fagus.utils.OptStr">
+<span class="sig-prename descclassname"><span class="pre">fagus.utils.</span></span><span class="sig-name descname"><span class="pre">OptStr</span></span><a class="headerlink" href="#fagus.utils.OptStr" title="Permalink to this definition"></a></dt>
+<dd><p>TypeAlias for FagusOption requiring a str. Specify custom value as str, or keep … to use FagusOption default.</p>
+<p>alias of <code class="xref py py-obj docutils literal notranslate"><span class="pre">Union</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">ellipsis</span></code>]</p>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="fagus.utils.OptBool">
+<span class="sig-prename descclassname"><span class="pre">fagus.utils.</span></span><span class="sig-name descname"><span class="pre">OptBool</span></span><a class="headerlink" href="#fagus.utils.OptBool" title="Permalink to this definition"></a></dt>
+<dd><p>TypeAlias for FagusOption requiring a bool. Specify custom value as bool, or keep … to use FagusOption default.</p>
+<p>alias of <code class="xref py py-obj docutils literal notranslate"><span class="pre">Union</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">ellipsis</span></code>]</p>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="fagus.utils.OptInt">
+<span class="sig-prename descclassname"><span class="pre">fagus.utils.</span></span><span class="sig-name descname"><span class="pre">OptInt</span></span><a class="headerlink" href="#fagus.utils.OptInt" title="Permalink to this definition"></a></dt>
+<dd><p>TypeAlias for FagusOption requiring an int. Specify custom value as int, or keep … to use FagusOption default.</p>
+<p>alias of <code class="xref py py-obj docutils literal notranslate"><span class="pre">Union</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">ellipsis</span></code>]</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="fagus.utils.OptAny">
+<span class="sig-prename descclassname"><span class="pre">fagus.utils.</span></span><span class="sig-name descname"><span class="pre">OptAny</span></span><a class="headerlink" href="#fagus.utils.OptAny" title="Permalink to this definition"></a></dt>
+<dd><p>TypeAlias for FagusOption taking any object. Specify custom value, or keep … to use FagusOption default.</p>
 </dd></dl>
 
 </section>

@@ -4,9 +4,10 @@
 - Added mypy as a build-dependency to ensure correct and strong typing in the whole library. Consequences:
   - `TypeAlias` was added to make Fagus Options more clear.
   - Now, `OptStr`, `OptBool`, `OptInt` and `OptAny` clearly declare what the ... means, and make it strongly typed.
-- `type_extensions >= 3.74` added as external dependency for Python < 3.10
+- Added external dependency `type_extensions >= 3.74` for Python < 3.10
   - This was necessary to support `TypeAlias`. However, with `>= 3.74` which was released in June 2019, this dependency is kept as open and forgiving as possible.
   - For Python >= 3.10, `Fagus` still has no external dependencies.
+- Renamed the `FagusOption` `value_split` to `path_split` which is more descriptive of what it is doing.
 - More documentation in README: now all the different `FagusOption`s are documented properly, as well as the basic `set()`, `get()`, `update()`, `add()`, `insert()` and `extend()`-functions.
 
 **2022-05-13 1.0.1 Release of Fagus on GitHub and ReadTheDocs**

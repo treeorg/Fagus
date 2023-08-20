@@ -252,7 +252,7 @@ In this last example, there is no list to be traversed at depth one. In that cas
 * **Type**: `str`
 * **Allowed values**: Any string only containing the characters `"d"`, `"l"` and `" "`
 
-This parameter is used to precisely specify which types the new nodes to create when inserting a value at [`path`](#the-path-parameter) shall have. There are defined in three possible ways: `"l"` for `list`, `"d"` for `dict` or `" "` for "don't care". Don't care means that if the node exists, its type will be preserved if possible, however if a new node needs to be created because it doesn't exist, [`default_node_type`](#default-node-type) will be used if possible. The examples below will make it more clear how this works. For an overview, also check the [basic principles for modifying the tree](#basic-principles-for-modifying-the-tree).
+This parameter is used to precisely specify which types the new nodes to create when inserting a value at [`path`](#the-path-parameter) shall have. There are defined in three possible ways: `"l"` for `list`, `"d"` for `dict` or `" "` for "don't care". Don't care means that if the node exists, its type will be preserved if possible, however if a new node needs to be created because it doesn't exist, [`default_node_type`](#default_node_type) will be used if possible. The examples below will make it more clear how this works. For an overview, also check the [basic principles for modifying the tree](#basic-principles-for-modifying-the-tree).
 
 **Example one: creating new nodes inside an empty object**:
 ```python
@@ -462,7 +462,7 @@ The `insert()` function works similar to [`append()`](#append----adding-a-new-el
 {'flowers': ['daffodil', 'tulip', 'rose', 'sunflower']}
 ```
 
-The normal indexation of `list`-nodes in `Fagus` only allows appending or prepending elements if it is necessary to do so anywhere in [`path`](#the-path-parameter), this is documented [`here`](#correctly-handling-list-indices). Check out the [`list_insert`](#listinsert) `FagusOption` for examples on how to insert new nodes at any index in the list anywhere in `path`.
+The normal indexation of `list`-nodes in `Fagus` only allows appending or prepending elements if it is necessary to do so anywhere in [`path`](#the-path-parameter), this is documented [`here`](#correctly-handling-list-indices). Check out the [`list_insert`](#list_insert) `FagusOption` for examples on how to insert new nodes at any index in the list anywhere in `path`.
 
 ### add() -- adding a new element to a `set`
 The `add()` function works similar to [`append()`](#append----adding-a-new-element-to-a-list), the main difference is just that instead of creating and appending to `list`-nodes, `set`-nodes are used. For detailed examples of the rules when and how new `set`-nodes are created by this function, check out [`append()`](#append----adding-a-new-element-to-a-list) just replacing occurrences of `list` with `set`.
