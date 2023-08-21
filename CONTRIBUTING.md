@@ -4,9 +4,10 @@ First off, welcome and thank you for taking the time to contribute to Fagus! Any
 
 The following is a set of guidelines for contribution to Fagus, which is hosted by the [treeorg](https://github.com/treeorg) organisation on GitHub. They are mostly guidelines, not rules. All of this can be discussed - use your best judgement, and feel free to propose changes to this document in a pull request.
 
-<font size=5>**Table of contents**</font>
+## Table of contents
 <!--TOC-->
 
+- [Table of contents](#table-of-contents)
 - [Fagus Principles](#fagus-principles)
 - [How Can I Contribute?](#how-can-i-contribute)
   - [Reporting Bugs](#reporting-bugs)
