@@ -1,7 +1,8 @@
 """This module contains filter-classes used in Fagus"""
+
 import re
 import collections.abc as c_abc
-from typing import Union, Any, Optional, Callable, Tuple, Collection, Set
+from typing import Union, Any, Optional, Callable, Tuple, Collection, Set, Dict, List
 
 from .utils import _None, _is
 
@@ -155,7 +156,7 @@ class KFil(FilBase):
     def _set_extra_filter(self, index: int, filter_: Union["CFil", VFil]) -> None:
         """Removes VFil / CFil from args and puts it into extra_filters"""
         if not hasattr(self, "extra_filters"):
-            self.extra_filters: dict[int, list[Union["CFil", VFil]]] = {}
+            self.extra_filters: Dict[int, List[Union["CFil", VFil]]] = {}
         if index not in self.extra_filters:
             self.extra_filters[index] = []
         self.extra_filters[index].append(filter_)

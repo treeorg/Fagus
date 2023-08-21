@@ -1173,13 +1173,13 @@ def run_doctests(verbose: bool, test_type: str) -> bool:
     return res
 
 
-class SortedSet(Set):
+class SortedSet(Set):  # type: ignore
     """Helper class to be able to always print a set sorted and thus predictable (used internally for doctests)"""
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f"{{{str(sorted(list(self)))[1:-1]}}}"
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return str(self)  # f"SortedSet({str(self)})"
         # return f"SortedSet({str(self)})"
 

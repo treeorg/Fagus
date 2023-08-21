@@ -1,10 +1,35 @@
 # Fagus
 These days most data is converted to and from `json` and `yaml` while it is sent back and forth to and from API's. Often this data is deeply nested. `Fagus` is a Python-library that makes it easier to work with nested dicts and lists. It allows you to traverse and edit these tree-objects with simple function calls that handle the most common errors and exceptions internally. The name fagus is actually the latin name for the genus of beech-trees.
 
-### Code and tests ready, documentation still WORK IN PROGRESS
+#### Code and tests ready, documentation still WORK IN PROGRESS
 This documentation is still Work in Progress. I have some more ideas for features, but most of the coding is done. The code is tested as good as possible, but of course there still might be bugs as this library has just been released. Just report them so we get them away ;). Even though this README is not done yet, you should be able to use most of the functions based on the docstrings and some trial and error. Just ask questions [here](https://github.com/treeorg/Fagus/discussions/categories/q-a) if sth is unclear. The documentation will be filled in and completed as soon as possible.
 
 **HAVE FUN!**
+
+<font size=5>**Table of contents**</font>
+<!--TOC-->
+
+- [Basic principles](#basic-principles)
+  - [Introduction -- What it solves](#introduction----what-it-solves)
+  - [The path-parameter](#the-path-parameter)
+  - [Static and instance usage](#static-and-instance-usage)
+  - [Fagus options](#fagus-options)
+- [Modifying the tree](#modifying-the-tree)
+  - [Basic principles for modifying the tree](#basic-principles-for-modifying-the-tree)
+  - [set() -- adding and overwriting elements](#set----adding-and-overwriting-elements)
+  - [append() -- adding a new element to a `list`](#append----adding-a-new-element-to-a-list)
+  - [extend() -- extending a `list` with multiple elements](#extend----extending-a-list-with-multiple-elements)
+  - [insert() -- insert an element at a given index in a `list`](#insert----insert-an-element-at-a-given-index-in-a-list)
+  - [add() -- adding a new element to a `set`](#add----adding-a-new-element-to-a-set)
+  - [update() -- update multiple elements in a `set` or `dict`](#update----update-multiple-elements-in-a-set-or-dict)
+  - [remove(), delete() and pop()](#remove-delete-and-pop)
+  - [serialize() -- ensure that a tree is json- or yaml-serializable](#serialize----ensure-that-a-tree-is-json--or-yaml-serializable)
+  - [mod() -- modifying elements](#mod----modifying-elements)
+- [Iterating over nested objects](#iterating-over-nested-objects)
+  - [Skipping nodes in iteration.](#skipping-nodes-in-iteration)
+- [Filtering nested objects](#filtering-nested-objects)
+
+<!--TOC-->
 
 ## Basic principles
 

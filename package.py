@@ -25,7 +25,7 @@ def main() -> None:
 )
 @click.option("-b", "--build", is_flag=True, help="Builds the package wheel into dist")
 @click.option("-d", "--documentation", is_flag=True, help="Updates the sphinx documentation")
-@click.option("-l", "--latex-pdf", is_flag=True, help="Builds documentation pdf using latex. ")
+@click.option("-l", "--latex-pdf", is_flag=True, help="Builds documentation pdf using latex.")
 @click.option(
     "-p",
     "--pre-commit",
@@ -54,21 +54,21 @@ def update(version: str, build: bool, documentation: bool, latex_pdf: bool, pre_
             shell=True,
         )
         original_files = sphinx_hacks("general")
-        subprocess.run(
-            "make clean", shell=True, **({} if os.getcwd().endswith("docs") else {"cwd": "docs"})  # type: ignore
+        subprocess.run(  # type: ignore
+            "make clean", shell=True, **({} if os.getcwd().endswith("docs") else {"cwd": "docs"})
         )
         if documentation:
             if packaging.version.parse(platform.python_version()) < packaging.version.parse("3.7"):
                 raise EnvironmentError(
                     "Sphinx-documentation can't be built on Python < 3.7 (required by the RTD theme)"
                 )
-            subprocess.run(
-                "make html", shell=True, **({} if os.getcwd().endswith("docs") else {"cwd": "docs"})  # type: ignore
+            subprocess.run(  # type: ignore
+                "make html", shell=True, **({} if os.getcwd().endswith("docs") else {"cwd": "docs"})
             )
         if latex_pdf:
             original_files.update(sphinx_hacks("pdf", original_files))
-            subprocess.run(
-                "make latexpdf", shell=True, **({} if os.getcwd().endswith("docs") else {"cwd": "docs"})  # type: ignore
+            subprocess.run(  # type: ignore
+                "make latexpdf", shell=True, **({} if os.getcwd().endswith("docs") else {"cwd": "docs"})
             )
         sphinx_hacks(restore=original_files)
     if pre_commit:
@@ -86,15 +86,20 @@ def sphinx_hacks(hack: str = "", restore: Optional[Dict[str, str]] = None) -> Di
         None dict with filepath as key and the original content of the file before the hack as value
     """
     files = {}
+    basepath = ".." if os.getcwd().endswith("docs") else "."
     try:
         if hack == "general":
-            filepath = f"{'..' if os.getcwd().endswith('docs') else '.'}/fagus/fagus.py"
-            with open(filepath, "r+") as f:
-                files[filepath] = f.read()  # __options has to be renamed to options to get the doc right (at runtime
-                f.seek(0)  # exactly the same rename is done in __init__)
-                f.write(files[filepath].replace("def __options(", "def options(  "))  # add spaces to have same length
-                f.seek(0)
-            filepath = f"{'..' if os.getcwd().endswith('docs') else '.'}/LICENSE.md"
+            for file in (pyfile for pyfile in os.listdir(f"{basepath}/fagus") if pyfile.endswith(".py")):
+                filepath = f"{basepath}/fagus/{file}"
+                with open(filepath, "r+") as f:
+                    files[filepath] = f.read()
+                    f.seek(0)
+                    new_c = files[filepath].replace('"""\n', '"""\n\nfrom __future__ import annotations\n', 1)
+                    if file == "fagus.py":  # __options must be renamed to options to get the doc right (at runtime, the
+                        new_c = new_c.replace("def __options(", "def options(", 1)  # same rename is done in __init__)
+                    f.write(new_c)
+                    f.seek(0)
+            filepath = f"{basepath}/LICENSE.md"
             with open(filepath, "r+") as f:
                 files[filepath] = f.read()
                 f.seek(0)
@@ -104,7 +109,7 @@ def sphinx_hacks(hack: str = "", restore: Optional[Dict[str, str]] = None) -> Di
             if os.path.exists(filepath):
                 os.remove(filepath)
         elif hack == "pdf":
-            filepath = f"{'..' if os.getcwd().endswith('docs') else '.'}/README.md"
+            filepath = f"{basepath}/README.md"
             with open(filepath, "r+") as f:
                 files[filepath] = f.read()
                 f.seek(0)
