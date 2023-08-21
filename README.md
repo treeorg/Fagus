@@ -6,9 +6,10 @@ This documentation is still Work in Progress. I have some more ideas for feature
 
 **HAVE FUN!**
 
-<font size=5>**Table of contents**</font>
+## Table of contents
 <!--TOC-->
 
+- [Table of contents](#table-of-contents)
 - [Basic principles](#basic-principles)
   - [Introduction -- What it solves](#introduction----what-it-solves)
   - [The path-parameter](#the-path-parameter)

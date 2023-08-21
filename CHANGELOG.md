@@ -1,5 +1,5 @@
 # Changelog
-**2023-08-20 1.1.1 Fixed some errors in the documentation introduced in 1.1.0**
+**2023-08-20 1.1.2 Fixed some errors in the documentation introduced in 1.1.0**
 - Removed caret dependency for Python 3.6, so now it is compatible with any future Python version.
 - Ensure that `TypeAlias` also works in readthedocs
 - Added automatically updated TOC to README and CONTRIBUTING
