@@ -4,18 +4,20 @@ First off, welcome and thank you for taking the time to contribute to Fagus! Any
 
 The following is a set of guidelines for contribution to Fagus, which is hosted by the [treeorg](https://github.com/treeorg) organisation on GitHub. They are mostly guidelines, not rules. All of this can be discussed - use your best judgement, and feel free to propose changes to this document in a pull request.
 
-### Table of contents
-[Fagus Principles](#fagus-principles)
+<font size=5>**Table of contents**</font>
+<!--TOC-->
 
-[How Can I Contribute?](#how-can-i-contribute)
-  * [Reporting Bugs](#reporting-bugs)
-  * [Requesting New Features](#requesting-new-features)
+- [Fagus Principles](#fagus-principles)
+- [How Can I Contribute?](#how-can-i-contribute)
+  - [Reporting Bugs](#reporting-bugs)
+  - [Requesting New Features](#requesting-new-features)
+- [Developing Fagus](#developing-fagus)
+  - [Software Dependencies For Development](#software-dependencies-for-development)
+  - [Code Styling Guidelines](#code-styling-guidelines)
+  - [Setting Up A Local Fagus Developing Environment](#setting-up-a-local-fagus-developing-environment)
+  - [Submitting Pull Requests for Fagus](#submitting-pull-requests-for-fagus)
 
-[Developing Fagus](#developing-fagus)
-  * [Software Dependencies for Development](#software-dependencies-for-development)
-  * [Code Styling Guidelines](#code-styling-guidelines)
-  * [Setting Up A Local Fagus Developing Environment](#setting-up-a-local-fagus-developing-environment)
-  * [Submitting Pull Requests For Fagus](#submitting-pull-requests-for-fagus)
+<!--TOC-->
 
 ## Fagus Principles
 1. **No external dependencies**: Fagus runs on native Python without 3rd party dependencies.
@@ -93,6 +95,8 @@ If it hasn't run in your console yet, run `poetry shell` to get all the developm
 #### Tests
 You can run `python3 -m unittest discover` to run all the tests in `./tests`. If you add new functionality in your pull-request, make sure that the tests still work, or update them if necessary. As this is a generic library, it's very important that all the functions have test coverage for as many edge cases as possible.
 
+Doctests have also been defined, some in the docstrings in the `fagus`-module, others in `README.md`. Run `python3 -m tests.test_fagus doctest` to run all the doctests, and make sure that they still work.
+
 #### Committing using pre-commit and commitizen
 1. Make sure all your changes are staged for commit: `git add -A` includes all of your changes
 2. Dry-run the pre-commit-checks: `pre-commit`
@@ -103,8 +107,25 @@ You can run `python3 -m unittest discover` to run all the tests in `./tests`. If
    * If the pre-commit-checks fail, your commit is rejected and after fixing the issues you'd have to retype the commit-message. To not have that problem, do step 3 beforehand.
 
 #### Releasing A New Fagus Package on PyPi
-1. Run `poetry version <major, minor or patch>`to increment the version number in poetry.
-    * **Major**: For backwards incompatible changes (e.g. removing support for Python 3.6)
-    * **Minor**: Adds functionality in a backwards compatible way
-    * **Patch**: Fixes bugs in a backwards compatible way
-3. Run `sed -i "s/__version__ = .*\$/__version__ = \"$(poetry version -s)\"/" fagus/__init__.py` (only works on Linux / MacOS) to update the version number in the fagus-package. If you know the command to do this replacement in a windows shell, feel free to add it here.
+1. Run the commands from [Tests](#tests) to ensure that the tests still work. If possible, also test for Python 3.6.
+2. Update `Changelog.md` with a description of the changes you have made.
+3. Manually run `package.py` from the project's root folder using the following command
+   - `python3 package update -bdlp -v <version number or increment>`
+   - `b` builds the package for later upload to PyPi
+   - `d` updates the documentation files (see if this runs properly, if it does it will work on sphinx as well)
+   - `l` builds a pdf-documentation file
+   - `p` runs the pre-commit checks to ensure that everything is alright before publishing
+   - `v` requires a version number or increment. Either manually put a version number here, or use one of the following increments:
+      - **major**: For backwards incompatible changes (e.g. removing support for Python 3.6)
+      - **minor**: Adds functionality in a backwards compatible way
+      - **patch**: Fixes bugs in a backwards compatible way
+4. Make a commit including all the changes made in step 1 and 2, and repeat them if necessary. Check the following before committing:
+   - Ensure that the version number mentioned in `CHANGELOG.md` corresponds to the one that is now present in `pyproject.toml`. If it is not equal, update `CHANGELOG.md` accordingly, and rerun step 2 but without the version-parameter `-v`.
+   - Go through the errors and warnings which are thrown especially while the documentation is created in step 2.
+     - This warning is alright: `WARNING: more than one target found for cross-reference 'Fil': fagus.Fil, fagus.filters.Fil`
+     - Fix all other warnings / errors.
+5. Create a Pull Request for the changes back to the `main`-branch, this is easiest to do directly on [GitHub](https://github.com/treeorg/Fagus/pulls). Use the title and text from `CHANGELOG.md` for the title and description of the PR.
+6. Run `poetry publish` to publish the new version to `PyPi`.
+   - If it doesn't work, make sure that you are allowed to publish to [Fagus](https://pypi.org/project/fagus/).
+   - Set up an access token in your PyPi account [here](https://pypi.org/manage/account/).
+   - Then run `poetry config pypi-token.pypi <my-token>` documented [here](https://python-poetry.org/docs/repositories/#configuring-credentials) to add the token to your `poetry`-configuration, `poetry publish` should now work.

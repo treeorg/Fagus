@@ -1,4 +1,5 @@
 """This module contains iterator-classes that are used to iterate over Fagus-objects"""
+
 from typing import (
     TYPE_CHECKING,
     Union,

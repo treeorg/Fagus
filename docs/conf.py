@@ -14,7 +14,7 @@ import os
 import sys
 
 sys.path.insert(0, os.path.abspath(".."))
-from fagus import __version__
+from fagus import __version__  # noqa: E402
 
 # -- Project information -----------------------------------------------------
 
@@ -84,6 +84,7 @@ strip_signature_backslash = True
 myst_heading_anchors = 6
 myst_number_code_blocks = ["python"]
 autodoc_member_order = "bysource"
+autodoc_type_aliases = {"OptStr": "OptStr", "OptBool": "OptBool", "OptInt": "OptInt", "OptAny": "OptAny"}
 autodoc_default_options = {
     "special-members": True,
 }

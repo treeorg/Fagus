@@ -1,4 +1,5 @@
 """This module contains classes and functions used across the Fagus-library that didn't fit in another module"""
+
 import copy as cp
 import re
 import sys

@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" >
 <head>
-  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Changelog &mdash; Fagus 1.0.1 documentation</title>
+  <title>Changelog &mdash; Fagus 1.1.1 documentation</title>
       <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="_static/wider_page.css" type="text/css" />
@@ -15,7 +15,9 @@
         <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
         <script src="_static/jquery.js"></script>
         <script src="_static/underscore.js"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="_static/doctools.js"></script>
+        <script src="_static/sphinx_highlight.js"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
@@ -28,11 +30,15 @@
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search" >
-            <a href="index.html" class="icon icon-home"> Fagus
+
+
+
+          <a href="index.html" class="icon icon-home">
+            Fagus
           </a>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
-    <input type="text" name="q" placeholder="Search docs" />
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
     <input type="hidden" name="check_keywords" value="yes" />
     <input type="hidden" name="area" value="default" />
   </form>
@@ -60,8 +66,8 @@
         <div class="rst-content">
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
-      <li>Changelog</li>
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Changelog</li>
       <li class="wy-breadcrumbs-aside">
             <a href="_sources/CHANGELOG.rst.txt" rel="nofollow"> View page source</a>
       </li>
@@ -72,7 +78,30 @@
            <div itemprop="articleBody">
 
   <section id="changelog">
-<h1>Changelog<a class="headerlink" href="#changelog" title="Permalink to this headline"></a></h1>
+<h1>Changelog<a class="headerlink" href="#changelog" title="Permalink to this heading"></a></h1>
+<p><strong>2023-08-20 1.1.1 Fixed some errors in the documentation introduced in 1.1.0</strong></p>
+<ul class="simple">
+<li><p>Removed caret dependency for Python 3.6, so now it is compatible with any future Python version.</p></li>
+<li><p>Ensure that <code class="docutils literal notranslate"><span class="pre">TypeAlias</span></code> also works in readthedocs</p></li>
+<li><p>Added automatically updated TOC to README and CONTRIBUTING</p></li>
+</ul>
+<p><strong>2023-08-19 1.1.0 Fixed strong typing and added more documentation</strong></p>
+<ul class="simple">
+<li><p>Added mypy as a build-dependency to ensure correct and strong typing in the whole library. Consequences:</p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">TypeAlias</span></code> was added to make Fagus Options more clear.</p></li>
+<li><p>Now, <code class="docutils literal notranslate"><span class="pre">OptStr</span></code>, <code class="docutils literal notranslate"><span class="pre">OptBool</span></code>, <code class="docutils literal notranslate"><span class="pre">OptInt</span></code> and <code class="docutils literal notranslate"><span class="pre">OptAny</span></code> clearly declare what the … means, and make it strongly typed.</p></li>
+</ul>
+</li>
+<li><p>Added external dependency <code class="docutils literal notranslate"><span class="pre">type_extensions</span> <span class="pre">&gt;=</span> <span class="pre">3.74</span></code> for Python &lt; 3.10</p>
+<ul>
+<li><p>This was necessary to support <code class="docutils literal notranslate"><span class="pre">TypeAlias</span></code>. However, with <code class="docutils literal notranslate"><span class="pre">&gt;=</span> <span class="pre">3.74</span></code> which was released in June 2019, this dependency is kept as open and forgiving as possible.</p></li>
+<li><p>For Python &gt;= 3.10, <code class="docutils literal notranslate"><span class="pre">Fagus</span></code> still has no external dependencies.</p></li>
+</ul>
+</li>
+<li><p>Renamed the <code class="docutils literal notranslate"><span class="pre">FagusOption</span></code> <code class="docutils literal notranslate"><span class="pre">value_split</span></code> to <code class="docutils literal notranslate"><span class="pre">path_split</span></code> which is more descriptive of what it is doing.</p></li>
+<li><p>More documentation in README: now all the different <code class="docutils literal notranslate"><span class="pre">FagusOption</span></code>s are documented properly, as well as the basic <code class="docutils literal notranslate"><span class="pre">set()</span></code>, <code class="docutils literal notranslate"><span class="pre">get()</span></code>, <code class="docutils literal notranslate"><span class="pre">update()</span></code>, <code class="docutils literal notranslate"><span class="pre">add()</span></code>, <code class="docutils literal notranslate"><span class="pre">insert()</span></code> and <code class="docutils literal notranslate"><span class="pre">extend()</span></code>-functions.</p></li>
+</ul>
 <p><strong>2022-05-13 1.0.1 Release of Fagus on GitHub and ReadTheDocs</strong></p>
 <p>Now. Finally. The documentation is still not completely ready but it’s time to get some feedback from the community.</p>
 <p><strong>2022-04-05 1.0.0 Renaming to Fagus</strong></p>

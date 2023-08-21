@@ -14,7 +14,7 @@ Submodules in :py:mod:`fagus`:
     * :py:mod:`~fagus.utils`: helper classes and methods for :obj:`~fagus.Fagus`
 """
 
-__version__ = "1.0.1"
+__version__ = "1.1.1"
 
 from .fagus import Fagus
 from .filters import Fil, CFil, VFil

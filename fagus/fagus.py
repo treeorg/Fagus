@@ -1,6 +1,5 @@
 """Base-module that contains the :obj:`~fagus.Fagus`-class"""
 
-
 import copy as cp
 from datetime import datetime, date, time
 import collections.abc as c_abc
@@ -48,7 +47,8 @@ class Fagus(c_abc.MutableMapping, c_abc.MutableSequence, c_abc.MutableSet, metac
     """Fagus is a wrapper-class for complex, nested objects of dicts and lists in Python
 
     Fagus can be used as an object by instantiating it, but it's also possible to use all methods statically without
-    even an object, so that a = {}; Fagus.set(a, "top med", 1) and a = Fagus({}); a.set(1, "top med") do the same.
+    even an object, so that ``a = {}; Fagus.set(a, "top med", 1)`` and ``a = Fagus({}); a.set(1, "top med")`` do the
+    same.
 
     The root node is always modified directly. If you don't want to change the root node, all the functions where it
     makes sense support to rather modify a copy, and return that modified copy using the copy-parameter.
@@ -56,12 +56,19 @@ class Fagus(c_abc.MutableMapping, c_abc.MutableSequence, c_abc.MutableSet, metac
     **FagusOptions**:
     Several parameters used in functions in Fagus work as options so that you don't have to specify them each time you
     run a function. In the docstrings, these options are marked with a \\*, e.g. the fagus parameter is an option.
-    Options can be specified at three levels with increasing precedence: at class-level (Fagus.fagus = True), at
-    object-level (a = Fagus(), a.fagus = True) and in each function-call (a.get("b", fagus=True)). If you generally want
-    to change an option, change it at class-level - all objects in that file will inherit this option. If you want to
-    change the option specifically for one object, change the option at object-level. If you only want to change the
-    option for one single run of a function, put it as a function-parameter. More thorough examples of options can be
-    found in README.md.
+    Options can be specified at three levels with increasing precedence: at class-level (``Fagus.fagus = True``), at
+    object-level (``a = Fagus(), a.fagus = True``) and in each function-call (``a.get("b", fagus=True)``). If you
+    generally want to change an option, change it at class-level - all objects in that file will inherit this option.
+    If you want to change the option specifically for one object, change the option at object-level. If you only want
+    to change the option for one single run of a function, put it as a function-parameter. More thorough examples of
+    options can be found in README.md.
+    """
+
+    root: Collection[Any]
+    """ Contains the root note the Fagus-object is wrapped around
+
+    This can be used to remove the Fagus-wrapper in case the plain object is needed, e.g. if ``a = Fagus(["ex"])``,
+    ``a.root = ["ex"]``. The root node is also returned when a is called: ``a()``, examples in ``Fagus.__call__()``.
     """
 
     def __init__(
@@ -86,17 +93,18 @@ class Fagus(c_abc.MutableMapping, c_abc.MutableSequence, c_abc.MutableSet, metac
             root: object (like dict / list) to wrap Fagus around. If this is None, an empty node of the type
                 default_node_type will be used. Default None
             node_types: \\* Can be used to manually define if the nodes along path are supposed to be (l)ists or
-                (d)icts. E.g. "dll" to create a dict at level 1, and lists at level 2 and 3. " " can also be used -
-                space doesn't enforce a node-type like d or l. For " ", existing nodes are traversed if possible,
-                otherwise default_node_type is used to create new nodes. Default "", interpreted as " " at each level.
+                (d)icts. E.g. ``"dll"`` to create a dict at level 1, and lists at level 2 and 3. ``" "`` can also be
+                used -- space doesn't enforce a node-type like ``"d"`` or ``"l"``. For ``" "``, existing nodes are
+                traversed if possible, otherwise default_node_type is used to create new nodes. Default ``""``,
+                interpreted as " " at each level. See README
             list_insert: \\* Level at which a new node shall be inserted into the list instead of traversing the
                 existing node in the list at that index. See README
-            path_split: \\* used to split path into a list if path is a string, default " "
+            path_split: \\* used to split path into a list if path is a string, default ``" "``, see README
             fagus: \\* this option is used to determine whether nodes in the returned object should be returned as
                 Fagus-objects. This can be useful e.g. if you want to use Fagus in an iteration. Check the particular
                 function you want to use for a more thorough explanation of what this does in each case
             default_node_type: \\* determines if new nodes by default should be created as (d)ict or (l)ist. Must be
-                either "d" or "l", default "d"
+                either ``"d"`` or ``"l"``, default ``"d"``, examples in README
             default: \\* ~ is used in get and other functions if a path doesn't exist
             if_: \\* only set value if it meets the condition specified here, otherwise do nothing. The condition can be
                 a lambda, any value or a tuple of accepted values. Default _None (don't check value)
@@ -115,7 +123,7 @@ class Fagus(c_abc.MutableMapping, c_abc.MutableSequence, c_abc.MutableSet, metac
         if copy:
             root = Fagus.__copy__(root)
         if isinstance(root, Fagus):
-            self.root: Collection[Any] = root.root
+            self.root = root.root
             self._options: Optional[Dict[str, Any]] = None if root._options is None else root._options.copy()
         else:
             self.root = root
@@ -136,12 +144,12 @@ class Fagus(c_abc.MutableMapping, c_abc.MutableSequence, c_abc.MutableSet, metac
     ) -> Any:
         """Retrieves value at path. If the value doesn't exist, default is returned.
 
-        To get "hello" from x = Fagus({"a": ["b", {"c": "d"}], e: ["f", "g"]}), you can use x[("a", 1, "c")]. The tuple
-        ("a", 1, "c") is the path-parameter that is used to traverse x. At first, the list at "a" is picked in the
-        top-most dict, and then the 2nd element {"c": "d"} is picked from that list. Then, "d" is picked from {"c": "d"}
-        and returned. The path-parameter can be a tuple or list, the keys must be either integers for lists, or any
-        hashable objects for dicts. For convenience, the keys can also be put in a single string separated by
-        path_split (default " "), so a["a 1 c"] also returns "d".
+        To get ``"hello"`` from ``x = Fagus({"a": ["b", {"c": "d"}], e: ["f", "g"]})``, you can use
+        ``x[("a", 1, "c")]``. The tuple ``("a", 1, "c")`` is the path-parameter that is used to traverse x. At first,
+        the list at ``"a"`` is picked in the top-most dict, and then the 2nd element ``{"c": "d"}`` is picked from that
+        list. Then, "d" is picked from ``{"c": "d"}`` and returned. The path-parameter can be a tuple or list, the keys
+        must be either integers for lists, or any hashable objects for dicts. For convenience, the keys can also be put
+        in a single string separated by path_split (default ``" "``), so ``a["a 1 c"]`` also returns ``"d"``.
 
         \\* means that the parameter is a FagusOption, see Fagus-class-docstring for more information about options
 
@@ -154,7 +162,7 @@ class Fagus(c_abc.MutableMapping, c_abc.MutableSequence, c_abc.MutableSet, metac
                 (dicts, lists) in the returned values, and you make changes to these nodes, these changes will also be
                 applied in the root node from which values() was called. If you want the returned values to be
                 independent, use copy to get a shallow copy of the returned value
-            path_split: \\* used to split path into a list if path is a str, default " "
+            path_split: \\* used to split path into a list if path is a str, default ``" "``
 
         Returns:
             the value if the path exists, or default if it doesn't exist
@@ -197,12 +205,13 @@ class Fagus(c_abc.MutableMapping, c_abc.MutableSequence, c_abc.MutableSet, metac
         \\* means that the parameter is a FagusOption, see Fagus-class-docstring for more information about options
 
         Args:
-            max_depth: Can be used to limit how deep the iteration goes. Example: a = {"a": ["b", ["c", "d"]], "e": "f"}
-                If max_depth is sys.max_size, all the nodes are traversed: [("a", "b", "c"), ("a", "b", "d"]),
-                ("e", "f")]. If max_depth is 1, iter returns [("a", "b", ["c", "d"]), ("e", "f")], so ["c", "d"] is not
-                iterated through but returned as a node. If max_depth is 0, iter returns [("a", ["b", ["c", "d"]]),
-                ("e", "f")], effectively the same as dict.items(). Default sys.maxitems (iterate as deeply as possible)
-                A negative number (e.g. -1) is treated as sys.maxitems.
+            max_depth: Can be used to limit how deep the iteration goes. Example:
+                ``a = {"a": ["b", ["c", "d"]], "e": "f"}`` If max_depth is sys.max_size, all the nodes are traversed:
+                ``[("a", "b", "c"), ("a", "b", "d"]), ("e", "f")]``. If max_depth is 1, iter returns
+                ``[("a", "b", ["c", "d"]), ("e", "f")]``, so ``["c", "d"]`` is not iterated through but returned as a
+                node. If max_depth is 0, iter returns ``[("a", ["b", ["c", "d"]]), ("e", "f")]``, effectively the same
+                as dict.items(). Default sys.maxitems (iterate as deeply as possible). A negative number (e.g. -1) is
+                treated as sys.maxitems.
             path: Start iterating at path. Internally calls get(path), and iterates on the node get returns. See get()
             filter_: Only iterate over specific nodes defined using Fil (see README.md and Fil for more info)
             fagus: \\* If the leaf in the tuple is a dict or list, return it as a Fagus-object. This option has no
@@ -211,7 +220,7 @@ class Fagus(c_abc.MutableMapping, c_abc.MutableSequence, c_abc.MutableSet, metac
                 iter() returns are exactly max_items long. This can be useful if you want to unpack the keys / leaves
                 from the tuples in a loop, which fails if the count of items in the tuples varies. This option has no
                 effect if max_items is -1. The default value is ..., meaning that the tuples are not filled, and the
-                length of the tuples can vary. See README.md for a more thorough example.
+                length of the tuples can vary. See README for a more thorough example.
             select: Extract only some specified values from the tuples. E.g. if ~ is -1, only the leaf-values are
                 returned. ~ can also be a list of indices. Default None (don't reduce the tuples)
             copy: Iterate on a shallow-copy to make sure that you can edit root node without disturbing the iteration
@@ -220,7 +229,7 @@ class Fagus(c_abc.MutableMapping, c_abc.MutableSequence, c_abc.MutableSet, metac
             filter_ends: Affects the end dict/list that is returned if max_items is used. Normally, filters are not
                 applied on that end node. If you would like to get the end node filtered too, set this to True. If this
                 is set to True, the last nodes will always be copies (if unfiltered they are references)
-            path_split: \\* used to split path into a list if path is a str, default " "
+            path_split: \\* used to split path into a list if path is a str, default ``" "``, see README
 
         Returns:
             FagusIterator with one tuple for each leaf-node, containing the keys of the parent-nodes until the leaf
@@ -257,11 +266,11 @@ class Fagus(c_abc.MutableMapping, c_abc.MutableSequence, c_abc.MutableSet, metac
         Args:
             filter_: Fil-object in which the filtering-criteria are specified
             path: at this point in self, the filtering will start (apply filter\\_ relatively from this point).
-                Default "", meaning that the root node is filtered, see get() and README for examples
+                Default ``""``, meaning that the root node is filtered, see get() and README for examples
             fagus: \\* return the filtered self as Fagus-object (default is just to return the filtered node)
             copy: Create a copy and filter on that copy. Default is to modify the self directly
             default: \\* returned if path doesn't exist in self, or the value at path can't be filtered
-            path_split: \\* used to split path into a list if path is a str, default " "
+            path_split: \\* used to split path into a list if path is a string, default ``" "``, see README
 
         Returns:
             the filtered object, starting at path
@@ -310,11 +319,11 @@ class Fagus(c_abc.MutableMapping, c_abc.MutableSequence, c_abc.MutableSet, metac
         Args:
             filter_: Fil-object in which the filtering-criteria are specified
             path: at this position in self, the splitting will start (apply filter\\_ relatively from this point).
-                Default "", meaning that the root node is split, see get() and README for examples
+                Default ``""``, meaning that the root node is split, see get() and README for examples
             fagus: \\* return the filtered self as Fagus-object (default is just to return the filtered node)
             copy: Create a copy and filter on that copy. Default is to modify the object directly
-            default: \\* returned if path doesn't exist in self, or the
-            path_split: \\* used to split path into a list if path is a str, default " "
+            default: \\* returned if path doesn't exist in self
+            path_split: \\* used to split path into a list if path is a str, default ``" "``
 
         Returns:
             a tuple, where the first element is the nodes that pass the filter, and the second element is the nodes that
@@ -434,17 +443,18 @@ class Fagus(c_abc.MutableMapping, c_abc.MutableSequence, c_abc.MutableSet, metac
             path: List/Tuple of key-values that are traversed in self. If no nodes exist at the keys, new nodes are
                 created. Can also be specified as a string, that is split into a tuple using path_split. See get()
             node_types: \\* Can be used to manually define if the nodes along path are supposed to be (l)ists or
-                (d)icts. E.g. "dll" to create a dict at level 1, and lists at level 2 and 3. " " can also be used -
-                space doesn't enforce a node-type like d or l. For " ", existing nodes are traversed if possible,
-                otherwise default_node_type is used to create new nodes. Default "", interpreted as " " at each level.
+                (d)icts. E.g. ``"dll"`` to create a dict at level 1, and lists at level 2 and 3. ``" "`` can also be
+                used -- space doesn't enforce a node-type like ``"d"`` or ``"l"``. For ``" "``, existing nodes are
+                traversed if possible, otherwise default_node_type is used to create new nodes. Default ``""``,
+                interpreted as " " at each level. See README
             list_insert: \\* Level at which a new node shall be inserted into the list instead of traversing the
                 existing node in the list at that index. See README
-            path_split: \\* used to split path into a list if path is a string, default " "
+            path_split: \\* used to split path into a list if path is a string, default ``" "``, see README
             fagus: \\* return self as a Fagus-object if it is a node (tuple / list / dict), default False
-            if_: \\* only set value if it meets the condition specified here, otherwise do nothing. The condition can be
-                a lambda, any value or a tuple of accepted values. Default _None (don't check value)
+            if_: \\* only set value if it meets the condition specified here, otherwise do nothing. The condition can
+                be a lambda, any value or a tuple of accepted values. Default _None (don't check value)
             default_node_type: \\* determines if new nodes by default should be created as (d)ict or (l)ist. Must be
-                either "d" or "l", default "d"
+                either ``"d"`` or ``"l"``, default ``"d"``, examples in README
             copy: if this is set, a copy of self is modified and then returned (thus self is not modified)
 
         Returns:
@@ -482,17 +492,18 @@ class Fagus(c_abc.MutableMapping, c_abc.MutableSequence, c_abc.MutableSet, metac
             path: List/Tuple of key-values that are traversed in self. If no nodes exist at the keys, new nodes are
                 created. Can also be specified as a string, that is split into a tuple using path_split. See get()
             node_types: \\* Can be used to manually define if the nodes along path are supposed to be (l)ists or
-                (d)icts. E.g. "dll" to create a dict at level 1, and lists at level 2 and 3. " " can also be used -
-                space doesn't enforce a node-type like d or l. For " ", existing nodes are traversed if possible,
-                otherwise default_node_type is used to create new nodes. Default "", interpreted as " " at each level.
+                (d)icts. E.g. ``"dll"`` to create a dict at level 1, and lists at level 2 and 3. ``" "`` can also be
+                used -- space doesn't enforce a node-type like ``"d"`` or ``"l"``. For ``" "``, existing nodes are
+                traversed if possible, otherwise default_node_type is used to create new nodes. Default ``""``,
+                interpreted as " " at each level. See README
             list_insert: \\* Level at which a new node shall be inserted into the list instead of traversing the
                 existing node in the list at that index. See README
-            path_split: \\* used to split path into a list if path is a string, default " "
+            path_split: \\* used to split path into a list if path is a string, default ``" "``, see README
             fagus: \\* return self as a Fagus-object if it is a node (tuple / list / dict), default False
-            if_: \\* only append value if it meets the condition specified here, otherwise do nothing. The condition can
-                be a lambda, any value or a tuple of accepted values. Default _None (don't check value)
+            if_: \\* only append value if it meets the condition specified here, otherwise do nothing. The condition
+                can be a lambda, any value or a tuple of accepted values. Default _None (don't check value)
             default_node_type: \\* determines if new nodes by default should be created as (d)ict or (l)ist. Must be
-                either "d" or "l", default "d"
+                either ``"d"`` or ``"l"``, default ``"d"``, examples in README
             copy: if this is set, a copy of self is modified and then returned (thus self is not modified)
 
         Returns:
@@ -532,17 +543,18 @@ class Fagus(c_abc.MutableMapping, c_abc.MutableSequence, c_abc.MutableSet, metac
                 created. Can also be specified as a string, that is split into a tuple using path_split. See get()
 
             node_types: \\* Can be used to manually define if the nodes along path are supposed to be (l)ists or
-                (d)icts. E.g. "dll" to create a dict at level 1, and lists at level 2 and 3. " " can also be used -
-                space doesn't enforce a node-type like d or l. For " ", existing nodes are traversed if possible,
-                otherwise default_node_type is used to create new nodes. Default "", interpreted as " " at each level.
+                (d)icts. E.g. ``"dll"`` to create a dict at level 1, and lists at level 2 and 3. ``" "`` can also be
+                used -- space doesn't enforce a node-type like ``"d"`` or ``"l"``. For ``" "``, existing nodes are
+                traversed if possible, otherwise default_node_type is used to create new nodes. Default ``""``,
+                interpreted as " " at each level. See README
             list_insert: \\* Level at which a new node shall be inserted into the list instead of traversing the
                 existing node in the list at that index. See README
-            path_split: \\* used to split path into a list if path is a string, default " "
+            path_split: \\* used to split path into a list if path is a string, default ``" "``, see README
             fagus: \\* return self as a Fagus-object if it is a node (tuple / list / dict), default False
             if_: \\* only extend with values if they meet the condition specified here, otherwise do nothing. The
                 condition can be a lambda, any value or a tuple of accepted values. Default _None (don't check values)
             default_node_type: \\* determines if new nodes by default should be created as (d)ict or (l)ist. Must be
-                either "d" or "l", default "d"
+                either ``"d"`` or ``"l"``, default ``"d"``, examples in README
             copy: if this is set, a copy of self is modified and then returned (thus self is not modified)
 
         Returns:
@@ -584,17 +596,18 @@ class Fagus(c_abc.MutableMapping, c_abc.MutableSequence, c_abc.MutableSet, metac
             path: List/Tuple of key-values that are traversed in self. If no nodes exist at the keys, new nodes are
                 created. Can also be specified as a string, that is split into a tuple using path_split. See get()
             node_types: \\* Can be used to manually define if the nodes along path are supposed to be (l)ists or
-                (d)icts. E.g. "dll" to create a dict at level 1, and lists at level 2 and 3. " " can also be used -
-                space doesn't enforce a node-type like d or l. For " ", existing nodes are traversed if possible,
-                otherwise default_node_type is used to create new nodes. Default "", interpreted as " " at each level.
+                (d)icts. E.g. ``"dll"`` to create a dict at level 1, and lists at level 2 and 3. ``" "`` can also be
+                used -- space doesn't enforce a node-type like ``"d"`` or ``"l"``. For ``" "``, existing nodes are
+                traversed if possible, otherwise default_node_type is used to create new nodes. Default ``""``,
+                interpreted as " " at each level. See README
             list_insert: \\* Level at which a new node shall be inserted into the list instead of traversing the
                 existing node in the list at that index. See README
-            path_split: \\* used to split path into a list if path is a string, default " "
+            path_split: \\* used to split path into a list if path is a string, default ``" "``, see README
             fagus: \\* return self as a Fagus-object if it is a node (tuple / list / dict), default False
-            if_: \\* only insert value if it meets the condition specified here, otherwise do nothing. The condition can
-                be a lambda, any value or a tuple of accepted values. Default _None (don't check value)
+            if_: \\* only insert value if it meets the condition specified here, otherwise do nothing. The condition
+                can be a lambda, any value or a tuple of accepted values. Default _None (don't check value)
             default_node_type: \\* determines if new nodes by default should be created as (d)ict or (l)ist. Must be
-                either "d" or "l", default "d"
+                either ``"d"`` or ``"l"``, default ``"d"``, examples in README
             copy: if this is set, a copy of self is modified and then returned (thus self is not modified)
 
         Returns:
@@ -644,17 +657,18 @@ class Fagus(c_abc.MutableMapping, c_abc.MutableSequence, c_abc.MutableSet, metac
             path: List/Tuple of key-values that are traversed in self. If no nodes exist at the keys, new nodes are
                 created. Can also be specified as a string, that is split into a tuple using path_split. See get()
             node_types: \\* Can be used to manually define if the nodes along path are supposed to be (l)ists or
-                (d)icts. E.g. "dll" to create a dict at level 1, and lists at level 2 and 3. " " can also be used -
-                space doesn't enforce a node-type like d or l. For " ", existing nodes are traversed if possible,
-                otherwise default_node_type is used to create new nodes. Default "", interpreted as " " at each level.
+                (d)icts. E.g. ``"dll"`` to create a dict at level 1, and lists at level 2 and 3. ``" "`` can also be
+                used -- space doesn't enforce a node-type like ``"d"`` or ``"l"``. For ``" "``, existing nodes are
+                traversed if possible, otherwise default_node_type is used to create new nodes. Default ``""``,
+                interpreted as " " at each level. See README
             list_insert: \\* Level at which a new node shall be inserted into the list instead of traversing the
                 existing node in the list at that index. See README
-            path_split: \\* used to split path into a list if path is a string, default " "
+            path_split: \\* used to split path into a list if path is a string, default ``" "``, see README
             fagus: \\* return self as a Fagus-object if it is a node (tuple / list / dict), default False
-            if_: \\* only add value if it meets the condition specified here, otherwise do nothing. The condition can be
-                a lambda, any value or a tuple of accepted values. Default _None (don't check value)
+            if_: \\* only add value if it meets the condition specified here, otherwise do nothing. The condition can
+                be a lambda, any value or a tuple of accepted values. Default _None (don't check value)
             default_node_type: \\* determines if new nodes by default should be created as (d)ict or (l)ist. Must be
-                either "d" or "l", default "d"
+                either ``"d"`` or ``"l"``, default ``"d"``, examples in README
             copy: if this is set, a copy of self is modified and then returned (thus self is not modified)
 
         Returns:
@@ -694,17 +708,18 @@ class Fagus(c_abc.MutableMapping, c_abc.MutableSequence, c_abc.MutableSet, metac
             path: List/Tuple of key-values that are traversed in self. If no nodes exist at the keys, new nodes are
                 created. Can also be specified as a string, that is split into a tuple using path_split. See get()
             node_types: \\* Can be used to manually define if the nodes along path are supposed to be (l)ists or
-                (d)icts. E.g. "dll" to create a dict at level 1, and lists at level 2 and 3. " " can also be used -
-                space doesn't enforce a node-type like d or l. For " ", existing nodes are traversed if possible,
-                otherwise default_node_type is used to create new nodes. Default "", interpreted as " " at each level.
+                (d)icts. E.g. ``"dll"`` to create a dict at level 1, and lists at level 2 and 3. ``" "`` can also be
+                used -- space doesn't enforce a node-type like ``"d"`` or ``"l"``. For ``" "``, existing nodes are
+                traversed if possible, otherwise default_node_type is used to create new nodes. Default ``""``,
+                interpreted as " " at each level. See README
             list_insert: \\* Level at which a new node shall be inserted into the list instead of traversing the
                 existing node in the list at that index. See README
-            path_split: \\* used to split path into a list if path is a string, default " "
+            path_split: \\* used to split path into a list if path is a string, default ``" "``, see README
             fagus: \\* return self as a Fagus-object if it is a node (tuple / list / dict), default False
             if_: \\* only update with values if they meet the condition specified here, otherwise do nothing. The
                 condition can be a lambda, any value or a tuple of accepted values. Default _None (don't check values)
             default_node_type: \\* determines if new nodes by default should be created as (d)ict or (l)ist. Must be
-                either "d" or "l", default "d"
+                either ``"d"`` or ``"l"``, default ``"d"``, examples in README
             copy: if this is set, a copy of self is modified and then returned (thus self is not modified)
 
         Returns:
@@ -896,7 +911,7 @@ class Fagus(c_abc.MutableMapping, c_abc.MutableSequence, c_abc.MutableSet, metac
             else:
                 if not isinstance(node, (c_abc.MutableSet, c_abc.MutableMapping)):
                     try:
-                        node = (  # type: ignore
+                        node = (
                             dict(node)
                             if action == "update" and isinstance(node, c_abc.Mapping)
                             else set(node)  # type: ignore
@@ -934,14 +949,15 @@ class Fagus(c_abc.MutableMapping, c_abc.MutableSequence, c_abc.MutableSet, metac
             default: \\* returned if path doesn't exist in self
             fagus: \\* return self as a Fagus-object if it is a node (tuple / list / dict), default False
             node_types: \\* Can be used to manually define if the nodes along path are supposed to be (l)ists or
-                (d)icts. E.g. "dll" to create a dict at level 1, and lists at level 2 and 3. " " can also be used -
-                space doesn't enforce a node-type like d or l. For " ", existing nodes are traversed if possible,
-                otherwise default_node_type is used to create new nodes. Default "", interpreted as " " at each level.
+                (d)icts. E.g. ``"dll"`` to create a dict at level 1, and lists at level 2 and 3. ``" "`` can also be
+                used -- space doesn't enforce a node-type like ``"d"`` or ``"l"``. For ``" "``, existing nodes are
+                traversed if possible, otherwise default_node_type is used to create new nodes. Default ``""``,
+                interpreted as " " at each level. See README
             list_insert: \\* Level at which a new node shall be inserted into the list instead of traversing the
                 existing node in the list at that index. See README
-            path_split: \\* used to split path into a list if path is a str, default " "
+            path_split: \\* used to split path into a list if path is a str, default ``" "``
             default_node_type: \\* determines if new nodes by default should be created as (d)ict or (l)ist. Must be
-                either "d" or "l", default "d"
+                either ``"d"`` or ``"l"``, default ``"d"``, examples in README
 
         Returns:
             value at path if it exists, otherwise default is set at path and returned
@@ -1001,14 +1017,15 @@ class Fagus(c_abc.MutableMapping, c_abc.MutableSequence, c_abc.MutableSet, metac
                 changes the object, but returns None (if ~ stays on, the object is replaced with None). Default True.
                 If no value exists at path, the default value is always set at path (independent of ~)
             node_types: \\* Can be used to manually define if the nodes along path are supposed to be (l)ists or
-                (d)icts. E.g. "dll" to create a dict at level 1, and lists at level 2 and 3. " " can also be used -
-                space doesn't enforce a node-type like d or l. For " ", existing nodes are traversed if possible,
-                otherwise default_node_type is used to create new nodes. Default "", interpreted as " " at each level.
+                (d)icts. E.g. ``"dll"`` to create a dict at level 1, and lists at level 2 and 3. ``" "`` can also be
+                used -- space doesn't enforce a node-type like ``"d"`` or ``"l"``. For ``" "``, existing nodes are
+                traversed if possible, otherwise default_node_type is used to create new nodes. Default ``""``,
+                interpreted as " " at each level. See README
             list_insert: \\* Level at which a new node shall be inserted into the list instead of traversing the
                 existing node in the list at that index. See README
-            path_split: \\* used to split path into a list if path is a str, default " "
+            path_split: \\* used to split path into a list if path is a str, default ``" "``
             default_node_type: \\* determines if new nodes by default should be created as (d)ict or (l)ist. Must be
-                either "d" or "l", default "d"
+                either ``"d"`` or ``"l"``, default ``"d"``, examples in README
 
         Returns:
             the new value that was returned by the mod_function, or default if there was no value at path
@@ -1079,7 +1096,7 @@ class Fagus(c_abc.MutableMapping, c_abc.MutableSequence, c_abc.MutableSet, metac
                 If no value exists at path, the default value is always set at path (independent of ~)
             max_depth: Defines the maximum depth for the iteration. See Fagus.iter max_depth for more information
             copy: Can be ued to make sure that the node at path is not modified (instead a modified copy is returned)
-            path_split: \\* used to split path into a list if path is a str, default " "
+            path_split: \\* used to split path into a list if path is a str, default ``" "``
 
         Returns:
             the node at path where all the leaves matching filter\\_ are modified, or default if it didn't exist
@@ -1147,12 +1164,13 @@ class Fagus(c_abc.MutableMapping, c_abc.MutableSequence, c_abc.MutableSet, metac
                 several arguments. See README for examples
             path: position in self at which the value shall be modified. See get() / README
             node_types: \\* Can be used to manually define if the nodes along path are supposed to be (l)ists or
-                (d)icts. E.g. "dll" to create a dict at level 1, and lists at level 2 and 3. " " can also be used -
-                space doesn't enforce a node-type like d or l. For " ", existing nodes are traversed if possible,
-                otherwise default_node_type is used to create new nodes. Default "", interpreted as " " at each level.
+                (d)icts. E.g. ``"dll"`` to create a dict at level 1, and lists at level 2 and 3. ``" "`` can also be
+                used -- space doesn't enforce a node-type like ``"d"`` or ``"l"``. For ``" "``, existing nodes are
+                traversed if possible, otherwise default_node_type is used to create new nodes. Default ``""``,
+                interpreted as " " at each level. See README
             list_insert: \\* Level at which a new node shall be inserted into the list instead of traversing the
                 existing node in the list at that index. See README
-            path_split: \\* used to split path into a list if path is a str, default " "
+            path_split: \\* used to split path into a list if path is a str, default ``" "``
             copy: Create a copy and make that copy serializable. Default is to modify self directly
 
         Returns:
@@ -1287,15 +1305,16 @@ class Fagus(c_abc.MutableMapping, c_abc.MutableSequence, c_abc.MutableSet, metac
             copy: Don't modify the root node, modify and return a copy instead
             copy_obj: The objects to be merged are not modified, but references to subnodes of the objects can be
                 put into the root node. Set this to True to prevent that and keep root and objects independent
-            path_split: \\* used to split path into a list if path is a str, default " "
+            path_split: \\* used to split path into a list if path is a str, default ``" "``
             node_types: \\* Can be used to manually define if the nodes along path are supposed to be (l)ists or
-                (d)icts. E.g. "dll" to create a dict at level 1, and lists at level 2 and 3. " " can also be used -
-                space doesn't enforce a node-type like d or l. For " ", existing nodes are traversed if possible,
-                otherwise default_node_type is used to create new nodes. Default "", interpreted as " " at each level.
+                (d)icts. E.g. ``"dll"`` to create a dict at level 1, and lists at level 2 and 3. ``" "`` can also be
+                used -- space doesn't enforce a node-type like ``"d"`` or ``"l"``. For ``" "``, existing nodes are
+                traversed if possible, otherwise default_node_type is used to create new nodes. Default ``""``,
+                interpreted as " " at each level. See README
             list_insert: \\* Level at which a new node shall be inserted into the list instead of traversing the
                 existing node in the list at that index. See README
             default_node_type: \\* determines if new nodes by default should be created as (d)ict or (l)ist. Must be
-                either "d" or "l", default "d"
+                either ``"d"`` or ``"l"``, default ``"d"``, examples in README
 
         Returns:
             a reference to the modified root node, or a modified copy of the root node (see copy-parameter)
@@ -1437,7 +1456,7 @@ class Fagus(c_abc.MutableMapping, c_abc.MutableSequence, c_abc.MutableSet, metac
             path: pop value at this position in self, or don't do anything if path doesn't exist in self
             default: \\* returned if path doesn't exist in self
             fagus: \\* return the result as Fagus-object if possible (default is just to return the result)
-            path_split: \\* used to split path into a list if path is a str, default " "
+            path_split: \\* used to split path into a list if path is a str, default ``" "``
 
         Returns:
             value at path if it exists, or default if it doesn't
@@ -1483,7 +1502,7 @@ class Fagus(c_abc.MutableMapping, c_abc.MutableSequence, c_abc.MutableSet, metac
 
         Args:
             path: pop value at this position in self, or don't do anything if path doesn't exist in self
-            path_split: \\* used to split path into a list if path is a str, default " "
+            path_split: \\* used to split path into a list if path is a str, default ``" "``
 
         Returns: None
         """
@@ -1496,7 +1515,7 @@ class Fagus(c_abc.MutableMapping, c_abc.MutableSequence, c_abc.MutableSet, metac
 
         Args:
             path: pop value at this position in self, or don't do anything if path doesn't exist in self
-            path_split: \\* used to split path into a list if path is a str, default " "
+            path_split: \\* used to split path into a list if path is a str, default ``" "``
 
         Returns: None
 
@@ -1512,8 +1531,8 @@ class Fagus(c_abc.MutableMapping, c_abc.MutableSequence, c_abc.MutableSet, metac
         \\* means that the parameter is a FagusOption, see Fagus-class-docstring for more information about options
 
         Args:
-            path: get keys for node at this position in self. Default "" (gets values from the root node), See get()
-            path_split: \\* used to split path into a list if path is a str, default " "
+            path: get keys for node at this position in self. Default ``""`` (gets values from the root node), See get()
+            path_split: \\* used to split path into a list if path is a str, default ``" "``
 
         Returns:
             keys for the node at path, or an empty tuple if that node is a set or doesn't exist / doesn't have keys
@@ -1540,7 +1559,7 @@ class Fagus(c_abc.MutableMapping, c_abc.MutableSequence, c_abc.MutableSet, metac
 
         Args:
             path: get values at this position in self, default "" (gets values from the root node). See get()
-            path_split: \\* used to split path into a list if path is a str, default " "
+            path_split: \\* used to split path into a list if path is a str, default ``" "``
             fagus: \\* converts sub-nodes into Fagus-objects in the returned list of values, default False
             copy: ~ creates a copy of the node before values() are returned. This can be beneficial if you want to make
                 changes to the returned nodes, but you don't want to change self. Default False
@@ -1571,8 +1590,8 @@ class Fagus(c_abc.MutableMapping, c_abc.MutableSequence, c_abc.MutableSet, metac
         \\* means that the parameter is a FagusOption, see Fagus-class-docstring for more information about options
 
         Args:
-            path: get items at this position in self, Default "" (gets values from the root node). See get()
-            path_split: \\* used to split path into a list if path is a str, default " "
+            path: get items at this position in self, Default ``""`` (gets values from the root node). See get()
+            path_split: \\* used to split path into a list if path is a str, default ``" "``
             fagus: \\* converts sub-nodes into Fagus-objects in the returned iterator, default False
             copy: ~ creates a copy of the node before items() are returned. This can be beneficial if you want to make
                 changes to the returned nodes, but you don't want to change self. Default False
@@ -1605,8 +1624,8 @@ class Fagus(c_abc.MutableMapping, c_abc.MutableSequence, c_abc.MutableSet, metac
         \\* means that the parameter is a FagusOption, see Fagus-class-docstring for more information about options
 
         Args:
-            path: clear at this position in self, Default "" (gets values from the root node). See get()
-            path_split: \\* used to split path into a list if path is a str, default " "
+            path: clear at this position in self, Default ``""`` (gets values from the root node). See get()
+            path_split: \\* used to split path into a list if path is a str, default ``" "``
             copy: if ~ is set, a copy of self is modified and then returned (thus self is not modified), default False
             fagus: \\* return self as a Fagus-object if it is a node (tuple / list / dict), default False
 
@@ -1635,8 +1654,8 @@ class Fagus(c_abc.MutableMapping, c_abc.MutableSequence, c_abc.MutableSet, metac
 
         Args:
             value: value to check
-            path: check if value is in node at this position in self, Default "" (checks root node). See get()
-            path_split: \\* used to split path into a list if path is a str, default " "
+            path: check if value is in node at this position in self, Default ``""`` (checks root node). See get()
+            path_split: \\* used to split path into a list if path is a str, default ``" "``
 
         Return:
             whether value is in node at path in self. returns value == node if the node isn't iterable, and false if
@@ -1650,8 +1669,9 @@ class Fagus(c_abc.MutableMapping, c_abc.MutableSequence, c_abc.MutableSet, metac
         \\* means that the parameter is a FagusOption, see Fagus-class-docstring for more information about options
 
         Args:
-            path: position in self where the number of elements shall be found.Default "" (checks root node). See get()
-            path_split: \\* used to split path into a list if path is a str, default " "
+            path: position in self where the number of elements shall be found.Default ``""`` (checks root node). See
+                get() and README for examples
+            path_split: \\* used to split path into a list if path is a str, default ``" "``
 
         Return:
             the number of elements in the node at path. if there is no node at path, 0 is returned. If the element
@@ -1675,9 +1695,10 @@ class Fagus(c_abc.MutableMapping, c_abc.MutableSequence, c_abc.MutableSet, metac
             value: ~ to search index for
             start: start searching at this index. Only applicable if the node at path is a list / tuple
             stop: stop searching at this index. Only applicable if the node at path is a list / tuple
-            path: position in self where the node shall be searched for value. Default "" (checks root node). See get()
+            path: position in self where the node shall be searched for value. Default ``""`` (checks root node). See
+                get() and README for examples
             all_: returns all matching indices / keys in a generator (instead of only the first)
-            path_split: \\* used to split path into a list if path is a str, default " "
+            path_split: \\* used to split path into a list if path is a str, default ``" "``
 
         Returns:
             The first index of value if the node at path is a list, or the first key containing value if the node at
@@ -1724,7 +1745,7 @@ class Fagus(c_abc.MutableMapping, c_abc.MutableSequence, c_abc.MutableSet, metac
         Args:
             other: other object to check
             path: check if the node at this position in self, is disjoint from other
-            path_split: \\* used to split path into a list if path is a str, default " "
+            path_split: \\* used to split path into a list if path is a str, default ``" "``
             dict_: use (k)eys, (v)alues or (i)tems for if value is a dict. Default keys
 
         Returns: whether the other iterable is disjoint from the value at path. If value is a dict, the keys are used.
@@ -1757,7 +1778,7 @@ class Fagus(c_abc.MutableMapping, c_abc.MutableSequence, c_abc.MutableSet, metac
         Args:
             path: position in self where a list / tuple shall be returned reversed
             fagus: \\* converts sub-nodes into Fagus-objects in the returned iterator, default False
-            path_split: \\* used to split path into a list if path is a str, default " "
+            path_split: \\* used to split path into a list if path is a str, default ``" "``
             copy: ~ creates a copy of the node before it is returned reversed(). This can be beneficial if you want to
                 make changes to the returned nodes, but you don't want to change self. Default False
 
@@ -1783,7 +1804,7 @@ class Fagus(c_abc.MutableMapping, c_abc.MutableSequence, c_abc.MutableSet, metac
         Args:
             path: position in self where a list / tuple shall be reversed
             fagus: \\* converts sub-nodes into Fagus-objects in the returned iterator, default False
-            path_split: \\* used to split path into a list if path is a str, default " "
+            path_split: \\* used to split path into a list if path is a str, default ``" "``
             copy: ~ creates a copy of the node before it is returned reversed(). This can be beneficial if you want to
                 make changes to the returned nodes, but you don't want to change self. Default False
 
@@ -1921,9 +1942,10 @@ class Fagus(c_abc.MutableMapping, c_abc.MutableSequence, c_abc.MutableSet, metac
             list_insert: \\* Level at which a new node shall be inserted into the list instead of traversing the
                 existing node in the list at that index. See README
             node_types: \\* Can be used to manually define if the nodes along path are supposed to be (l)ists or
-                (d)icts. E.g. "dll" to create a dict at level 1, and lists at level 2 and 3. " " can also be used -
-                space doesn't enforce a node-type like d or l. For " ", existing nodes are traversed if possible,
-                otherwise default_node_type is used to create new nodes. Default "", interpreted as " " at each level.
+                (d)icts. E.g. ``"dll"`` to create a dict at level 1, and lists at level 2 and 3. ``" "`` can also be
+                used -- space doesn't enforce a node-type like ``"d"`` or ``"l"``. For ``" "``, existing nodes are
+                traversed if possible, otherwise default_node_type is used to create new nodes. Default ``""``,
+                interpreted as " " at each level. See README
 
         Returns:
             the parent node if it exists, otherwise None
